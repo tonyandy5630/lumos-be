@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LumosSolution.Controllers
@@ -17,7 +18,7 @@ namespace LumosSolution.Controllers
         {
             _logger = logger;
         }
-
+        [Authorize(Roles = "admin")]
         [HttpGet(Name = "GetWeatherForecast")]
         public IEnumerable<WeatherForecast> Get()
         {
