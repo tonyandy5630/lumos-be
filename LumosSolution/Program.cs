@@ -6,16 +6,22 @@ using Microsoft.OpenApi.Models;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
-
+var configuration = new ConfigurationBuilder()
+    .SetBasePath(Directory.GetCurrentDirectory())
+    .AddJsonFile("appsettings.json")
+    .Build();
+var googleClientId = configuration["Authentication:Google:clientId"];
+var googleClientSecret = configuration["Authentication:Google:clientSecret"];
 // Add services to the container.
-/*builder.Services.AddCors(options =>
+builder.Services.AddCors(options =>
 {
-    options.AddDefaultPolicy(builder =>
-        
+    options.AddPolicy(name:"CorsPolicy",builder =>
+
+    builder.WithOrigins("http://localhost:4200")
             .AllowAnyMethod()
             .AllowAnyHeader()
             .AllowCredentials());
-});*/
+});
 // Add Authentication and JwtBearer
 builder.Services
     .AddAuthentication(options =>
@@ -37,8 +43,8 @@ builder.Services
     })
     .AddGoogle(options =>
     {
-        options.ClientId = "1048081121937-ionaj108cungclffgsv1j0f6o0l6knfn.apps.googleusercontent.com";
-        options.ClientSecret = "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";
+        options.ClientId = googleClientId;
+        options.ClientSecret = googleClientSecret;
     });
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -80,6 +86,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseCors("CorsPolicy");
 app.UseAuthentication();
 app.UseAuthorization();
 

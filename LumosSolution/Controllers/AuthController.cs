@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authentication;
+﻿using Google.Apis.Auth;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
@@ -50,35 +51,24 @@ namespace LumosSolution.Controllers
                 return (false, null);
             }
         }
-        [AllowAnonymous]
-        [HttpGet("google-login")]
-        public IActionResult GoogleLogin()
+        [HttpPost("LoginWithGoogle")]
+        public async Task<IActionResult> LoginWithGoogle([FromBody] string credential)
         {
-            var authenticationProperties = new AuthenticationProperties
+            var setting = new GoogleJsonWebSignature.ValidationSettings() {
+                Audience = new List<string> { _configuration["Authentication:Google:clientId"] }
+            }; 
+            var payload = await GoogleJsonWebSignature.ValidateAsync(credential, setting);
+            //tìm user theo email đã lưu trong db
+            if (User != null)
             {
-                RedirectUri = Url.Action(nameof(GoogleLoginCallback)),
-                Items = { { "scheme", "Google" } }
-            };
-
-            return Challenge(authenticationProperties, "Google");
-        }
-
-        [AllowAnonymous]
-        [HttpGet("google-login-callback")]
-        public async Task<IActionResult> GoogleLoginCallback()
-        {
-            var authenticateResult = await HttpContext.AuthenticateAsync("External");
-            if (!authenticateResult.Succeeded)
-            {
-                return Unauthorized("Google authentication failed.");
+                /*return Ok(GenerateToken(user));*/
+                return Ok();
             }
-
-            var username = authenticateResult.Principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var role = "user"; // Set the role as needed
-
-            var token = GenerateToken(username, role);
-            return Ok(new { Message = $"Logged in with role: {role}", Token = token });
-        }
+            else
+            {
+                return BadRequest();
+            }
+        } 
 
         private string GenerateToken(string username, string role)
         {
