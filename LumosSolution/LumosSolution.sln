@@ -3,17 +3,19 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.33627.172
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LumosSolution", "LumosSolution.csproj", "{5863CA98-2E68-4239-B044-855CA520216B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LumosSolution", "LumosSolution.csproj", "{5863CA98-2E68-4239-B044-855CA520216B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BussinessObject", "..\BussinessObject\BussinessObject.csproj", "{BAD02DBD-6787-4F13-BBEF-491D48096318}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BussinessObject", "..\BussinessObject\BussinessObject.csproj", "{BAD02DBD-6787-4F13-BBEF-491D48096318}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Repository", "..\Repository\Repository.csproj", "{1BD9F7FA-4BC4-49C4-9A05-488209E3FA80}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Repository", "..\Repository\Repository.csproj", "{1BD9F7FA-4BC4-49C4-9A05-488209E3FA80}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Service", "..\Service\Service.csproj", "{8945A734-405C-43B2-9AAF-94B24356D03C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Service", "..\Service\Service.csproj", "{8945A734-405C-43B2-9AAF-94B24356D03C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataAccessLayer", "..\DataAccessLayer\DataAccessLayer.csproj", "{60D300B0-B0F7-470A-A44A-2E84CBFA43AD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataAccessLayer", "..\DataAccessLayer\DataAccessLayer.csproj", "{60D300B0-B0F7-470A-A44A-2E84CBFA43AD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Utils", "..\Utils\Utils.csproj", "{A190A99E-0DB9-47D5-AFE1-5CCD0F2C8288}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Utils", "..\Utils\Utils.csproj", "{A190A99E-0DB9-47D5-AFE1-5CCD0F2C8288}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Enum", "..\Enums\Enum.csproj", "{0BF38E3A-FB81-4322-BB1B-3FE2E9A4EA37}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -45,6 +47,10 @@ Global
 		{A190A99E-0DB9-47D5-AFE1-5CCD0F2C8288}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A190A99E-0DB9-47D5-AFE1-5CCD0F2C8288}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A190A99E-0DB9-47D5-AFE1-5CCD0F2C8288}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0BF38E3A-FB81-4322-BB1B-3FE2E9A4EA37}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0BF38E3A-FB81-4322-BB1B-3FE2E9A4EA37}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0BF38E3A-FB81-4322-BB1B-3FE2E9A4EA37}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0BF38E3A-FB81-4322-BB1B-3FE2E9A4EA37}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
