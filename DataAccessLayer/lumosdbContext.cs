@@ -477,7 +477,7 @@ namespace BussinessObject
                 entity.Property(e => e.Code)
                     .HasMaxLength(50)
                     .IsUnicode(false);
-
+                entity.Property(e => e.Date).HasColumnType("datetime");
                 entity.Property(e => e.CreatedBy)
                     .HasMaxLength(50)
                     .IsUnicode(false);
