@@ -1,0 +1,21 @@
+﻿using System;
+using System.Collections.Generic;
+
+namespace BussinessObject
+{
+    public partial class Address
+    {
+        public int AddressId { get; set; }
+        public int? ReportId { get; set; }
+        public string Code { get; set; }
+        public string DisplayName { get; set; }
+        public string Address1 { get; set; }
+        public int? Status { get; set; }
+        public DateTime? CreatedDate { get; set; }
+        public string CreatedBy { get; set; }
+        public DateTime? LastUpdate { get; set; }
+        public string UpdatedBy { get; set; }
+
+        public virtual MedicalReport Report { get; set; }
+    }
+}
