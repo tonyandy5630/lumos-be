@@ -21,6 +21,7 @@ namespace BussinessObject
         public virtual DbSet<Admin> Admins { get; set; }
         public virtual DbSet<AdminConfiguration> AdminConfigurations { get; set; }
         public virtual DbSet<Booking> Bookings { get; set; }
+        public virtual DbSet<BookingLog> BookingLogs { get; set; }
         public virtual DbSet<Customer> Customers { get; set; }
         public virtual DbSet<FavoritePartner> FavoritePartners { get; set; }
         public virtual DbSet<HistoryLog> HistoryLogs { get; set; }
@@ -48,7 +49,7 @@ namespace BussinessObject
              .SetBasePath(Directory.GetCurrentDirectory())
             .AddJsonFile("appsettings.json", true, true)
             .Build();
-            return config["ConnectionStrings:DefaultConnection"];
+            return config["ConnectionStrings:DB"];
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -86,7 +87,7 @@ namespace BussinessObject
                 entity.HasOne(d => d.Report)
                     .WithMany(p => p.Addresses)
                     .HasForeignKey(d => d.ReportId)
-                    .HasConstraintName("FK_Address_ReportId");
+                    .HasConstraintName("FK_Address_MedicalReport");
             });
 
             modelBuilder.Entity<Admin>(entity =>
@@ -109,6 +110,8 @@ namespace BussinessObject
                     .HasMaxLength(50)
                     .IsUnicode(false);
 
+                entity.Property(e => e.ImgUrl).IsUnicode(false);
+
                 entity.Property(e => e.LastUpdate).HasColumnType("datetime");
 
                 entity.Property(e => e.Password)
@@ -123,7 +126,7 @@ namespace BussinessObject
             modelBuilder.Entity<AdminConfiguration>(entity =>
             {
                 entity.HasKey(e => e.AdminConfigId)
-                    .HasName("PK__AdminCon__706D42E3A7D00A16");
+                    .HasName("PK__AdminCon__706D42E34324B939");
 
                 entity.ToTable("AdminConfiguration");
 
@@ -143,7 +146,7 @@ namespace BussinessObject
                 entity.HasOne(d => d.Config)
                     .WithMany(p => p.AdminConfigurations)
                     .HasForeignKey(d => d.ConfigId)
-                    .HasConstraintName("FK_AdminConfiguration_ConfigId");
+                    .HasConstraintName("FK_AdminConfiguration_SystemConfiguration");
             });
 
             modelBuilder.Entity<Booking>(entity =>
@@ -164,27 +167,43 @@ namespace BussinessObject
 
                 entity.Property(e => e.CreatedDate).HasColumnType("datetime");
 
-                entity.Property(e => e.FeedbackImage).HasMaxLength(255);
+                entity.Property(e => e.FeedbackImage)
+                    .HasMaxLength(1024)
+                    .IsUnicode(false);
 
                 entity.Property(e => e.FeedbackLumos).HasMaxLength(200);
 
                 entity.Property(e => e.FeedbackPartner).HasMaxLength(200);
 
-                entity.Property(e => e.LastUpdate).HasColumnType("datetime");
-
-                entity.Property(e => e.UpdatedBy)
-                    .HasMaxLength(50)
-                    .IsUnicode(false);
-
                 entity.HasOne(d => d.Payment)
                     .WithMany(p => p.Bookings)
                     .HasForeignKey(d => d.PaymentId)
-                    .HasConstraintName("FK_Booking_PaymentMethod");
+                    .HasConstraintName("FK_Booking_PaymentId");
 
                 entity.HasOne(d => d.Report)
                     .WithMany(p => p.Bookings)
                     .HasForeignKey(d => d.ReportId)
                     .HasConstraintName("FK_Booking_ReportId");
+            });
+
+            modelBuilder.Entity<BookingLog>(entity =>
+            {
+                entity.ToTable("BookingLog");
+
+                entity.Property(e => e.BookingLogId).ValueGeneratedNever();
+
+                entity.Property(e => e.CreatedBy)
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.CreatedDate).HasColumnType("datetime");
+
+                entity.Property(e => e.Note).HasColumnType("text");
+
+                entity.HasOne(d => d.Booking)
+                    .WithMany(p => p.BookingLogs)
+                    .HasForeignKey(d => d.BookingId)
+                    .HasConstraintName("FK_BookingLog_BookingId");
             });
 
             modelBuilder.Entity<Customer>(entity =>
@@ -208,6 +227,8 @@ namespace BussinessObject
                     .IsUnicode(false);
 
                 entity.Property(e => e.Fullname).HasMaxLength(100);
+
+                entity.Property(e => e.ImgUrl).IsUnicode(false);
 
                 entity.Property(e => e.LastLogin).HasColumnType("datetime");
 
@@ -233,7 +254,7 @@ namespace BussinessObject
             modelBuilder.Entity<FavoritePartner>(entity =>
             {
                 entity.HasKey(e => e.FavoriteId)
-                    .HasName("PK__Favorite__CE74FAD547AAF3B5");
+                    .HasName("PK__Favorite__CE74FAD5B2B3D8F1");
 
                 entity.ToTable("FavoritePartner");
 
@@ -257,13 +278,13 @@ namespace BussinessObject
                 entity.HasOne(d => d.Partner)
                     .WithMany(p => p.FavoritePartners)
                     .HasForeignKey(d => d.PartnerId)
-                    .HasConstraintName("FK_FavoritePartner_Partner");
+                    .HasConstraintName("FK_FavoritePartner_PartnerId");
             });
 
             modelBuilder.Entity<HistoryLog>(entity =>
             {
                 entity.HasKey(e => e.LogId)
-                    .HasName("PK__HistoryL__5E5486486B061BED");
+                    .HasName("PK__HistoryL__5E548648BDBC9A6B");
 
                 entity.ToTable("HistoryLog");
 
@@ -277,7 +298,7 @@ namespace BussinessObject
             modelBuilder.Entity<MedicalReport>(entity =>
             {
                 entity.HasKey(e => e.ReportId)
-                    .HasName("PK__MedicalR__D5BD4805031A3938");
+                    .HasName("PK__MedicalR__D5BD4805DE4C0A39");
 
                 entity.ToTable("MedicalReport");
 
@@ -343,6 +364,8 @@ namespace BussinessObject
                     .HasMaxLength(50)
                     .IsUnicode(false);
 
+                entity.Property(e => e.ImgUrl).IsUnicode(false);
+
                 entity.Property(e => e.LastLogin).HasColumnType("datetime");
 
                 entity.Property(e => e.LastUpdate).HasColumnType("datetime");
@@ -357,7 +380,7 @@ namespace BussinessObject
                     .HasMaxLength(20)
                     .IsUnicode(false);
 
-                entity.Property(e => e.PractiscingCertificate).HasMaxLength(20);
+                entity.Property(e => e.PracticingCertificate).HasMaxLength(20);
 
                 entity.Property(e => e.RefreshToken)
                     .HasMaxLength(200)
@@ -366,12 +389,17 @@ namespace BussinessObject
                 entity.Property(e => e.UpdatedBy)
                     .HasMaxLength(50)
                     .IsUnicode(false);
+
+                entity.HasOne(d => d.Type)
+                    .WithMany(p => p.Partners)
+                    .HasForeignKey(d => d.TypeId)
+                    .HasConstraintName("FK_Partner_PartnerType");
             });
 
             modelBuilder.Entity<PartnerService>(entity =>
             {
                 entity.HasKey(e => e.ServiceId)
-                    .HasName("PK__PartnerS__C51BB00A54FA255E");
+                    .HasName("PK__PartnerS__C51BB00A4482298F");
 
                 entity.ToTable("PartnerService");
 
@@ -395,11 +423,6 @@ namespace BussinessObject
                     .HasMaxLength(50)
                     .IsUnicode(false);
 
-                entity.HasOne(d => d.Booking)
-                    .WithMany(p => p.PartnerServices)
-                    .HasForeignKey(d => d.BookingId)
-                    .HasConstraintName("FK_PartnerService_BookingId");
-
                 entity.HasOne(d => d.Partner)
                     .WithMany(p => p.PartnerServices)
                     .HasForeignKey(d => d.PartnerId)
@@ -408,9 +431,12 @@ namespace BussinessObject
 
             modelBuilder.Entity<PartnerType>(entity =>
             {
+                entity.HasKey(e => e.TypeId)
+                    .HasName("PK__PartnerT__516F03B5F53DC50F");
+
                 entity.ToTable("PartnerType");
 
-                entity.Property(e => e.PartnertypeId).ValueGeneratedNever();
+                entity.Property(e => e.TypeId).ValueGeneratedNever();
 
                 entity.Property(e => e.Code)
                     .HasMaxLength(50)
@@ -431,17 +457,12 @@ namespace BussinessObject
                 entity.Property(e => e.UpdatedBy)
                     .HasMaxLength(50)
                     .IsUnicode(false);
-
-                entity.HasOne(d => d.Partner)
-                    .WithMany(p => p.PartnerTypes)
-                    .HasForeignKey(d => d.PartnerId)
-                    .HasConstraintName("FK_PartnerType_Partner");
             });
 
             modelBuilder.Entity<PaymentMethod>(entity =>
             {
                 entity.HasKey(e => e.PaymentId)
-                    .HasName("PK__PaymentM__9B556A38D5F383D8");
+                    .HasName("PK__PaymentM__9B556A38D45DAAAB");
 
                 entity.ToTable("PaymentMethod");
 
@@ -477,12 +498,14 @@ namespace BussinessObject
                 entity.Property(e => e.Code)
                     .HasMaxLength(50)
                     .IsUnicode(false);
-                entity.Property(e => e.Date).HasColumnType("datetime");
+
                 entity.Property(e => e.CreatedBy)
                     .HasMaxLength(50)
                     .IsUnicode(false);
 
                 entity.Property(e => e.CreatedDate).HasColumnType("datetime");
+
+                entity.Property(e => e.Date).HasColumnType("date");
 
                 entity.Property(e => e.LastUpdate).HasColumnType("datetime");
 
@@ -504,10 +527,6 @@ namespace BussinessObject
 
                 entity.Property(e => e.ServiceBookingId).ValueGeneratedNever();
 
-                entity.Property(e => e.Code)
-                    .HasMaxLength(50)
-                    .IsUnicode(false);
-
                 entity.Property(e => e.CreatedDate).HasColumnType("datetime");
 
                 entity.Property(e => e.Description).HasColumnType("text");
@@ -518,23 +537,28 @@ namespace BussinessObject
                     .HasMaxLength(50)
                     .IsUnicode(false);
 
-                entity.HasOne(d => d.PartnerService)
+                entity.HasOne(d => d.Booking)
                     .WithMany(p => p.ServiceBookings)
-                    .HasForeignKey(d => d.PartnerServiceId)
-                    .HasConstraintName("FK_ServiceBooking_PartnerServiceId");
+                    .HasForeignKey(d => d.BookingId)
+                    .HasConstraintName("FK_ServiceBooking_Booking");
+
+                entity.HasOne(d => d.Service)
+                    .WithMany(p => p.ServiceBookings)
+                    .HasForeignKey(d => d.ServiceId)
+                    .HasConstraintName("FK_ServiceBooking_Service");
             });
 
             modelBuilder.Entity<ServiceCategory>(entity =>
             {
                 entity.HasKey(e => e.CategoryId)
-                    .HasName("PK__ServiceC__19093A0B9F5A22DE");
+                    .HasName("PK__ServiceC__19093A0BEDD87D3F");
 
                 entity.ToTable("ServiceCategory");
 
                 entity.Property(e => e.CategoryId).ValueGeneratedNever();
 
                 entity.Property(e => e.Category)
-                    .HasMaxLength(30)
+                    .HasMaxLength(50)
                     .IsUnicode(false);
 
                 entity.Property(e => e.Code)
@@ -547,10 +571,6 @@ namespace BussinessObject
 
                 entity.Property(e => e.CreatedDate).HasColumnType("datetime");
 
-                entity.Property(e => e.ImgUrl)
-                    .HasMaxLength(256)
-                    .IsUnicode(false);
-
                 entity.Property(e => e.LastUpdate).HasColumnType("datetime");
 
                 entity.Property(e => e.UpdatedBy)
@@ -561,7 +581,7 @@ namespace BussinessObject
             modelBuilder.Entity<ServiceDetail>(entity =>
             {
                 entity.HasKey(e => e.DetailId)
-                    .HasName("PK__ServiceD__135C316D46D4E55F");
+                    .HasName("PK__ServiceD__135C316D7BCC61A8");
 
                 entity.ToTable("ServiceDetail");
 
@@ -587,13 +607,13 @@ namespace BussinessObject
                 entity.HasOne(d => d.Service)
                     .WithMany(p => p.ServiceDetails)
                     .HasForeignKey(d => d.ServiceId)
-                    .HasConstraintName("FK_ServiceDetail_ServiceId");
+                    .HasConstraintName("FK_ServiceDetail_PartnerService");
             });
 
             modelBuilder.Entity<SystemConfiguration>(entity =>
             {
                 entity.HasKey(e => e.ConfigId)
-                    .HasName("PK__SystemCo__C3BC335CD3C5DF24");
+                    .HasName("PK__SystemCo__C3BC335C5F07A42E");
 
                 entity.ToTable("SystemConfiguration");
 

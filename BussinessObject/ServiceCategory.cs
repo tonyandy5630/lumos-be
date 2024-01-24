@@ -18,7 +18,6 @@ namespace BussinessObject
         public DateTime? CreatedDate { get; set; }
         public DateTime? LastUpdate { get; set; }
         public string UpdatedBy { get; set; }
-        public string ImgUrl { get; set; }
 
         public virtual ICollection<ServiceDetail> ServiceDetails { get; set; }
     }

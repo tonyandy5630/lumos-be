@@ -26,6 +26,7 @@ namespace BussinessObject
         public DateTime? LastUpdate { get; set; }
         public string UpdateBy { get; set; }
         public DateTime? CreatedDate { get; set; }
+        public string ImgUrl { get; set; }
 
         public virtual ICollection<FavoritePartner> FavoritePartners { get; set; }
         public virtual ICollection<MedicalReport> MedicalReports { get; set; }

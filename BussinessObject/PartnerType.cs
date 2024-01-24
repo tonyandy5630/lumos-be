@@ -5,8 +5,12 @@ namespace BussinessObject
 {
     public partial class PartnerType
     {
-        public int PartnertypeId { get; set; }
-        public int? PartnerId { get; set; }
+        public PartnerType()
+        {
+            Partners = new HashSet<Partner>();
+        }
+
+        public int TypeId { get; set; }
         public string Code { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
@@ -16,6 +20,6 @@ namespace BussinessObject
         public DateTime? LastUpdate { get; set; }
         public string UpdatedBy { get; set; }
 
-        public virtual Partner Partner { get; set; }
+        public virtual ICollection<Partner> Partners { get; set; }
     }
 }

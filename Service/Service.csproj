@@ -10,4 +10,8 @@
     <ProjectReference Include="..\Repository\Repository.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="3rd_Party\" />
+  </ItemGroup>
+
 </Project>

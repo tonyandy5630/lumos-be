@@ -20,6 +20,7 @@ namespace BussinessObject
         public string CreatedBy { get; set; }
         public DateTime? LastUpdate { get; set; }
         public string UpdatedBy { get; set; }
+        public string ImgUrl { get; set; }
 
         public virtual ICollection<AdminConfiguration> AdminConfigurations { get; set; }
     }
