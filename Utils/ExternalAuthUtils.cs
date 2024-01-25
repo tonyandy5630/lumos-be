@@ -21,7 +21,7 @@ namespace Utils
             _googleClientId = _configuration["Authentication:Google:clientId"]!;
         }
 
-        public async Task<GoogleJsonWebSignature.Payload> VerifyGoogleToken(ExternalAuth externalAuth)
+        /*public async Task<GoogleJsonWebSignature.Payload> VerifyGoogleToken(ExternalAuth externalAuth)
         {
             var settings = new GoogleJsonWebSignature.ValidationSettings()
             {
@@ -29,7 +29,7 @@ namespace Utils
             };
             var payload = await GoogleJsonWebSignature.ValidateAsync(externalAuth.IdToken, settings);
             return payload;
-        }
+        }*/
     }
 
 }

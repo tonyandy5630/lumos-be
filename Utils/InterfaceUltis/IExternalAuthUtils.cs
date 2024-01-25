@@ -10,6 +10,6 @@ namespace Utils.InterfaceUltis
 {
     public interface IExternalAuthUtils
     {
-        public Task<GoogleJsonWebSignature.Payload> VerifyGoogleToken(ExternalAuth externalAuth);
+/*        public Task<GoogleJsonWebSignature.Payload> VerifyGoogleToken(ExternalAuth externalAuth);*/
     }
 }

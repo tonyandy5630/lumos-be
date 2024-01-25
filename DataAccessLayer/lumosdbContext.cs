@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using BussinessObject;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.Extensions.Configuration;
 
-namespace BussinessObject
+namespace DataAccessLayer
 {
     public partial class lumosdbContext : DbContext
     {
