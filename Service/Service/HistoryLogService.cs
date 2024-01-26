@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Repository.Interface.IUnitOfWork;
+using Service.InterfaceService;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,7 +8,12 @@ using System.Threading.Tasks;
 
 namespace Service.Service
 {
-    public class HistoryLogService
+    public class HistoryLogService:IHistoryLogService
     {
+        private readonly IUnitOfWork _unitOfWork;
+        public HistoryLogService(IUnitOfWork unitOfWork)
+        {
+            _unitOfWork = unitOfWork;
+        }
     }
 }
