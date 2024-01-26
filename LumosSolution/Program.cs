@@ -13,7 +13,8 @@ var configuration = new ConfigurationBuilder()
     .Build();
 var googleClientId = configuration["Authentication:Google:clientId"];
 var googleClientSecret = configuration["Authentication:Google:clientSecret"];
-builder.Services.AddInfrastructure(builder.Configuration);
+var dbconnection = configuration["ConnectionStrings:DB"];
+builder.Services.AddInfrastructure(builder.Configuration,dbconnection);
 // Add services to the container.
 builder.Services.AddCors(options =>
 {
