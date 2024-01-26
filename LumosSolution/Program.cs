@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using Repository.DI;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = new ConfigurationBuilder()
@@ -12,6 +13,7 @@ var configuration = new ConfigurationBuilder()
     .Build();
 var googleClientId = configuration["Authentication:Google:clientId"];
 var googleClientSecret = configuration["Authentication:Google:clientSecret"];
+builder.Services.AddInfrastructure(builder.Configuration);
 // Add services to the container.
 builder.Services.AddCors(options =>
 {
