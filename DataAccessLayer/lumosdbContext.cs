@@ -506,7 +506,7 @@ namespace DataAccessLayer
 
                 entity.Property(e => e.CreatedDate).HasColumnType("datetime");
 
-                entity.Property(e => e.Date).HasColumnType("date");
+                entity.Property(e => e.DayOfWeek).HasColumnType("int");
 
                 entity.Property(e => e.LastUpdate).HasColumnType("datetime");
 
