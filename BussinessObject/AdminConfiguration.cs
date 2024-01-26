@@ -9,9 +9,9 @@ namespace BussinessObject
         public int? ConfigId { get; set; }
         public int? AdminId { get; set; }
         public DateTime? LastUpdate { get; set; }
-        public string UpdateBy { get; set; }
+        public string? UpdateBy { get; set; }
 
-        public virtual Admin Admin { get; set; }
-        public virtual SystemConfiguration Config { get; set; }
+        public virtual Admin? Admin { get; set; }
+        public virtual SystemConfiguration? Config { get; set; }
     }
 }

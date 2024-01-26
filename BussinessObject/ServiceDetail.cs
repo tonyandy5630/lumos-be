@@ -9,11 +9,11 @@ namespace BussinessObject
         public int? ServiceId { get; set; }
         public int? CategoryId { get; set; }
         public DateTime? CreatedDate { get; set; }
-        public string CreatedBy { get; set; }
+        public string? CreatedBy { get; set; }
         public DateTime? LastUpdate { get; set; }
-        public string UpdatedBy { get; set; }
+        public string? UpdatedBy { get; set; }
 
-        public virtual ServiceCategory Category { get; set; }
-        public virtual PartnerService Service { get; set; }
+        public virtual ServiceCategory? Category { get; set; }
+        public virtual PartnerService? Service { get; set; }
     }
 }

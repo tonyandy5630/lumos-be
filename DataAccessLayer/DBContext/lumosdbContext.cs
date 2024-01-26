@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using BussinessObject;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.Extensions.Configuration;
 
-namespace DataAccessLayer.DBContext
+namespace BussinessObject
 {
     public partial class LumosDBContext : DbContext
     {
@@ -18,24 +17,25 @@ namespace DataAccessLayer.DBContext
         {
         }
 
-        public virtual DbSet<Address> Addresses { get; set; }
-        public virtual DbSet<Admin> Admins { get; set; }
-        public virtual DbSet<AdminConfiguration> AdminConfigurations { get; set; }
-        public virtual DbSet<Booking> Bookings { get; set; }
-        public virtual DbSet<BookingLog> BookingLogs { get; set; }
-        public virtual DbSet<Customer> Customers { get; set; }
-        public virtual DbSet<FavoritePartner> FavoritePartners { get; set; }
-        public virtual DbSet<HistoryLog> HistoryLogs { get; set; }
-        public virtual DbSet<MedicalReport> MedicalReports { get; set; }
-        public virtual DbSet<Partner> Partners { get; set; }
-        public virtual DbSet<PartnerService> PartnerServices { get; set; }
-        public virtual DbSet<PartnerType> PartnerTypes { get; set; }
-        public virtual DbSet<PaymentMethod> PaymentMethods { get; set; }
-        public virtual DbSet<Schedule> Schedules { get; set; }
-        public virtual DbSet<ServiceBooking> ServiceBookings { get; set; }
-        public virtual DbSet<ServiceCategory> ServiceCategories { get; set; }
-        public virtual DbSet<ServiceDetail> ServiceDetails { get; set; }
-        public virtual DbSet<SystemConfiguration> SystemConfigurations { get; set; }
+        public virtual DbSet<Address> Addresses { get; set; } = null!;
+        public virtual DbSet<Admin> Admins { get; set; } = null!;
+        public virtual DbSet<AdminConfiguration> AdminConfigurations { get; set; } = null!;
+        public virtual DbSet<Booking> Bookings { get; set; } = null!;
+        public virtual DbSet<BookingDetail> BookingDetails { get; set; } = null!;
+        public virtual DbSet<BookingLog> BookingLogs { get; set; } = null!;
+        public virtual DbSet<Customer> Customers { get; set; } = null!;
+        public virtual DbSet<FavoritePartner> FavoritePartners { get; set; } = null!;
+        public virtual DbSet<HistoryLog> HistoryLogs { get; set; } = null!;
+        public virtual DbSet<MedicalReport> MedicalReports { get; set; } = null!;
+        public virtual DbSet<Partner> Partners { get; set; } = null!;
+        public virtual DbSet<PartnerService> PartnerServices { get; set; } = null!;
+        public virtual DbSet<PartnerType> PartnerTypes { get; set; } = null!;
+        public virtual DbSet<PaymentMethod> PaymentMethods { get; set; } = null!;
+        public virtual DbSet<Schedule> Schedules { get; set; } = null!;
+        public virtual DbSet<ServiceBooking> ServiceBookings { get; set; } = null!;
+        public virtual DbSet<ServiceCategory> ServiceCategories { get; set; } = null!;
+        public virtual DbSet<ServiceDetail> ServiceDetails { get; set; } = null!;
+        public virtual DbSet<SystemConfiguration> SystemConfigurations { get; set; } = null!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -44,6 +44,7 @@ namespace DataAccessLayer.DBContext
                 optionsBuilder.UseSqlServer(GetConnectionStrings());
             }
         }
+
         private string GetConnectionStrings()
         {
             IConfiguration config = new ConfigurationBuilder()
@@ -85,10 +86,10 @@ namespace DataAccessLayer.DBContext
                     .HasMaxLength(50)
                     .IsUnicode(false);
 
-                entity.HasOne(d => d.Report)
+                entity.HasOne(d => d.Customer)
                     .WithMany(p => p.Addresses)
-                    .HasForeignKey(d => d.ReportId)
-                    .HasConstraintName("FK_Address_MedicalReport");
+                    .HasForeignKey(d => d.CustomerId)
+                    .HasConstraintName("FK_Address_Customer");
             });
 
             modelBuilder.Entity<Admin>(entity =>
@@ -119,6 +120,8 @@ namespace DataAccessLayer.DBContext
                     .HasMaxLength(100)
                     .IsUnicode(false);
 
+                entity.Property(e => e.RefreshToken).IsUnicode(false);
+
                 entity.Property(e => e.UpdatedBy)
                     .HasMaxLength(50)
                     .IsUnicode(false);
@@ -127,7 +130,7 @@ namespace DataAccessLayer.DBContext
             modelBuilder.Entity<AdminConfiguration>(entity =>
             {
                 entity.HasKey(e => e.AdminConfigId)
-                    .HasName("PK__AdminCon__706D42E34324B939");
+                    .HasName("PK__AdminCon__706D42E3CD05B80F");
 
                 entity.ToTable("AdminConfiguration");
 
@@ -156,6 +159,8 @@ namespace DataAccessLayer.DBContext
 
                 entity.Property(e => e.BookingId).ValueGeneratedNever();
 
+                entity.Property(e => e.Address).HasMaxLength(100);
+
                 entity.Property(e => e.BookingDate).HasColumnType("date");
 
                 entity.Property(e => e.Code)
@@ -179,12 +184,35 @@ namespace DataAccessLayer.DBContext
                 entity.HasOne(d => d.Payment)
                     .WithMany(p => p.Bookings)
                     .HasForeignKey(d => d.PaymentId)
-                    .HasConstraintName("FK_Booking_PaymentId");
+                    .HasConstraintName("FK_Booking_PaymentMethod");
+            });
+
+            modelBuilder.Entity<BookingDetail>(entity =>
+            {
+                entity.HasKey(e => e.DetailId)
+                    .HasName("PK__BookingD__135C316D8882B929");
+
+                entity.ToTable("BookingDetail");
+
+                entity.Property(e => e.DetailId).ValueGeneratedNever();
+
+                entity.Property(e => e.CreatedBy)
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.CreatedDate).HasColumnType("datetime");
+
+                entity.Property(e => e.Note).HasColumnType("text");
+
+                entity.HasOne(d => d.Booking)
+                    .WithMany(p => p.BookingDetails)
+                    .HasForeignKey(d => d.BookingId)
+                    .HasConstraintName("FK_BookingDetail_Booking");
 
                 entity.HasOne(d => d.Report)
-                    .WithMany(p => p.Bookings)
+                    .WithMany(p => p.BookingDetails)
                     .HasForeignKey(d => d.ReportId)
-                    .HasConstraintName("FK_Booking_ReportId");
+                    .HasConstraintName("FK_BookingDetail_MedicalReport");
             });
 
             modelBuilder.Entity<BookingLog>(entity =>
@@ -204,7 +232,7 @@ namespace DataAccessLayer.DBContext
                 entity.HasOne(d => d.Booking)
                     .WithMany(p => p.BookingLogs)
                     .HasForeignKey(d => d.BookingId)
-                    .HasConstraintName("FK_BookingLog_BookingId");
+                    .HasConstraintName("FK_BookingLog_Booking");
             });
 
             modelBuilder.Entity<Customer>(entity =>
@@ -218,10 +246,6 @@ namespace DataAccessLayer.DBContext
                     .IsUnicode(false);
 
                 entity.Property(e => e.CreatedDate).HasColumnType("datetime");
-
-                entity.Property(e => e.Dob)
-                    .HasColumnType("date")
-                    .HasColumnName("DOB");
 
                 entity.Property(e => e.Email)
                     .HasMaxLength(50)
@@ -243,9 +267,7 @@ namespace DataAccessLayer.DBContext
                     .HasMaxLength(20)
                     .IsUnicode(false);
 
-                entity.Property(e => e.RefreshToken)
-                    .HasMaxLength(200)
-                    .IsUnicode(false);
+                entity.Property(e => e.RefreshToken).IsUnicode(false);
 
                 entity.Property(e => e.UpdateBy)
                     .HasMaxLength(50)
@@ -255,7 +277,7 @@ namespace DataAccessLayer.DBContext
             modelBuilder.Entity<FavoritePartner>(entity =>
             {
                 entity.HasKey(e => e.FavoriteId)
-                    .HasName("PK__Favorite__CE74FAD5B2B3D8F1");
+                    .HasName("PK__Favorite__CE74FAD5DADCCCB8");
 
                 entity.ToTable("FavoritePartner");
 
@@ -274,18 +296,18 @@ namespace DataAccessLayer.DBContext
                 entity.HasOne(d => d.Customer)
                     .WithMany(p => p.FavoritePartners)
                     .HasForeignKey(d => d.CustomerId)
-                    .HasConstraintName("FK_FavoritePartner_CustomerId");
+                    .HasConstraintName("FK_FavoritePartner_Customer");
 
                 entity.HasOne(d => d.Partner)
                     .WithMany(p => p.FavoritePartners)
                     .HasForeignKey(d => d.PartnerId)
-                    .HasConstraintName("FK_FavoritePartner_PartnerId");
+                    .HasConstraintName("FK_FavoritePartner_Partner");
             });
 
             modelBuilder.Entity<HistoryLog>(entity =>
             {
                 entity.HasKey(e => e.LogId)
-                    .HasName("PK__HistoryL__5E548648BDBC9A6B");
+                    .HasName("PK__HistoryL__5E5486487A9BEB7C");
 
                 entity.ToTable("HistoryLog");
 
@@ -299,7 +321,7 @@ namespace DataAccessLayer.DBContext
             modelBuilder.Entity<MedicalReport>(entity =>
             {
                 entity.HasKey(e => e.ReportId)
-                    .HasName("PK__MedicalR__D5BD4805DE4C0A39");
+                    .HasName("PK__MedicalR__D5BD48056690407F");
 
                 entity.ToTable("MedicalReport");
 
@@ -314,10 +336,6 @@ namespace DataAccessLayer.DBContext
                 entity.Property(e => e.Dob)
                     .HasColumnType("date")
                     .HasColumnName("DOB");
-
-                entity.Property(e => e.Email)
-                    .HasMaxLength(50)
-                    .IsUnicode(false);
 
                 entity.Property(e => e.Fullname).HasMaxLength(20);
 
@@ -346,6 +364,8 @@ namespace DataAccessLayer.DBContext
                 entity.Property(e => e.PartnerId).ValueGeneratedNever();
 
                 entity.Property(e => e.Address).HasMaxLength(255);
+
+                entity.Property(e => e.BusinessLicenseNumber).IsUnicode(false);
 
                 entity.Property(e => e.Code)
                     .HasMaxLength(50)
@@ -381,11 +401,7 @@ namespace DataAccessLayer.DBContext
                     .HasMaxLength(20)
                     .IsUnicode(false);
 
-                entity.Property(e => e.PracticingCertificate).HasMaxLength(20);
-
-                entity.Property(e => e.RefreshToken)
-                    .HasMaxLength(200)
-                    .IsUnicode(false);
+                entity.Property(e => e.RefreshToken).IsUnicode(false);
 
                 entity.Property(e => e.UpdatedBy)
                     .HasMaxLength(50)
@@ -400,7 +416,7 @@ namespace DataAccessLayer.DBContext
             modelBuilder.Entity<PartnerService>(entity =>
             {
                 entity.HasKey(e => e.ServiceId)
-                    .HasName("PK__PartnerS__C51BB00A4482298F");
+                    .HasName("PK__PartnerS__C51BB00A0405CF5F");
 
                 entity.ToTable("PartnerService");
 
@@ -433,7 +449,7 @@ namespace DataAccessLayer.DBContext
             modelBuilder.Entity<PartnerType>(entity =>
             {
                 entity.HasKey(e => e.TypeId)
-                    .HasName("PK__PartnerT__516F03B5F53DC50F");
+                    .HasName("PK__PartnerT__516F03B5C3CF9D1C");
 
                 entity.ToTable("PartnerType");
 
@@ -463,7 +479,7 @@ namespace DataAccessLayer.DBContext
             modelBuilder.Entity<PaymentMethod>(entity =>
             {
                 entity.HasKey(e => e.PaymentId)
-                    .HasName("PK__PaymentM__9B556A38D45DAAAB");
+                    .HasName("PK__PaymentM__9B556A38D51AF085");
 
                 entity.ToTable("PaymentMethod");
 
@@ -506,8 +522,6 @@ namespace DataAccessLayer.DBContext
 
                 entity.Property(e => e.CreatedDate).HasColumnType("datetime");
 
-                entity.Property(e => e.DayOfWeek).HasColumnType("int");
-
                 entity.Property(e => e.LastUpdate).HasColumnType("datetime");
 
                 entity.Property(e => e.Note).HasColumnType("text");
@@ -519,7 +533,7 @@ namespace DataAccessLayer.DBContext
                 entity.HasOne(d => d.Partner)
                     .WithMany(p => p.Schedules)
                     .HasForeignKey(d => d.PartnerId)
-                    .HasConstraintName("FK_Schedule_PartnerId");
+                    .HasConstraintName("FK_Schedule_Partner");
             });
 
             modelBuilder.Entity<ServiceBooking>(entity =>
@@ -538,21 +552,21 @@ namespace DataAccessLayer.DBContext
                     .HasMaxLength(50)
                     .IsUnicode(false);
 
-                entity.HasOne(d => d.Booking)
+                entity.HasOne(d => d.Detail)
                     .WithMany(p => p.ServiceBookings)
-                    .HasForeignKey(d => d.BookingId)
-                    .HasConstraintName("FK_ServiceBooking_Booking");
+                    .HasForeignKey(d => d.DetailId)
+                    .HasConstraintName("FK_ServiceBooking_BookingDetail");
 
                 entity.HasOne(d => d.Service)
                     .WithMany(p => p.ServiceBookings)
                     .HasForeignKey(d => d.ServiceId)
-                    .HasConstraintName("FK_ServiceBooking_Service");
+                    .HasConstraintName("FK_ServiceBooking_PartnerService");
             });
 
             modelBuilder.Entity<ServiceCategory>(entity =>
             {
                 entity.HasKey(e => e.CategoryId)
-                    .HasName("PK__ServiceC__19093A0BEDD87D3F");
+                    .HasName("PK__ServiceC__19093A0B211A2729");
 
                 entity.ToTable("ServiceCategory");
 
@@ -582,7 +596,7 @@ namespace DataAccessLayer.DBContext
             modelBuilder.Entity<ServiceDetail>(entity =>
             {
                 entity.HasKey(e => e.DetailId)
-                    .HasName("PK__ServiceD__135C316D7BCC61A8");
+                    .HasName("PK__ServiceD__135C316D3FBC6307");
 
                 entity.ToTable("ServiceDetail");
 
@@ -603,7 +617,7 @@ namespace DataAccessLayer.DBContext
                 entity.HasOne(d => d.Category)
                     .WithMany(p => p.ServiceDetails)
                     .HasForeignKey(d => d.CategoryId)
-                    .HasConstraintName("FK_ServiceDetail_CategoryId");
+                    .HasConstraintName("FK_ServiceDetail_ServiceCategory");
 
                 entity.HasOne(d => d.Service)
                     .WithMany(p => p.ServiceDetails)
@@ -614,7 +628,7 @@ namespace DataAccessLayer.DBContext
             modelBuilder.Entity<SystemConfiguration>(entity =>
             {
                 entity.HasKey(e => e.ConfigId)
-                    .HasName("PK__SystemCo__C3BC335C5F07A42E");
+                    .HasName("PK__SystemCo__C3BC335C7A0CB385");
 
                 entity.ToTable("SystemConfiguration");
 
