@@ -8,7 +8,7 @@ namespace BussinessObject
         public int ScheduleId { get; set; }
         public int? PartnerId { get; set; }
         public string Code { get; set; }
-        public DateTime? Date { get; set; }
+        public int? DayOfWeek { get; set; }
         public TimeSpan? From { get; set; }
         public TimeSpan? To { get; set; }
         public string Note { get; set; }
