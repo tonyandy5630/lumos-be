@@ -11,7 +11,7 @@ namespace Repository.Repo
 {
     public class AddressRepo:IAddressRepo
     {
-        public AddressRepo(lumosdbContext context)
+        public AddressRepo(LumosDBContext context)
         {
         }
     }

@@ -1,4 +1,5 @@
-﻿using Repository.Interface;
+﻿using DataAccessLayer.DBContext;
+using Repository.Interface;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,5 +10,7 @@ namespace Repository.Repo
 {
     public class AdminRepo:IAdminRepo
     {
+        public AdminRepo(LumosDBContext context) {
+        }
     }
 }
