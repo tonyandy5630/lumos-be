@@ -13,7 +13,6 @@ namespace Repository.Interface.IUnitOfWork
         IBookingRepo BookingRepo { get; }
         IBookingLogRepo BookingLogRepo { get; }
         ICustomerRepo CustomerRepo { get; }
-        IFavoritePartnerRepo FavoritePartnerRepo { get; }
         IHistoryLogRepo HistoryLogRepo { get; }
         IPartnerRepo PartnerRepo { get; }
         IPaymentMethodRepo PaymentMethodRepo { get; }

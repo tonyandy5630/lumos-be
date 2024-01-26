@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Repository.UnitOfWork
+namespace Repository
 {
     internal class UnitOfWork : IUnitOfWork
     {
@@ -23,14 +23,13 @@ namespace Repository.UnitOfWork
             BookingRepo = new BookingRepo(context);
             BookingLogRepo = new BookingLogRepo(context);
             CustomerRepo = new CustomerRepo(context);
-            FavoritePartnerRepo = new FavoritePartnerRepo(context);
             HistoryLogRepo = new HistoryLogRepo(context);
             PartnerRepo = new PartnerRepo(context);
             PaymentMethodRepo = new PaymentMethodRepo(context);
             ScheduleRepo = new ScheduleRepo(context);
             ServiceBookingRepo = new ServiceBookingRepo(context);
             ServiceCategoryRepo = new ServiceCategoryRepo(context);
-            SystemConfigurationRepo  = new SystemConfigurationRepo(context);
+            SystemConfigurationRepo = new SystemConfigurationRepo(context);
         }
         public LumosDBContext Context { get { return _Context; } }
         public IAddressRepo AddressRepo { get; }
@@ -38,7 +37,6 @@ namespace Repository.UnitOfWork
         public IBookingRepo BookingRepo { get; }
         public IBookingLogRepo BookingLogRepo { get; }
         public ICustomerRepo CustomerRepo { get; }
-        public IFavoritePartnerRepo FavoritePartnerRepo { get; }
         public IHistoryLogRepo HistoryLogRepo { get; }
         public IPartnerRepo PartnerRepo { get; }
         public IPaymentMethodRepo PaymentMethodRepo { get; }
