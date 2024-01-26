@@ -7,13 +7,13 @@ using Microsoft.Extensions.Configuration;
 
 namespace DataAccessLayer.DBContext
 {
-    public partial class lumosdbContext : DbContext
+    public partial class LumosDBContext : DbContext
     {
-        public lumosdbContext()
+        public LumosDBContext()
         {
         }
 
-        public lumosdbContext(DbContextOptions<lumosdbContext> options)
+        public LumosDBContext(DbContextOptions<LumosDBContext> options)
             : base(options)
         {
         }
