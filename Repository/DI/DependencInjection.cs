@@ -15,15 +15,15 @@ namespace Repository.DI
 {
     public static class DependencInjection
     {
-        public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
+        public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration, string connectionString)
         {
             services.AddHttpContextAccessor();
             services.AddDbContext<LumosDBContext>(option =>
-            option.UseSqlServer("Server=tcp:lumos-db.database.windows.net,1433;Initial Catalog=lumos-db;Persist Security Info=True;User ID=dev;Password=Lumos2024;MultipleActiveResultSets=True;Encrypt=True;TrustServerCertificate=True;"));
+            option.UseSqlServer(connectionString));
 
             #region entity
             //unitofwork
-            services.AddTransient<IUnitOfWork, UnitOfWork.UnitOfWork>();
+            services.AddTransient<IUnitOfWork, UnitOfWork>();
             //add repo
             services.AddTransient<IAdminRepo, AdminRepo>();
 
@@ -34,8 +34,6 @@ namespace Repository.DI
             services.AddTransient<IBookingRepo, BookingRepo>();
 
             services.AddTransient<ICustomerRepo, CustomerRepo>();
-
-            services.AddTransient<IFavoritePartnerRepo, FavoritePartnerRepo>();
 
             services.AddTransient<IHistoryLogRepo, HistoryLogRepo>();
 
