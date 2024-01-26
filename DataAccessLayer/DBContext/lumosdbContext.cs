@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.Extensions.Configuration;
 
-namespace DataAccessLayer
+namespace DataAccessLayer.DBContext
 {
     public partial class lumosdbContext : DbContext
     {
