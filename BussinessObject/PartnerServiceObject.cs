@@ -1,17 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
 
 namespace BussinessObject
 {
-    public partial class PartnerService
+    public partial class PartnerServiceObject
     {
-        public PartnerService()
+        public PartnerServiceObject()
         {
             ServiceBookings = new HashSet<ServiceBooking>();
             ServiceDetails = new HashSet<ServiceDetail>();
         }
 
         public int ServiceId { get; set; }
+        [JsonIgnore]
         public int? PartnerId { get; set; }
         public string? Name { get; set; }
         public string? Code { get; set; }
@@ -24,7 +28,10 @@ namespace BussinessObject
         public string? UpdatedBy { get; set; }
 
         public virtual Partner? Partner { get; set; }
+        [JsonIgnore]
         public virtual ICollection<ServiceBooking> ServiceBookings { get; set; }
+        [JsonIgnore]
+
         public virtual ICollection<ServiceDetail> ServiceDetails { get; set; }
     }
 }
