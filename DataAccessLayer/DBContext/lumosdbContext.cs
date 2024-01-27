@@ -28,7 +28,7 @@ namespace BussinessObject
         public virtual DbSet<HistoryLog> HistoryLogs { get; set; } = null!;
         public virtual DbSet<MedicalReport> MedicalReports { get; set; } = null!;
         public virtual DbSet<Partner> Partners { get; set; } = null!;
-        public virtual DbSet<PartnerServiceObject> PartnerServices { get; set; } = null!;
+        public virtual DbSet<PartnerService> PartnerServices { get; set; } = null!;
         public virtual DbSet<PartnerType> PartnerTypes { get; set; } = null!;
         public virtual DbSet<PaymentMethod> PaymentMethods { get; set; } = null!;
         public virtual DbSet<Schedule> Schedules { get; set; } = null!;
@@ -413,7 +413,7 @@ namespace BussinessObject
                     .HasConstraintName("FK_Partner_PartnerType");
             });
 
-            modelBuilder.Entity<PartnerServiceObject>(entity =>
+            modelBuilder.Entity<PartnerService>(entity =>
             {
                 entity.HasKey(e => e.ServiceId)
                     .HasName("PK__PartnerS__C51BB00A0405CF5F");
