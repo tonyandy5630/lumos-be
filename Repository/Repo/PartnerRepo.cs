@@ -1,5 +1,5 @@
 ﻿using BussinessObject;
-using Repository.GenericRepository;
+using DataAccessLayer;
 using Repository.Interface;
 using System;
 using System.Collections.Generic;
@@ -9,13 +9,11 @@ using System.Threading.Tasks;
 
 namespace Repository.Repo
 {
-    public class PartnerRepo:IPartnerRepo
+    public class PartnerRepo : IPartnerRepo
     {
         public PartnerRepo(LumosDBContext context) { }
 
-        public Task<PartnerService> GetPartnerServiceDetailByIdAsync(int id)
-        {
-            throw new NotImplementedException();
-        }
+        public Task<PartnerService?> GetPartnerServiceDetailByIdAsync(int id) => PartnerDAO.Instance.GetPartnerServiceByIdAsync(id);
+
     }
 }

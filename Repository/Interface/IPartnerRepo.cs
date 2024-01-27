@@ -9,6 +9,6 @@ namespace Repository.Interface
 {
     public interface IPartnerRepo
     {
-        Task<PartnerService> GetPartnerServiceDetailByIdAsync(int id);
+        Task<PartnerService?> GetPartnerServiceDetailByIdAsync(int id);
     }
 }
