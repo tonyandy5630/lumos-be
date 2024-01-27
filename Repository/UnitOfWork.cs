@@ -1,4 +1,6 @@
 ﻿using BussinessObject;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Repository.Interface;
 using Repository.Interface.IUnitOfWork;
 using Repository.Repo;
@@ -7,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace Repository
 {
@@ -44,5 +47,27 @@ namespace Repository
         public IServiceBookingRepo ServiceBookingRepo { get; }
         public IServiceCategoryRepo ServiceCategoryRepo { get; }
         public ISystemConfigurationRepo SystemConfigurationRepo { get; }
+
+        public Task CommitTransaction(IDbContextTransaction commit)
+        {
+            return commit.CommitAsync();
+
+        }
+
+        public Task RollBack(IDbContextTransaction commit, string name)
+        {
+            return commit.RollbackToSavepointAsync(name);
+        }
+
+        public Task<int> SaveChangesAsync()
+        {
+            return _Context.SaveChangesAsync();
+        }
+
+        public Task StartTransaction(string name)
+        {
+            var commit = _Context.Database.BeginTransaction();
+            return commit.CreateSavepointAsync(name);
+        }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore.Storage;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +9,7 @@ namespace Repository.Interface.IUnitOfWork
 {
      public interface IUnitOfWork
     {
+
         IAddressRepo AddressRepo { get; }
         IAdminRepo AdminRepo { get; }
         IBookingRepo BookingRepo { get; }
@@ -20,6 +22,12 @@ namespace Repository.Interface.IUnitOfWork
         IServiceBookingRepo ServiceBookingRepo { get; }
         IServiceCategoryRepo ServiceCategoryRepo { get; }
         ISystemConfigurationRepo SystemConfigurationRepo { get; }
+
+        Task<int> SaveChangesAsync();
+        Task StartTransactionAsync(string name);
+        Task CommitTransactionAsync(IDbContextTransaction commit);
+        Task RollBackAsync(IDbContextTransaction commit, string name);
+
 
     }
 }
