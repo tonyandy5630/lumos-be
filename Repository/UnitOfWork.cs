@@ -13,7 +13,7 @@ using System.Xml.Linq;
 
 namespace Repository
 {
-    internal class UnitOfWork : IUnitOfWork
+    public class UnitOfWork : IUnitOfWork
     {
         private readonly LumosDBContext _Context;
         public UnitOfWork(
@@ -48,13 +48,13 @@ namespace Repository
         public IServiceCategoryRepo ServiceCategoryRepo { get; }
         public ISystemConfigurationRepo SystemConfigurationRepo { get; }
 
-        public Task CommitTransaction(IDbContextTransaction commit)
+        public Task CommitTransactionAsync(IDbContextTransaction commit)
         {
             return commit.CommitAsync();
 
         }
 
-        public Task RollBack(IDbContextTransaction commit, string name)
+        public Task RollBackAsync(IDbContextTransaction commit, string name)
         {
             return commit.RollbackToSavepointAsync(name);
         }
@@ -64,7 +64,7 @@ namespace Repository
             return _Context.SaveChangesAsync();
         }
 
-        public Task StartTransaction(string name)
+        public Task StartTransactionAsync(string name)
         {
             var commit = _Context.Database.BeginTransaction();
             return commit.CreateSavepointAsync(name);

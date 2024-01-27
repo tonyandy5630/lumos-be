@@ -6,12 +6,13 @@ using System.Text.Json.Serialization;
 
 namespace BussinessObject
 {
-    public partial class PartnerServiceObject
+    public partial class PartnerService
     {
-        public PartnerServiceObject()
+        public PartnerService()
         {
             ServiceBookings = new HashSet<ServiceBooking>();
             ServiceDetails = new HashSet<ServiceDetail>();
+            ServiceCategories = new HashSet<ServiceCategory>();
         }
 
         public int ServiceId { get; set; }
@@ -33,5 +34,7 @@ namespace BussinessObject
         [JsonIgnore]
 
         public virtual ICollection<ServiceDetail> ServiceDetails { get; set; }
+
+        public virtual ICollection<ServiceCategory> ServiceCategories { get; set; }
     }
 }

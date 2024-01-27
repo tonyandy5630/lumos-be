@@ -15,6 +15,6 @@ namespace BussinessObject
         public string? UpdatedBy { get; set; }
 
         public virtual BookingDetail? Detail { get; set; }
-        public virtual PartnerServiceObject? Service { get; set; }
+        public virtual PartnerService? Service { get; set; }
     }
 }

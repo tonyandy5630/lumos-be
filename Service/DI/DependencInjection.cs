@@ -55,10 +55,10 @@ namespace Service.DI
 
             // Partner
             services.AddTransient<IPartnerRepo, PartnerRepo>();
-            services.AddTransient<IPartnerService, PartnerService>();
+            services.AddTransient<IPartnerService, PartnerServices>();
 
             services.AddTransient<IPartnerTypeRepo, PartnerTypeRepo>();
-            services.AddTransient<IPartnerService, PartnerService>();
+            services.AddTransient<IPartnerService, PartnerServices>();
 
             services.AddTransient<IPaymentMethodRepo, PaymentMethodRepo>();
             services.AddTransient<IPaymentMethodService, PaymentMethodService>();

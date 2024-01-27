@@ -8,7 +8,7 @@ namespace BussinessObject
         public Partner()
         {
             FavoritePartners = new HashSet<FavoritePartner>();
-            PartnerServices = new HashSet<PartnerServiceObject>();
+            PartnerServices = new HashSet<PartnerService>();
             Schedules = new HashSet<Schedule>();
         }
 
@@ -34,7 +34,7 @@ namespace BussinessObject
 
         public virtual PartnerType? Type { get; set; }
         public virtual ICollection<FavoritePartner> FavoritePartners { get; set; }
-        public virtual ICollection<PartnerServiceObject> PartnerServices { get; set; }
+        public virtual ICollection<PartnerService> PartnerServices { get; set; }
         public virtual ICollection<Schedule> Schedules { get; set; }
     }
 }

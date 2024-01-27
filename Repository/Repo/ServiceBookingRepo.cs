@@ -1,4 +1,5 @@
 ﻿using BussinessObject;
+using DataAccessLayer;
 using Repository.Interface;
 using System;
 using System.Collections.Generic;
@@ -11,5 +12,6 @@ namespace Repository.Repo
     public class ServiceBookingRepo:IServiceBookingRepo
     {
         public ServiceBookingRepo(LumosDBContext context) { }
+
     }
 }
