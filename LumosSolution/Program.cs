@@ -5,6 +5,8 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
 using Service.DI;
+using Microsoft.Extensions.Logging;
+using System.IdentityModel.Tokens.Jwt;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = new ConfigurationBuilder()
@@ -15,6 +17,7 @@ var googleClientId = configuration["Authentication:Google:clientId"];
 var googleClientSecret = configuration["Authentication:Google:clientSecret"];
 var dbconnection = configuration["ConnectionStrings:DB"];
 builder.Services.AddInfrastructure(builder.Configuration,dbconnection);
+using var loggerFactory = LoggerFactory.Create(b => b.SetMinimumLevel(LogLevel.Trace).AddConsole());
 // Add services to the container.
 builder.Services.AddCors(options =>
 {
@@ -41,7 +44,13 @@ builder.Services
         {
             ValidateAudience = false,
             ValidateIssuer = false,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Secret"]))
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Secret"])),
+            ClockSkew = new TimeSpan(0, 0, 5)
+        };
+        options.Events = new JwtBearerEvents
+        {
+            OnChallenge = ctx => LogAttempt(ctx.Request.Headers, "OnChallenge"),
+            OnTokenValidated = ctx => LogAttempt(ctx.Request.Headers, "OnTokenValidated")
         };
     })
     .AddGoogle(options =>
@@ -96,3 +105,22 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+Task LogAttempt(IHeaderDictionary headers, string eventType)
+{
+    var logger = loggerFactory.CreateLogger<Program>();
+
+    var authorizationHeader = headers["Authorization"].FirstOrDefault();
+
+    if (authorizationHeader is null)
+        logger.LogInformation($"{eventType}. JWT not present");
+    else
+    {
+        string jwtString = authorizationHeader.Substring("Bearer ".Length);
+
+        var jwt = new JwtSecurityToken(jwtString);
+
+        logger.LogInformation($"{eventType}. Expiration: {jwt.ValidTo.ToLongTimeString()}. System time: {DateTime.UtcNow.ToLongTimeString()}");
+    }
+
+    return Task.CompletedTask;
+}
