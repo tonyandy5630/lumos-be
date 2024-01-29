@@ -1,4 +1,5 @@
 ﻿using BussinessObject;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Service.InterfaceService;
@@ -18,6 +19,7 @@ namespace LumosSolution.Controllers
         }
 
         [HttpGet("service/{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<PartnerService?>> GetaPartnerServiceDetailById(int id){
             ApiResponse<PartnerService?> res = await _partnerService.GetPartnerServiceDetailAsync(id);
             return Ok(res);
