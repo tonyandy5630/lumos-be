@@ -23,9 +23,11 @@ namespace Service.Service
 
         public async Task<ApiResponse<PartnerService?>> GetPartnerServiceDetailAsync(int serviceId)
         {
-            ApiResponse<PartnerService?> response = new ApiResponse<PartnerService?>();
-            response.message = MessagesResponse.Error.NotFound;
-            response.StatusCode = 404;
+            ApiResponse<PartnerService?> response = new ApiResponse<PartnerService?>
+            {
+                message = MessagesResponse.Error.NotFound,
+                StatusCode = 404
+            };
             PartnerService? service =  await _unitOfWork.PartnerRepo.GetPartnerServiceDetailByIdAsync(serviceId);
 
             if(service == null)

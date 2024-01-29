@@ -66,7 +66,7 @@ namespace LumosSolution.Controllers
 
             if (authenticated)
             {
-                var (token, expiration, refreshToken) = GenerateToken(model.Email, role);
+                var (token, expiration, refreshToken) = await GenerateToken(model.Email, role);
 
 
                 var response = new ApiResponse<object>
@@ -108,7 +108,7 @@ namespace LumosSolution.Controllers
             {
                 return BadRequest("Invalid user role.");
             }
-            var (token, expiration, newRefreshToken) = GenerateToken(userEmail, userRole);
+            var (token, expiration, newRefreshToken) = await GenerateToken(userEmail, userRole);
 
             await SaveRefreshTokenToDatabase(userEmail, newRefreshToken);
 
@@ -157,7 +157,7 @@ namespace LumosSolution.Controllers
             return (authenticated, role);
         }
 
-        private (string, DateTime, string) GenerateToken(string email, string role)
+        private async Task<(string, DateTime, string)> GenerateToken(string email, string role)
         {
             var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
             var signingCredentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
@@ -172,13 +172,13 @@ namespace LumosSolution.Controllers
 
             var tokenOptions = new JwtSecurityToken(
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(1),
+                expires: DateTime.UtcNow.AddMinutes(30),
                 signingCredentials: signingCredentials
             );
 
             var token = new JwtSecurityTokenHandler().WriteToken(tokenOptions);
             var expiration = tokenOptions.ValidTo;
-            SaveRefreshTokenToDatabase(email, refreshToken);
+            await SaveRefreshTokenToDatabase(email, refreshToken);
             return (token, expiration,refreshToken);
         }
 

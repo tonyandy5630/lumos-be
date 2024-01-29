@@ -27,7 +27,7 @@ namespace DataAccessLayer
 
         public async Task<PartnerService?> GetPartnerServiceByIdAsync(int serviceId)
         {
-            return await _context.PartnerServices.Include(s => s.ServiceDetails).SingleOrDefaultAsync(s => s.ServiceId == serviceId );
+            return await _context.PartnerServices.SingleOrDefaultAsync(s => s.ServiceId == serviceId );
         }
         public async Task<List<Partner>> GetAllPartnersAsync()
         {

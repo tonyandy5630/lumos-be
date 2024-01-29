@@ -10,7 +10,7 @@ namespace Service.InterfaceService
 {
     public interface IPartnerService
     {
-        public Task<ApiResponse<PartnerService?>> GetPartnerServiceDetailAsync(int serviceId);
+        Task<ApiResponse<PartnerService?>> GetPartnerServiceDetailAsync(int serviceId);
         Task<ApiResponse<List<Partner>>> GetAllPartnersAsync();
         Task<ApiResponse<Partner>> GetPartnerByIDAsync(int id);
         Task<ApiResponse<Partner>> GetPartnerByRefreshTokenAsync(string token);

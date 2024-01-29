@@ -19,7 +19,7 @@ namespace LumosSolution.Controllers
         }
 
         [HttpGet("service/{id}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,Customer,Partner")]
         public async Task<ActionResult<PartnerService?>> GetaPartnerServiceDetailById(int id){
             ApiResponse<PartnerService?> res = await _partnerService.GetPartnerServiceDetailAsync(id);
             return Ok(res);
