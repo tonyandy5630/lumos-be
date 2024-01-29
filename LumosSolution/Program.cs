@@ -18,12 +18,12 @@ var configuration = new ConfigurationBuilder()
 var googleClientId = configuration["Authentication:Google:clientId"];
 var googleClientSecret = configuration["Authentication:Google:clientSecret"];
 var dbconnection = configuration["ConnectionStrings:DB"];
-builder.Services.AddInfrastructure(builder.Configuration,dbconnection);
+builder.Services.AddInfrastructure(builder.Configuration, dbconnection);
 using var loggerFactory = LoggerFactory.Create(b => b.SetMinimumLevel(LogLevel.Trace).AddConsole());
 // Add services to the container.
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy(name:"CorsPolicy",builder =>
+    options.AddPolicy(name: "CorsPolicy", builder =>
 
     builder.WithOrigins("http://localhost:4200")
             .AllowAnyMethod()
@@ -98,11 +98,8 @@ builder.Services.AddSwaggerGen(opt =>
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 app.UseCors("CorsPolicy");
@@ -110,7 +107,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
+//app.Run("http://0.0.0.0:80");
 app.Run();
 Task LogAttempt(IHeaderDictionary headers, string eventType)
 {

@@ -1,5 +1,4 @@
-﻿// Add missing using directives
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -48,20 +47,43 @@ namespace LumosSolution.Controllers
             try
             {
                 var payload = await GoogleJsonWebSignature.ValidateAsync(credential, setting);
-                // Handle the case when the user is not found in the database after Google authentication
-                if (User != null)
+
+                var userEmail = payload.Email;
+
+                // Kiểm tra xem người dùng đã tồn tại trong hệ thống hay chưa
+                var (roleValid, userRole) = await _authentication.CheckRole(userEmail);
+
+                if (!roleValid)
                 {
-                    return Ok();
+                    return BadRequest("Invalid user role.");
                 }
+
+                var (token, accessTokenTime, refreshTokentime, refreshToken) = await _authentication.GenerateToken(userEmail, userRole);
+
+                var accessTokenRemainingTime = accessTokenTime - DateTime.UtcNow;
+                var refreshTokenRemainingTime = refreshTokentime - DateTime.UtcNow;
+
+                var response = new ApiResponse<object>
+                {
+                    message = $"Logged in with role: {userRole}",
+                    StatusCode = 200,
+                    data = new
+                    {
+                        Token = token,
+                        AccessTokenExpiration = accessTokenRemainingTime,
+                        RefreshToken = refreshToken,
+                        RefreshTokenExpiration = refreshTokenRemainingTime
+                    }
+                };
+
+                return Ok(response);
             }
             catch (Exception ex)
             {
-                // Log or handle the exception accordingly
                 return BadRequest("Google authentication failed.");
             }
-
-            return BadRequest("User not found after Google authentication.");
         }
+
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginModel model)
         {
@@ -69,14 +91,23 @@ namespace LumosSolution.Controllers
 
             if (authenticated)
             {
-                var (token, expiration, refreshToken) = await _authentication.GenerateToken(model.Email, role);
+                var (token, accessTokenTime, refreshTokentime, refreshToken) = await _authentication.GenerateToken(model.Email, role);
+                
+                var accessTokenRemainingTime = accessTokenTime - DateTime.UtcNow;
+                var refreshTokenRemainingTime = refreshTokentime - DateTime.UtcNow;
 
 
                 var response = new ApiResponse<object>
                 {
                     message = $"Logged in with role: {role}",
                     StatusCode = 200,
-                    data = new { Token = token, Expiration = expiration, RefreshToken = refreshToken }
+                    data = new
+                    {
+                        Token = token,
+                        AccessTokenExpiration = accessTokenRemainingTime,
+                        RefreshToken = refreshToken,
+                        RefreshTokenExpiration = refreshTokenRemainingTime
+                    }
                 };
 
                 return Ok(response);
@@ -105,21 +136,43 @@ namespace LumosSolution.Controllers
             {
                 return BadRequest("Invalid refresh token.");
             }
+
             var (roleValid, userRole) = await _authentication.CheckRole(userEmail);
 
             if (!roleValid)
             {
                 return BadRequest("Invalid user role.");
             }
-            var (token, expiration, newRefreshToken) = await _authentication.GenerateToken(userEmail, userRole);
 
+            var (token, accessTokenTime, refreshTokentime, newRefreshToken) = await _authentication.GenerateToken(userEmail, userRole);
+            
+            var accessTokenRemainingTime = accessTokenTime - DateTime.UtcNow;
+            var refreshTokenRemainingTime = refreshTokentime - DateTime.UtcNow;
+            
             await _authentication.SaveRefreshTokenToDatabase(userEmail, newRefreshToken);
+
+            if (accessTokenTime < DateTime.UtcNow)
+            {
+                var expiredTokenResponse = new ApiResponse<object>
+                {
+                    message = "Access Token has expired.",
+                    StatusCode = 401,
+                    data = null
+                };
+                return Unauthorized(expiredTokenResponse);
+            }
 
             var response = new ApiResponse<object>
             {
                 message = "Token refreshed successfully.",
                 StatusCode = 200,
-                data = new { Token = token, Expiration = expiration, RefreshToken = newRefreshToken }
+                data = new
+                {
+                    Token = token,
+                    AccessTokenExpiration = accessTokenRemainingTime,
+                    RefreshToken = newRefreshToken,
+                    RefreshTokenExpiration = refreshTokenRemainingTime
+                }
             };
 
             return Ok(response);
