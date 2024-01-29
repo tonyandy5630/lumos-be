@@ -67,7 +67,7 @@ namespace Service.Service
             var signingCredentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
             var refreshTokenSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
             var refreshTokenSigningCredentials = new SigningCredentials(refreshTokenSigningKey, SecurityAlgorithms.HmacSha256);
-            var accessTokenExpiration = DateTime.UtcNow.AddMinutes(1);
+            var accessTokenExpiration = DateTime.UtcNow.AddHours(3);
             var refreshTokenExpiration = DateTime.UtcNow.AddHours(24);
 
             var claims = new[]
