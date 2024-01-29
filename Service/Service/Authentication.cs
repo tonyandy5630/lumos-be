@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace Service.Service
 {
-    public class Authentication :IAuthentication
+    public class Authentication : IAuthentication
     {
         private readonly IConfiguration _configuration;
         private readonly IAdminService _adminService;
@@ -61,39 +61,40 @@ namespace Service.Service
             return (authenticated, role);
         }
 
-        public async Task<(string, DateTime, string)> GenerateToken(string email, string role)
+        public async Task<(string, DateTime, DateTime, string)> GenerateToken(string email, string role)
         {
             var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
             var signingCredentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
-            var refreshToken = GenerateRefreshToken();
+            var refreshTokenSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
+            var refreshTokenSigningCredentials = new SigningCredentials(refreshTokenSigningKey, SecurityAlgorithms.HmacSha256);
+            var accessTokenExpiration = DateTime.UtcNow.AddMinutes(1);
+            var refreshTokenExpiration = DateTime.UtcNow.AddHours(24);
 
             var claims = new[]
             {
                 new Claim(ClaimTypes.Email, email),
                 new Claim(ClaimTypes.Role, role),
-                new Claim("RefreshToken", refreshToken)
             };
 
-            var tokenOptions = new JwtSecurityToken(
+            var accessTokenOptions = new JwtSecurityToken(
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(1),
+                expires: accessTokenExpiration,
                 signingCredentials: signingCredentials
             );
 
-            var token = new JwtSecurityTokenHandler().WriteToken(tokenOptions);
-            var expiration = tokenOptions.ValidTo;
-            SaveRefreshTokenToDatabase(email, refreshToken);
-            return (token, expiration, refreshToken);
-        }
+            var refreshTokenOptions = new JwtSecurityToken(
+                claims: claims,
+                expires: refreshTokenExpiration,
+                signingCredentials: refreshTokenSigningCredentials
+            );
 
-        public string GenerateRefreshToken()
-        {
-            var randomNumber = new byte[64];
+            var accessToken = new JwtSecurityTokenHandler().WriteToken(accessTokenOptions);
+            var refreshTokenString = new JwtSecurityTokenHandler().WriteToken(refreshTokenOptions);
 
-            using var generator = RandomNumberGenerator.Create();
-            generator.GetBytes(randomNumber);
-
-            return Convert.ToBase64String(randomNumber);
+            SaveRefreshTokenToDatabase(email, refreshTokenString);
+            var accessTokenexpiration = accessTokenOptions.ValidTo;
+            var refreshTokenexpires = refreshTokenOptions.ValidTo;
+            return (accessToken, accessTokenexpiration, refreshTokenexpires, refreshTokenString);
         }
 
         public async Task SaveRefreshTokenToDatabase(string email, string refreshToken)

@@ -25,6 +25,8 @@ namespace Service.DI
             option.UseSqlServer(connectionString));
 
             #region entity
+            //authentication
+            services.AddTransient<IAuthentication, Authentication>();
             //unitofwork
             services.AddTransient<IUnitOfWork, UnitOfWork>();
             //add repo
