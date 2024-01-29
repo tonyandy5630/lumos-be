@@ -12,7 +12,6 @@ namespace BussinessObject
         {
             ServiceBookings = new HashSet<ServiceBooking>();
             ServiceDetails = new HashSet<ServiceDetail>();
-            ServiceCategories = new HashSet<ServiceCategory>();
         }
 
         public int ServiceId { get; set; }
@@ -31,10 +30,8 @@ namespace BussinessObject
         public virtual Partner? Partner { get; set; }
         [JsonIgnore]
         public virtual ICollection<ServiceBooking> ServiceBookings { get; set; }
-        [JsonIgnore]
 
         public virtual ICollection<ServiceDetail> ServiceDetails { get; set; }
 
-        public virtual ICollection<ServiceCategory> ServiceCategories { get; set; }
     }
 }

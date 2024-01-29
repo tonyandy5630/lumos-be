@@ -31,6 +31,8 @@ namespace Service.Service
             if(service == null)
                 return response;
 
+            response.message = MessagesResponse.Success.Completed;
+            response.StatusCode = 200;
             response.data = service;
             return response;
         }
