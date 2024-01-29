@@ -25,13 +25,16 @@ namespace LumosSolution.Controllers
         private readonly IAdminService _adminService;
         private readonly ICustomerService _customerService;
         private readonly IPartnerService _partnerService;
-
-        public AuthController(IConfiguration configuration, IAdminService adminService, ICustomerService customerService, IPartnerService partnerService)
+        private readonly IAuthentication _authentication;
+        public AuthController(IConfiguration configuration, IAdminService adminService,
+            ICustomerService customerService, IPartnerService partnerService
+            , IAuthentication authentication)
         {
             _configuration = configuration;
             _adminService = adminService;
             _customerService = customerService;
             _partnerService = partnerService;
+            _authentication = authentication;
         }
         //Chưa hoàn thiện 
         [HttpPost("loginwithgoogle")]
@@ -62,11 +65,11 @@ namespace LumosSolution.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginModel model)
         {
-            var (authenticated, role) = await IsUserAuthenticatedAsync(model.Email, model.Password);
+            var (authenticated, role) = await _authentication.IsUserAuthenticatedAsync(model.Email, model.Password);
 
             if (authenticated)
             {
-                var (token, expiration, refreshToken) = await GenerateToken(model.Email, role);
+                var (token, expiration, refreshToken) = await _authentication.GenerateToken(model.Email, role);
 
 
                 var response = new ApiResponse<object>
@@ -96,21 +99,21 @@ namespace LumosSolution.Controllers
                 return BadRequest("Refresh token is missing.");
             }
 
-            var (isValid, userEmail) = await ValidateRefreshToken(model.RefreshToken);
+            var (isValid, userEmail) = await _authentication.ValidateRefreshToken(model.RefreshToken);
 
             if (!isValid)
             {
                 return BadRequest("Invalid refresh token.");
             }
-            var (roleValid, userRole) = await CheckRole(userEmail);
+            var (roleValid, userRole) = await _authentication.CheckRole(userEmail);
 
             if (!roleValid)
             {
                 return BadRequest("Invalid user role.");
             }
-            var (token, expiration, newRefreshToken) = await GenerateToken(userEmail, userRole);
+            var (token, expiration, newRefreshToken) = await _authentication.GenerateToken(userEmail, userRole);
 
-            await SaveRefreshTokenToDatabase(userEmail, newRefreshToken);
+            await _authentication.SaveRefreshTokenToDatabase(userEmail, newRefreshToken);
 
             var response = new ApiResponse<object>
             {
@@ -120,149 +123,6 @@ namespace LumosSolution.Controllers
             };
 
             return Ok(response);
-        }
-        //Function
-        private async Task<(bool, string)> IsUserAuthenticatedAsync(string email, string password)
-        {
-            string role = null;
-            bool authenticated = false;
-
-            var adminResponse = await _adminService.GetAdminByEmailAsync(email);
-            if (adminResponse != null && adminResponse.data != null && adminResponse.data.Password == password)
-            {
-                authenticated = true;
-                role = "Admin";
-            }
-
-            if (!authenticated)
-            {
-                var partnerResponse = await _partnerService.GetPartnerByEmailAsync(email);
-                if (partnerResponse != null && partnerResponse.data != null && partnerResponse.data.Password == password)
-                {
-                    authenticated = true;
-                    role = "Partner";
-                }
-            }
-
-            if (!authenticated)
-            {
-                var customerResponse = await _customerService.GetCustomerByEmailAsync(email);
-                if (customerResponse != null && customerResponse.data != null && customerResponse.data.Password == password)
-                {
-                    authenticated = true;
-                    role = "Customer";
-                }
-            }
-
-            return (authenticated, role);
-        }
-
-        private async Task<(string, DateTime, string)> GenerateToken(string email, string role)
-        {
-            var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
-            var signingCredentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
-            var refreshToken = GenerateRefreshToken();
-
-            var claims = new[]
-            {
-                new Claim(ClaimTypes.Email, email),
-                new Claim(ClaimTypes.Role, role),
-                new Claim("RefreshToken", refreshToken)
-            };
-
-            var tokenOptions = new JwtSecurityToken(
-                claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(30),
-                signingCredentials: signingCredentials
-            );
-
-            var token = new JwtSecurityTokenHandler().WriteToken(tokenOptions);
-            var expiration = tokenOptions.ValidTo;
-            await SaveRefreshTokenToDatabase(email, refreshToken);
-            return (token, expiration,refreshToken);
-        }
-
-        private static string GenerateRefreshToken()
-        {
-            var randomNumber = new byte[64];
-
-            using var generator = RandomNumberGenerator.Create();
-            generator.GetBytes(randomNumber);
-
-            return Convert.ToBase64String(randomNumber);
-        }
-        private async Task SaveRefreshTokenToDatabase(string email, string refreshToken)
-        {
-            var adminResponse = await _adminService.GetAdminByEmailAsync(email);
-            var customerResponse = await _customerService.GetCustomerByEmailAsync(email);
-            var partnerResponse = await _partnerService.GetPartnerByEmailAsync(email);
-
-            switch (adminResponse?.data, customerResponse?.data, partnerResponse?.data)
-            {
-                case (BussinessObject.Admin admin, _, _):
-                    admin.RefreshToken = refreshToken;
-                    await _adminService.UpdateAdminAsync(admin);
-                    break;
-
-                case (_, BussinessObject.Customer customer, _):
-                    customer.RefreshToken = refreshToken;
-                    await _customerService.UpdateCustomerAsync(customer);
-                    break;
-
-                case (_, _, BussinessObject.Partner partner):
-                    partner.RefreshToken = refreshToken;
-                    await _partnerService.UpdatePartnerAsync(partner);
-                    break;
-
-                default:
-                    break;
-            }
-        }
-        private async Task<(bool, string)> ValidateRefreshToken(string refreshToken)
-        {
-            var adminResponse = await _adminService.GetAdminByRefreshTokenAsync(refreshToken);
-            var customerResponse = await _customerService.GetCustomerByRefreshTokenAsync(refreshToken);
-            var partnerResponse = await _partnerService.GetPartnerByRefreshTokenAsync(refreshToken);
-
-            if (adminResponse?.data != null)
-            {
-                return (true, adminResponse.data.Email);
-            }
-            else if (customerResponse?.data != null)
-            {
-                return (true, customerResponse.data.Email);
-            }
-            else if (partnerResponse?.data != null)
-            {
-                return (true, partnerResponse.data.Email);
-            }
-            else
-            {
-                return (false, null);
-            }
-        }
-        private async Task<(bool, string)> CheckRole(string email)
-        {
-            var adminResponse = await _adminService.GetAdminByEmailAsync(email);
-            var customerResponse = await _customerService.GetCustomerByEmailAsync(email);
-            var partnerResponse = await _partnerService.GetPartnerByEmailAsync(email);
-
-            if (adminResponse?.data != null)
-            {
-                return (true, "Admin");
-            }
-            else if (customerResponse?.data != null)
-            {
-                return (true, "Customer");
-            }
-            else if (partnerResponse?.data != null)
-            {
-                return (true, "Partner");
-            }
-            else
-            {
-                return (false, null);
-            }
         }
     }
 }
