@@ -12,6 +12,13 @@ namespace DataAccessLayer
     {
         private static PartnerDAO instance = null;
         private LumosDBContext _context = null;
+
+        public PartnerDAO()
+        {
+            if(_context == null)
+                _context = new LumosDBContext();
+        }
+
         public static PartnerDAO Instance
         {
             get
@@ -19,7 +26,6 @@ namespace DataAccessLayer
                 if (instance == null)
                 {
                     instance = new PartnerDAO();
-                    instance._context = new LumosDBContext();
                 }
                 return instance;
             }
