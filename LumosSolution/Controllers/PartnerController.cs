@@ -26,5 +26,18 @@ namespace LumosSolution.Controllers
             return Ok(res);
         }
 
+        [HttpGet, Route("{keyword?}")]
+        [Authorize(Roles = "Admin,Customer,Partner")]
+        public async Task<ActionResult<IEnumerable<Partner>>> GetPartnerByPartnerOrServiceName(string? keyword = null)
+        {
+            ApiResponse<IEnumerable<Partner>> res = await _partnerService.SearchPartnerByPartnerOrServiceName(keyword);
+
+            if(res.StatusCode == 200)
+            {
+                return Ok(res);
+            }
+            return BadRequest();
+        }
+
     }
 }

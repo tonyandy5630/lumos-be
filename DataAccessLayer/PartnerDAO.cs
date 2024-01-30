@@ -35,6 +35,11 @@ namespace DataAccessLayer
         {
             return await _context.PartnerServices.FirstOrDefaultAsync(s => s.ServiceId == serviceId);
         }
+
+        public async Task<IEnumerable<Partner>> SearchPartnerByServiceOrPartnerNameAsync(string keyword)
+        {
+            return await _context.Partners.Where(s => s.PartnerName.Contains(keyword) || s.PartnerServices.Any(ps => ps.Name.Contains(keyword))).ToListAsync();
+        }
         public async Task<List<Partner>> GetAllPartnersAsync()
         {
             return await _context.Partners.ToListAsync();

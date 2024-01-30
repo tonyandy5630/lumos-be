@@ -33,18 +33,29 @@ namespace Service.Service
                 message = MessagesResponse.Error.NotFound,
                 StatusCode = 404
             };
-            PartnerService? service =  await _unitOfWork.PartnerRepo.GetPartnerServiceDetailByIdAsync(serviceId);
-            IEnumerable<ServiceCategory> serviceCategories = await _unitOfWork.ServiceCategoryRepo.GetCategoriesByServiceIdAsync(serviceId);
-            if(service == null)
-                return response;
 
-            response.message = MessagesResponse.Success.Completed;
-            response.StatusCode = 200;
+            try
+            {
+                PartnerService? service = await _unitOfWork.PartnerRepo.GetPartnerServiceDetailByIdAsync(serviceId);
+                IEnumerable<ServiceCategory> serviceCategories = await _unitOfWork.ServiceCategoryRepo.GetCategoriesByServiceIdAsync(serviceId);
 
-            PartnerServiceDTO serviceDTO =  _mapper.Map<PartnerServiceDTO>(service);
-            IEnumerable<ServiceCategoryDTO> serviceCategoryDTOs = _mapper.Map <IEnumerable<ServiceCategoryDTO>>(serviceCategories);
-            serviceDTO.Categories = serviceCategoryDTOs;
-            response.data = serviceDTO;
+                if (service == null)
+                    return response;
+
+                response.message = MessagesResponse.Success.Completed;
+                response.StatusCode = 200;
+
+                PartnerServiceDTO serviceDTO = _mapper.Map<PartnerServiceDTO>(service);
+                IEnumerable<ServiceCategoryDTO> serviceCategoryDTOs = _mapper.Map<IEnumerable<ServiceCategoryDTO>>(serviceCategories);
+                serviceDTO.Categories = serviceCategoryDTOs;
+                response.data = serviceDTO;
+            }
+            catch
+            {
+                response.message = MessagesResponse.Error.OperationFailed;
+                response.StatusCode = 500;
+            }
+           
             return response;
         }
         public async Task<ApiResponse<bool>> AddPartnerAsync(Partner partner)
@@ -237,6 +248,27 @@ namespace Service.Service
             }
 
             return response;
+        }
+
+        public async Task<ApiResponse<IEnumerable<Partner>>> SearchPartnerByPartnerOrServiceName(string keyword)
+        {
+            ApiResponse<IEnumerable<Partner>> response = new ApiResponse<IEnumerable<Partner>>
+            {
+                message = MessagesResponse.Error.OperationFailed,
+                StatusCode = 500
+            };
+            try
+            {
+                IEnumerable<Partner> searchedPartner = await _unitOfWork.PartnerRepo.SearchPartnerByPartnerOrServiceNameAsync(keyword.Trim());
+                response.message = MessagesResponse.Success.Completed;
+                response.data = searchedPartner;
+                response.StatusCode = 200;
+                return response;
+            }
+            catch
+            {
+                return response;
+            }
         }
     }
 }
