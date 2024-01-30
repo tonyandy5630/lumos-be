@@ -1,4 +1,5 @@
 ﻿using BussinessObject;
+using DataTransferObject.DTO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -20,8 +21,8 @@ namespace LumosSolution.Controllers
 
         [HttpGet("service/{id}")]
         [Authorize(Roles = "Admin,Customer,Partner")]
-        public async Task<ActionResult<PartnerService?>> GetaPartnerServiceDetailById(int id){
-            ApiResponse<PartnerService?> res = await _partnerService.GetPartnerServiceDetailAsync(id);
+        public async Task<ActionResult<PartnerServiceDTO?>> GetaPartnerServiceDetailById(int id){
+            ApiResponse<PartnerServiceDTO?> res = await _partnerService.GetPartnerServiceDetailAsync(id);
             return Ok(res);
         }
 

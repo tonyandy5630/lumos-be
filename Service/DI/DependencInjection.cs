@@ -1,4 +1,5 @@
 ﻿using BussinessObject;
+using DataTransferObject;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -79,7 +80,8 @@ namespace Service.DI
 
             #endregion
 
-
+            //AUTOMAPPER
+            services.AddAutoMapper(typeof(MappingProfile).Assembly);
             return services;
         }
     }

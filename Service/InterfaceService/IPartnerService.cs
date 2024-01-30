@@ -1,4 +1,5 @@
 ﻿using BussinessObject;
+using DataTransferObject.DTO;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +11,7 @@ namespace Service.InterfaceService
 {
     public interface IPartnerService
     {
-        Task<ApiResponse<PartnerService?>> GetPartnerServiceDetailAsync(int serviceId);
+        Task<ApiResponse<PartnerServiceDTO?>> GetPartnerServiceDetailAsync(int serviceId);
         Task<ApiResponse<List<Partner>>> GetAllPartnersAsync();
         Task<ApiResponse<Partner>> GetPartnerByIDAsync(int id);
         Task<ApiResponse<Partner>> GetPartnerByRefreshTokenAsync(string token);

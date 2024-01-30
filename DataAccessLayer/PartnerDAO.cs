@@ -15,7 +15,7 @@ namespace DataAccessLayer
 
         public PartnerDAO()
         {
-            if(_context == null)
+            if (_context == null)
                 _context = new LumosDBContext();
         }
 
@@ -33,7 +33,7 @@ namespace DataAccessLayer
 
         public async Task<PartnerService?> GetPartnerServiceByIdAsync(int serviceId)
         {
-            return await _context.PartnerServices.SingleOrDefaultAsync(s => s.ServiceId == serviceId );
+            return await _context.PartnerServices.FirstOrDefaultAsync(s => s.ServiceId == serviceId);
         }
         public async Task<List<Partner>> GetAllPartnersAsync()
         {

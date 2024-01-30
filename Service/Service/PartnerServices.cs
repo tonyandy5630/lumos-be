@@ -1,4 +1,6 @@
-﻿using BussinessObject;
+﻿using AutoMapper;
+using BussinessObject;
+using DataTransferObject.DTO;
 using Repository.Interface.IUnitOfWork;
 using Repository.Repo;
 using Service.InterfaceService;
@@ -14,28 +16,35 @@ namespace Service.Service
     public class PartnerServices : IPartnerService
     {
         private readonly IUnitOfWork _unitOfWork;
-        public PartnerServices(IUnitOfWork unitOfWork)
+        private readonly IMapper _mapper;
+
+        public PartnerServices(IUnitOfWork unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
+            _mapper = mapper;
         }
 
        
 
-        public async Task<ApiResponse<PartnerService?>> GetPartnerServiceDetailAsync(int serviceId)
+        public async Task<ApiResponse<PartnerServiceDTO?>> GetPartnerServiceDetailAsync(int serviceId)
         {
-            ApiResponse<PartnerService?> response = new ApiResponse<PartnerService?>
+            ApiResponse<PartnerServiceDTO?> response = new ApiResponse<PartnerServiceDTO?>
             {
                 message = MessagesResponse.Error.NotFound,
                 StatusCode = 404
             };
             PartnerService? service =  await _unitOfWork.PartnerRepo.GetPartnerServiceDetailByIdAsync(serviceId);
-
+            IEnumerable<ServiceCategory> serviceCategories = await _unitOfWork.ServiceCategoryRepo.GetCategoriesByServiceIdAsync(serviceId);
             if(service == null)
                 return response;
 
             response.message = MessagesResponse.Success.Completed;
             response.StatusCode = 200;
-            response.data = service;
+
+            PartnerServiceDTO serviceDTO =  _mapper.Map<PartnerServiceDTO>(service);
+            IEnumerable<ServiceCategoryDTO> serviceCategoryDTOs = _mapper.Map <IEnumerable<ServiceCategoryDTO>>(serviceCategories);
+            serviceDTO.Categories = serviceCategoryDTOs;
+            response.data = serviceDTO;
             return response;
         }
         public async Task<ApiResponse<bool>> AddPartnerAsync(Partner partner)
