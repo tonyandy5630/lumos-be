@@ -60,7 +60,7 @@ namespace BussinessObject
             {
                 entity.ToTable("Address");
 
-                entity.Property(e => e.AddressId).ValueGeneratedNever();
+                entity.Property(e => e.AddressId).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Address1)
                     .HasMaxLength(100)
@@ -96,7 +96,7 @@ namespace BussinessObject
             {
                 entity.ToTable("Admin");
 
-                entity.Property(e => e.AdminId).ValueGeneratedNever();
+                entity.Property(e => e.AdminId).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Code)
                     .HasMaxLength(50)
@@ -134,7 +134,7 @@ namespace BussinessObject
 
                 entity.ToTable("AdminConfiguration");
 
-                entity.Property(e => e.AdminConfigId).ValueGeneratedNever();
+                entity.Property(e => e.AdminConfigId).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.LastUpdate).HasColumnType("datetime");
 
@@ -157,7 +157,7 @@ namespace BussinessObject
             {
                 entity.ToTable("Booking");
 
-                entity.Property(e => e.BookingId).ValueGeneratedNever();
+                entity.Property(e => e.BookingId).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Address).HasMaxLength(100);
 
@@ -194,7 +194,7 @@ namespace BussinessObject
 
                 entity.ToTable("BookingDetail");
 
-                entity.Property(e => e.DetailId).ValueGeneratedNever();
+                entity.Property(e => e.DetailId).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.CreatedBy)
                     .HasMaxLength(50)
@@ -219,7 +219,7 @@ namespace BussinessObject
             {
                 entity.ToTable("BookingLog");
 
-                entity.Property(e => e.BookingLogId).ValueGeneratedNever();
+                entity.Property(e => e.BookingLogId).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.CreatedBy)
                     .HasMaxLength(50)
@@ -239,7 +239,7 @@ namespace BussinessObject
             {
                 entity.ToTable("Customer");
 
-                entity.Property(e => e.CustomerId).ValueGeneratedNever();
+                entity.Property(e => e.CustomerId).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Code)
                     .HasMaxLength(50)
@@ -281,7 +281,7 @@ namespace BussinessObject
 
                 entity.ToTable("FavoritePartner");
 
-                entity.Property(e => e.FavoriteId).ValueGeneratedNever();
+                entity.Property(e => e.FavoriteId).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.CreatedDate).HasColumnType("datetime");
 
@@ -311,7 +311,7 @@ namespace BussinessObject
 
                 entity.ToTable("HistoryLog");
 
-                entity.Property(e => e.LogId).ValueGeneratedNever();
+                entity.Property(e => e.LogId).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Date).HasColumnType("date");
 
@@ -325,7 +325,7 @@ namespace BussinessObject
 
                 entity.ToTable("MedicalReport");
 
-                entity.Property(e => e.ReportId).ValueGeneratedNever();
+                entity.Property(e => e.ReportId).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Code)
                     .HasMaxLength(50)
@@ -361,7 +361,7 @@ namespace BussinessObject
             {
                 entity.ToTable("Partner");
 
-                entity.Property(e => e.PartnerId).ValueGeneratedNever();
+                entity.Property(e => e.PartnerId).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Address).HasMaxLength(255);
 
@@ -420,7 +420,7 @@ namespace BussinessObject
 
                 entity.ToTable("PartnerService");
 
-                entity.Property(e => e.ServiceId).ValueGeneratedNever();
+                entity.Property(e => e.ServiceId).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Code)
                     .HasMaxLength(50)
@@ -453,7 +453,7 @@ namespace BussinessObject
 
                 entity.ToTable("PartnerType");
 
-                entity.Property(e => e.TypeId).ValueGeneratedNever();
+                entity.Property(e => e.TypeId).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Code)
                     .HasMaxLength(50)
@@ -483,7 +483,7 @@ namespace BussinessObject
 
                 entity.ToTable("PaymentMethod");
 
-                entity.Property(e => e.PaymentId).ValueGeneratedNever();
+                entity.Property(e => e.PaymentId).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Code)
                     .HasMaxLength(50)
@@ -510,7 +510,7 @@ namespace BussinessObject
             {
                 entity.ToTable("Schedule");
 
-                entity.Property(e => e.ScheduleId).ValueGeneratedNever();
+                entity.Property(e => e.ScheduleId).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Code)
                     .HasMaxLength(50)
@@ -540,7 +540,7 @@ namespace BussinessObject
             {
                 entity.ToTable("ServiceBooking");
 
-                entity.Property(e => e.ServiceBookingId).ValueGeneratedNever();
+                entity.Property(e => e.ServiceBookingId).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.CreatedDate).HasColumnType("datetime");
 
@@ -570,7 +570,7 @@ namespace BussinessObject
 
                 entity.ToTable("ServiceCategory");
 
-                entity.Property(e => e.CategoryId).ValueGeneratedNever();
+                entity.Property(e => e.CategoryId).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Category)
                     .HasMaxLength(50)
@@ -600,7 +600,7 @@ namespace BussinessObject
 
                 entity.ToTable("ServiceDetail");
 
-                entity.Property(e => e.DetailId).ValueGeneratedNever();
+                entity.Property(e => e.DetailId).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.CreatedBy)
                     .HasMaxLength(50)
@@ -632,7 +632,7 @@ namespace BussinessObject
 
                 entity.ToTable("SystemConfiguration");
 
-                entity.Property(e => e.ConfigId).ValueGeneratedNever();
+                entity.Property(e => e.ConfigId).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Config).HasColumnType("text");
 
