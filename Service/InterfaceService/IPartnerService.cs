@@ -11,14 +11,14 @@ namespace Service.InterfaceService
 {
     public interface IPartnerService
     {
-        Task<ApiResponse<PartnerServiceDTO?>> GetPartnerServiceDetailAsync(int serviceId);
-        Task<ApiResponse<List<Partner>>> GetAllPartnersAsync();
-        Task<ApiResponse<Partner>> GetPartnerByIDAsync(int id);
-        Task<ApiResponse<Partner>> GetPartnerByRefreshTokenAsync(string token);
-        Task<ApiResponse<Partner>> GetPartnerByEmailAsync(string email);
-        Task<ApiResponse<Partner>> GetPartnerByCodeAsync(string code);
-        Task<ApiResponse<bool>> AddPartnerAsync(Partner partner);
-        Task<ApiResponse<bool>> UpdatePartnerAsync(Partner partner);
-        Task<ApiResponse<bool>> BanPartnerAsync(int partnerId);
+        Task<PartnerServiceDTO?> GetPartnerServiceDetailAsync(int serviceId);
+        Task<List<Partner>> GetAllPartnersAsync();
+        Task<Partner> GetPartnerByIDAsync(int id);
+        Task<Partner> GetPartnerByRefreshTokenAsync(string token);
+        Task<Partner> GetPartnerByEmailAsync(string email);
+        Task<Partner> GetPartnerByCodeAsync(string code);
+        Task<bool> AddPartnerAsync(Partner partner);
+        Task<bool> UpdatePartnerAsync(Partner partner);
+        Task<bool> BanPartnerAsync(int partnerId);
     }
 }

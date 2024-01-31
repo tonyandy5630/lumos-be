@@ -32,7 +32,7 @@ namespace Service.Service
             bool authenticated = false;
 
             var adminResponse = await _adminService.GetAdminByEmailAsync(email);
-            if (adminResponse != null && adminResponse.data != null && adminResponse.data.Password == password)
+            if (adminResponse != null && adminResponse != null && adminResponse.Password == password)
             {
                 authenticated = true;
                 role = "Admin";
@@ -41,7 +41,7 @@ namespace Service.Service
             if (!authenticated)
             {
                 var partnerResponse = await _partnerService.GetPartnerByEmailAsync(email);
-                if (partnerResponse != null && partnerResponse.data != null && partnerResponse.data.Password == password)
+                if (partnerResponse != null && partnerResponse != null && partnerResponse.Password == password)
                 {
                     authenticated = true;
                     role = "Partner";
@@ -51,13 +51,16 @@ namespace Service.Service
             if (!authenticated)
             {
                 var customerResponse = await _customerService.GetCustomerByEmailAsync(email);
-                if (customerResponse != null && customerResponse.data != null && customerResponse.data.Password == password)
+                if (customerResponse != null && customerResponse != null && customerResponse.Password == password)
                 {
                     authenticated = true;
                     role = "Customer";
                 }
             }
-
+            if (authenticated && role != "Admin")
+            {
+                await UpdateLastLoginTime(email);
+            }
             return (authenticated, role);
         }
 
@@ -103,7 +106,7 @@ namespace Service.Service
             var customerResponse = await _customerService.GetCustomerByEmailAsync(email);
             var partnerResponse = await _partnerService.GetPartnerByEmailAsync(email);
 
-            switch (adminResponse?.data, customerResponse?.data, partnerResponse?.data)
+            switch (adminResponse, customerResponse, partnerResponse)
             {
                 case (BussinessObject.Admin admin, _, _):
                     admin.RefreshToken = refreshToken;
@@ -131,17 +134,17 @@ namespace Service.Service
             var customerResponse = await _customerService.GetCustomerByRefreshTokenAsync(refreshToken);
             var partnerResponse = await _partnerService.GetPartnerByRefreshTokenAsync(refreshToken);
 
-            if (adminResponse?.data != null)
+            if (adminResponse != null)
             {
-                return (true, adminResponse.data.Email);
+                return (true, adminResponse.Email);
             }
-            else if (customerResponse?.data != null)
+            else if (customerResponse != null)
             {
-                return (true, customerResponse.data.Email);
+                return (true, customerResponse.Email);
             }
-            else if (partnerResponse?.data != null)
+            else if (partnerResponse != null)
             {
-                return (true, partnerResponse.data.Email);
+                return (true, partnerResponse.Email);
             }
             else
             {
@@ -155,21 +158,44 @@ namespace Service.Service
             var customerResponse = await _customerService.GetCustomerByEmailAsync(email);
             var partnerResponse = await _partnerService.GetPartnerByEmailAsync(email);
 
-            if (adminResponse?.data != null)
+            if (adminResponse != null)
             {
                 return (true, "Admin");
             }
-            else if (customerResponse?.data != null)
+            else if (customerResponse != null)
             {
                 return (true, "Customer");
             }
-            else if (partnerResponse?.data != null)
+            else if (partnerResponse != null)
             {
                 return (true, "Partner");
             }
             else
             {
                 return (false, null);
+            }
+        }
+        private async Task UpdateLastLoginTime(string email)
+        {
+            var customerResponse = await _customerService.GetCustomerByEmailAsync(email);
+            var partnerResponse = await _partnerService.GetPartnerByEmailAsync(email);
+
+            DateTime now = DateTime.UtcNow;
+
+            switch (customerResponse, partnerResponse)
+            {
+                case (BussinessObject.Customer customer, _):
+                    customer.LastLogin = now;
+                    await _customerService.UpdateCustomerAsync(customer);
+                    break;
+
+                case (_, BussinessObject.Partner partner):
+                    partner.LastLogin = now;
+                    await _partnerService.UpdatePartnerAsync(partner);
+                    break;
+
+                default:
+                    break;
             }
         }
     }

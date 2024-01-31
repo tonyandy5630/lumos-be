@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using BussinessObject;
 using BussinessObject.AuthenModel;
+using DataTransferObject.DTO;
 using Google.Apis.Auth;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -15,6 +16,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Service.InterfaceService;
 using Utils;
+using static Google.Apis.Requests.BatchRequest;
 
 namespace LumosSolution.Controllers
 {
@@ -42,78 +44,114 @@ namespace LumosSolution.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegistrationModel model)
         {
-            if (string.IsNullOrWhiteSpace(model.Email) || string.IsNullOrWhiteSpace(model.Password))
-            {
-                var validationErrorResponse = new ApiResponse<object>
-                {
-                    message = "Email and password are required.",
-                    StatusCode = 400,
-                    data = null
-                };
-
-                return BadRequest(validationErrorResponse);
-            }
-            if (model.Password != model.ConfirmPassword)
-            {
-                var passwordMismatchErrorResponse = new ApiResponse<object>
-                {
-                    message = "Password and confirm password do not match.",
-                    StatusCode = 400,
-                    data = null
-                };
-
-                return BadRequest(passwordMismatchErrorResponse);
-            }
-
-            var user = _mapper.Map<Customer>(model);
-            var result = await _customerService.AddCustomerAsync(user);
-
-            if (result.data)
-            {
-                var response = new ApiResponse<object>
-                {
-                    message = "Registration successful.",
-                    StatusCode = 200,
-                    data = new
-                    {
-                    }
-                };
-
-                return Ok(response);
-            }
-            else
-            {
-                var errorResponse = new ApiResponse<object>
-                {
-                    message = "Registration failed",
-                    StatusCode = 400,
-                    data = null
-                };
-
-                return BadRequest(errorResponse);
-            }
-        }
-        //Chưa hoàn thiện 
-        [HttpPost("loginwithgoogle")]
-        public async Task<IActionResult> LoginWithGoogle([FromBody] string credential)
-        {
-            var setting = new GoogleJsonWebSignature.ValidationSettings()
-            {
-                Audience = new List<string> { _configuration["Authentication:Google:clientId"] }
-            };
-
+            ApiResponse<object> response = new ApiResponse<object>();
             try
             {
+                if (string.IsNullOrWhiteSpace(model.Email) || string.IsNullOrWhiteSpace(model.Password))
+                {
+                    response.message = MessagesResponse.Error.InvalidInput;
+                    response.StatusCode = ApiStatusCode.BadRequest;
+                    return BadRequest(response);
+                }
+                if (model.Password != model.ConfirmPassword)
+                {
+
+                    response.message = MessagesResponse.Error.OperationFailed;
+                    response.StatusCode = ApiStatusCode.BadRequest;
+                    return BadRequest(response);
+                }
+
+                var user = _mapper.Map<Customer>(model);
+                var result = await _customerService.AddCustomerAsync(user);
+
+                if (result)
+                {
+                    response.message = MessagesResponse.Success.Completed;
+                    response.StatusCode = ApiStatusCode.OK;
+                    return Ok(response);
+                }
+                else
+                {
+                    response.message = MessagesResponse.Error.OperationFailed;
+                    response.StatusCode = ApiStatusCode.BadRequest;
+                    return BadRequest(response);
+                }
+            }
+            catch (Exception ex)
+            {
+                response.message = MessagesResponse.Error.RegisterFailed;
+                response.StatusCode = ApiStatusCode.BadRequest;
+                return BadRequest(response);
+            }
+
+        }
+
+        [HttpPost("register/google")]
+        public async Task<IActionResult> RegisterGoogle([FromBody] string credential)
+        {
+            ApiResponse<object> response = new ApiResponse<object>();
+            try
+            {
+                var setting = new GoogleJsonWebSignature.ValidationSettings()
+                {
+                    Audience = new List<string> { _configuration["Authentication:Google:clientId"] }
+                };
                 var payload = await GoogleJsonWebSignature.ValidateAsync(credential, setting);
 
                 var userEmail = payload.Email;
 
-                // Kiểm tra xem người dùng đã tồn tại trong hệ thống hay chưa
                 var (roleValid, userRole) = await _authentication.CheckRole(userEmail);
 
                 if (!roleValid)
                 {
-                    return BadRequest("Invalid user role.");
+                    var newCustomer = new CustomerServiceDTO
+                    {
+                        Email = userEmail,
+                        Fullname = payload.Name,
+                        ImgUrl = payload.Picture,
+                        Password = "Passw0rd!"
+                    };
+                    var user = _mapper.Map<Customer>(newCustomer);
+                    var result = await _customerService.AddCustomerAsync(user);
+
+                    if (result)
+                    {
+                        response.message = MessagesResponse.Success.Completed;
+                        response.StatusCode = ApiStatusCode.OK;
+                    }
+                }
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                response.message = MessagesResponse.Error.RegisterFailed;
+                response.StatusCode = ApiStatusCode.BadRequest;
+                return BadRequest(response);
+            }
+        }
+
+        [HttpPost("loginwithgoogle")]
+        public async Task<IActionResult> LoginWithGoogle([FromBody] string credential)
+        {
+            ApiResponse<object>? response = new ApiResponse<object>();
+            try
+            {
+                var setting = new GoogleJsonWebSignature.ValidationSettings()
+                {
+                    Audience = new List<string> { _configuration["Authentication:Google:clientId"] }
+                };
+                var payload = await GoogleJsonWebSignature.ValidateAsync(credential, setting);
+
+                var userEmail = payload.Email;
+
+                var (roleValid, userRole) = await _authentication.CheckRole(userEmail);
+
+                if (!roleValid)
+                {
+                    response.message = MessagesResponse.Error.Unauthorized;
+                    response.StatusCode = ApiStatusCode.Unauthorized;
+                    return Unauthorized(response);
                 }
 
                 var (token, accessTokenTime, refreshTokentime, refreshToken) = await _authentication.GenerateToken(userEmail, userRole);
@@ -121,119 +159,130 @@ namespace LumosSolution.Controllers
                 var accessTokenRemainingTime = accessTokenTime - DateTime.UtcNow;
                 var refreshTokenRemainingTime = refreshTokentime - DateTime.UtcNow;
 
-                var response = new ApiResponse<object>
+                response.message = MessagesResponse.Success.Completed;
+                response.StatusCode = ApiStatusCode.OK;
+                response.data = new
                 {
-                    message = $"Logged in with role: {userRole}",
-                    StatusCode = 200,
-                    data = new
-                    {
-                        Token = token,
-                        AccessTokenExpiration = accessTokenRemainingTime,
-                        RefreshToken = refreshToken,
-                        RefreshTokenExpiration = refreshTokenRemainingTime
-                    }
+                    Token = token,
+                    AccessTokenExpiration = accessTokenRemainingTime,
+                    RefreshToken = refreshToken,
+                    RefreshTokenExpiration = refreshTokenRemainingTime
                 };
 
                 return Ok(response);
             }
             catch (Exception ex)
             {
-                return BadRequest("Google authentication failed.");
+                response.message = MessagesResponse.Error.LoginFailed;
+                response.StatusCode = ApiStatusCode.BadRequest;
+                return BadRequest(response);
             }
         }
-
+        
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginModel model)
         {
-            var (authenticated, role) = await _authentication.IsUserAuthenticatedAsync(model.Email, model.Password);
-
-            if (authenticated)
+            ApiResponse<object>? response = new ApiResponse<object>();
+            try
             {
-                var (token, accessTokenTime, refreshTokentime, refreshToken) = await _authentication.GenerateToken(model.Email, role);
-                
-                var accessTokenRemainingTime = accessTokenTime - DateTime.UtcNow;
-                var refreshTokenRemainingTime = refreshTokentime - DateTime.UtcNow;
+                var (authenticated, role) = await _authentication.IsUserAuthenticatedAsync(model.Email, model.Password);
 
-
-                var response = new ApiResponse<object>
+                if (authenticated)
                 {
-                    message = $"Logged in with role: {role}",
-                    StatusCode = 200,
-                    data = new
+                    var (token, accessTokenTime, refreshTokentime, refreshToken) = await _authentication.GenerateToken(model.Email, role);
+
+                    var accessTokenRemainingTime = accessTokenTime - DateTime.UtcNow;
+                    var refreshTokenRemainingTime = refreshTokentime - DateTime.UtcNow;
+
+                    response.message = MessagesResponse.Success.Completed;
+                    response.StatusCode = ApiStatusCode.OK;
+                    response.data = new
                     {
                         Token = token,
                         AccessTokenExpiration = accessTokenRemainingTime,
                         RefreshToken = refreshToken,
                         RefreshTokenExpiration = refreshTokenRemainingTime
-                    }
-                };
+                    };
+                    return Ok(response);
+                }
+                else
+                {
+                    response.message = MessagesResponse.Error.Unauthorized;
+                    response.StatusCode = ApiStatusCode.Unauthorized;
+                    return Unauthorized(response);
+                }
 
-                return Ok(response);
             }
-
-            var unauthorizedResponse = new ApiResponse<object>
+            catch (Exception ex)
             {
-                message = "Login failure",
-                StatusCode = 401,
-                data = null
-            };
-
-            return Unauthorized(unauthorizedResponse);
+                response.message = MessagesResponse.Error.OperationFailed;
+                response.StatusCode = ApiStatusCode.BadRequest;
+                return BadRequest(response);
+            }
         }
         [HttpPost("refreshtoken")]
         public async Task<IActionResult> RefreshToken([FromBody] RefreshModel model)
         {
-            if (string.IsNullOrEmpty(model.RefreshToken))
+            ApiResponse<object>? response = new ApiResponse<object>();
+            try
             {
-                return BadRequest("Refresh token is missing.");
-            }
-
-            var (isValid, userEmail) = await _authentication.ValidateRefreshToken(model.RefreshToken);
-
-            if (!isValid)
-            {
-                return BadRequest("Invalid refresh token.");
-            }
-
-            var (roleValid, userRole) = await _authentication.CheckRole(userEmail);
-
-            if (!roleValid)
-            {
-                return BadRequest("Invalid user role.");
-            }
-
-            var (token, accessTokenTime, refreshTokentime, newRefreshToken) = await _authentication.GenerateToken(userEmail, userRole);
-            
-            var accessTokenRemainingTime = accessTokenTime - DateTime.UtcNow;
-            var refreshTokenRemainingTime = refreshTokentime - DateTime.UtcNow;
-            
-            await _authentication.SaveRefreshTokenToDatabase(userEmail, newRefreshToken);
-
-            if (accessTokenTime < DateTime.UtcNow)
-            {
-                var expiredTokenResponse = new ApiResponse<object>
+                if (string.IsNullOrEmpty(model.RefreshToken))
                 {
-                    message = "Access Token has expired.",
-                    StatusCode = 401,
-                    data = null
-                };
-                return Unauthorized(expiredTokenResponse);
-            }
+                    response.message = MessagesResponse.Error.InvalidInput;
+                    response.StatusCode = ApiStatusCode.BadRequest;
+                    return BadRequest(response);
+                }
 
-            var response = new ApiResponse<object>
-            {
-                message = "Token refreshed successfully.",
-                StatusCode = 200,
-                data = new
+                var (isValid, userEmail) = await _authentication.ValidateRefreshToken(model.RefreshToken);
+
+                if (!isValid)
+                {
+                    response.message = MessagesResponse.Error.OperationFailed;
+                    response.StatusCode = ApiStatusCode.BadRequest;
+                    return BadRequest(response);
+                }
+
+                var (roleValid, userRole) = await _authentication.CheckRole(userEmail);
+
+                if (!roleValid)
+                {
+                    response.message = MessagesResponse.Error.OperationFailed;
+                    response.StatusCode = ApiStatusCode.BadRequest;
+                    return BadRequest(response);
+                }
+
+                var (token, accessTokenTime, refreshTokentime, newRefreshToken) = await _authentication.GenerateToken(userEmail, userRole);
+
+                var accessTokenRemainingTime = accessTokenTime - DateTime.UtcNow;
+                var refreshTokenRemainingTime = refreshTokentime - DateTime.UtcNow;
+
+                await _authentication.SaveRefreshTokenToDatabase(userEmail, newRefreshToken);
+
+                if (accessTokenTime < DateTime.UtcNow)
+                {
+                    response.message = MessagesResponse.Error.Unauthorized;
+                    response.StatusCode = ApiStatusCode.Unauthorized;
+                    return Unauthorized(response);
+                }
+
+                response.message = MessagesResponse.Success.Completed;
+                response.StatusCode = ApiStatusCode.OK;
+                response.data = new
                 {
                     Token = token,
                     AccessTokenExpiration = accessTokenRemainingTime,
                     RefreshToken = newRefreshToken,
                     RefreshTokenExpiration = refreshTokenRemainingTime
-                }
-            };
+                };
 
-            return Ok(response);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                response.message = MessagesResponse.Error.OperationFailed;
+                response.StatusCode = ApiStatusCode.BadRequest;
+                return BadRequest(response);
+            }
         }
     }
 }
