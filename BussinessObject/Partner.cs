@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace BussinessObject
 {
@@ -18,6 +19,7 @@ namespace BussinessObject
         public string? Email { get; set; }
         public string? PartnerName { get; set; }
         public string? DisplayName { get; set; }
+        [JsonIgnore]
         public string? Password { get; set; }
         public string? Phone { get; set; }
         public string? Address { get; set; }
