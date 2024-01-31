@@ -6,6 +6,7 @@ using Repository.Repo;
 using Service.InterfaceService;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -24,39 +25,28 @@ namespace Service.Service
             _mapper = mapper;
         }
 
-       
 
-        public async Task<ApiResponse<PartnerServiceDTO?>> GetPartnerServiceDetailAsync(int serviceId)
+
+        public async Task<PartnerServiceDTO?> GetPartnerServiceDetailAsync(int serviceId)
         {
-            ApiResponse<PartnerServiceDTO?> response = new ApiResponse<PartnerServiceDTO?>
-            {
-                message = MessagesResponse.Error.NotFound,
-                StatusCode = 404
-            };
-
             try
             {
                 PartnerService? service = await _unitOfWork.PartnerRepo.GetPartnerServiceDetailByIdAsync(serviceId);
                 IEnumerable<ServiceCategory> serviceCategories = await _unitOfWork.ServiceCategoryRepo.GetCategoriesByServiceIdAsync(serviceId);
 
                 if (service == null)
-                    return response;
+                    return null;
 
-                response.message = MessagesResponse.Success.Completed;
-                response.StatusCode = 200;
-
-                PartnerServiceDTO serviceDTO = _mapper.Map<PartnerServiceDTO>(service);
+                PartnerServiceDTO? serviceDTO = _mapper.Map<PartnerServiceDTO>(service);
                 IEnumerable<ServiceCategoryDTO> serviceCategoryDTOs = _mapper.Map<IEnumerable<ServiceCategoryDTO>>(serviceCategories);
                 serviceDTO.Categories = serviceCategoryDTOs;
-                response.data = serviceDTO;
+                return serviceDTO;
             }
-            catch
+            catch (Exception ex)
             {
-                response.message = MessagesResponse.Error.OperationFailed;
-                response.StatusCode = 500;
+                Console.WriteLine(ex.Message);
+                return null;
             }
-           
-            return response;
         }
         public async Task<ApiResponse<bool>> AddPartnerAsync(Partner partner)
         {
@@ -250,24 +240,33 @@ namespace Service.Service
             return response;
         }
 
-        public async Task<ApiResponse<IEnumerable<Partner>>> SearchPartnerByPartnerOrServiceName(string keyword)
+        public async Task<IEnumerable<SearchPartnerDTO>> SearchPartnerByPartnerOrServiceName(string keyword)
         {
-            ApiResponse<IEnumerable<Partner>> response = new ApiResponse<IEnumerable<Partner>>
-            {
-                message = MessagesResponse.Error.OperationFailed,
-                StatusCode = 500
-            };
             try
             {
+
                 IEnumerable<Partner> searchedPartner = await _unitOfWork.PartnerRepo.SearchPartnerByPartnerOrServiceNameAsync(keyword.Trim());
-                response.message = MessagesResponse.Success.Completed;
-                response.data = searchedPartner;
-                response.StatusCode = 200;
-                return response;
+                IEnumerable<SearchPartnerDTO> results = _mapper.Map<IEnumerable<SearchPartnerDTO>>(searchedPartner);
+                // Task for getting details parrallel
+                List<Task<PartnerServiceDTO?>> tasks = new();
+                foreach (var partner in results)
+                {
+                    foreach (var service in partner.PartnerServices)
+                    {
+                        if (service != null)
+                            tasks.Add(GetPartnerServiceDetailAsync(service.ServiceId));
+                    }
+                    // Wait for all the tasks to be done
+                    var resultsForPartner = await Task.WhenAll(tasks);
+                    //* Empty for mutable service detail
+                    partner.PartnerServices = Enumerable.Empty<PartnerServiceDTO>();
+                    partner.PartnerServices.ToList().AddRange(resultsForPartner);
+                }
+                return results;
             }
             catch
             {
-                return response;
+                return null;
             }
         }
     }

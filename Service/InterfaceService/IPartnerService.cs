@@ -11,7 +11,7 @@ namespace Service.InterfaceService
 {
     public interface IPartnerService
     {
-        Task<ApiResponse<PartnerServiceDTO?>> GetPartnerServiceDetailAsync(int serviceId);
+        Task<PartnerServiceDTO?> GetPartnerServiceDetailAsync(int serviceId);
         Task<ApiResponse<List<Partner>>> GetAllPartnersAsync();
         Task<ApiResponse<Partner>> GetPartnerByIDAsync(int id);
         Task<ApiResponse<Partner>> GetPartnerByRefreshTokenAsync(string token);
@@ -20,7 +20,6 @@ namespace Service.InterfaceService
         Task<ApiResponse<bool>> AddPartnerAsync(Partner partner);
         Task<ApiResponse<bool>> UpdatePartnerAsync(Partner partner);
         Task<ApiResponse<bool>> BanPartnerAsync(int partnerId);
-
-        Task<ApiResponse<IEnumerable<Partner>>> SearchPartnerByPartnerOrServiceName(string keyword);
+        Task<IEnumerable<SearchPartnerDTO>> SearchPartnerByPartnerOrServiceName(string keyword);
     }
 }
