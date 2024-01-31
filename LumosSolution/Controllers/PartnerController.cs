@@ -50,7 +50,7 @@ namespace LumosSolution.Controllers
         }
 
         [HttpGet, Route("{keyword?}")]
-        [Authorize(Roles = "Admin,Customer,Partner")]
+        [Authorize(Roles = "Admin,Customer")]
         public async Task<ActionResult<IEnumerable<SearchPartnerDTO>>> GetPartnerByPartnerOrServiceName(string? keyword = "")
         {
             ApiResponse<IEnumerable<SearchPartnerDTO>> res = new ApiResponse<IEnumerable<SearchPartnerDTO>>
