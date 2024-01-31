@@ -183,6 +183,17 @@ namespace DataAccessLayer
                 return parts[0];
             }
             return string.Empty;
+
+        public async Task<List<Address>> GetCustomerAddress(int customerId)
+        {
+            try
+            {
+                return await dbContext.Addresses.Where(x => x.CustomerId == customerId).ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
         }
     }
 }

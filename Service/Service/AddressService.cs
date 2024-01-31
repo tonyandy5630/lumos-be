@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Service.Service
 {
-    public class AddressService:IAddressService
+    public class AddressService : IAddressService
     {
         private readonly IUnitOfWork _unitOfWork;
         public AddressService (IUnitOfWork unitOfWork)

@@ -7,20 +7,24 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="InterfaceUltis\**" />
+    <Compile Remove="MiddleWare\**" />
+    <EmbeddedResource Remove="InterfaceUltis\**" />
+    <EmbeddedResource Remove="MiddleWare\**" />
+    <None Remove="InterfaceUltis\**" />
+    <None Remove="MiddleWare\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
-    <PackageReference Include="Google.Apis.Auth" Version="1.65.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0" />
-    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.10.0" />
+    <PackageReference Include="Google.Apis.Auth" Version="1.66.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.3.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\BussinessObject\BussinessObject.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="InterfaceUltis\" />
-    <Folder Include="MiddleWare\" />
   </ItemGroup>
 
 </Project>
