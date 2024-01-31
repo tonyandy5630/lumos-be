@@ -92,10 +92,18 @@ namespace DataAccessLayer
             try
             {
                 bool existingAccount = (await GetCustomersAsync())
-                    .Any(a => a.Code.ToLower().Equals(customer.Code.ToLower()) || a.Email.ToLower().Equals(customer.Email.ToLower()));
+                    .Any(a => a.Email.ToLower().Equals(customer.Email.ToLower()));
 
                 if (!existingAccount)
                 {
+                    customer.Code = GenerateCustomerCode();
+                    customer.Status = 1;
+                    customer.Fullname = ExtractNameFromEmail(customer.Email);
+                    DateTime currentDate = DateTime.UtcNow;
+                    customer.LastUpdate = currentDate;
+                    customer.UpdateBy = customer.Email;
+                    customer.CreatedDate = currentDate;
+
                     dbContext.Customers.Add(customer);
                     await dbContext.SaveChangesAsync();
                     return true;
@@ -162,6 +170,19 @@ namespace DataAccessLayer
                 Console.WriteLine($"Error in BanCustomer: {ex.Message}");
                 return false;
             }
+        }
+        private string GenerateCustomerCode()
+        {
+            return $"Cus{Guid.NewGuid().ToString("N").Substring(0, 5)}";
+        }
+        private string ExtractNameFromEmail(string email)
+        {
+            string[] parts = email.Split('@');
+            if (parts.Length > 0)
+            {
+                return parts[0];
+            }
+            return string.Empty;
         }
     }
 }

@@ -5,6 +5,8 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using AutoMapper;
+using BussinessObject;
 using BussinessObject.AuthenModel;
 using Google.Apis.Auth;
 using Microsoft.AspNetCore.Identity;
@@ -25,15 +27,71 @@ namespace LumosSolution.Controllers
         private readonly ICustomerService _customerService;
         private readonly IPartnerService _partnerService;
         private readonly IAuthentication _authentication;
+        private readonly IMapper _mapper;
         public AuthController(IConfiguration configuration, IAdminService adminService,
-            ICustomerService customerService, IPartnerService partnerService
-            , IAuthentication authentication)
+        ICustomerService customerService, IPartnerService partnerService
+        , IAuthentication authentication, IMapper mapper)
         {
             _configuration = configuration;
             _adminService = adminService;
             _customerService = customerService;
             _partnerService = partnerService;
             _authentication = authentication;
+            _mapper = mapper;
+        }
+        [HttpPost("register")]
+        public async Task<IActionResult> Register([FromBody] RegistrationModel model)
+        {
+            if (string.IsNullOrWhiteSpace(model.Email) || string.IsNullOrWhiteSpace(model.Password))
+            {
+                var validationErrorResponse = new ApiResponse<object>
+                {
+                    message = "Email and password are required.",
+                    StatusCode = 400,
+                    data = null
+                };
+
+                return BadRequest(validationErrorResponse);
+            }
+            if (model.Password != model.ConfirmPassword)
+            {
+                var passwordMismatchErrorResponse = new ApiResponse<object>
+                {
+                    message = "Password and confirm password do not match.",
+                    StatusCode = 400,
+                    data = null
+                };
+
+                return BadRequest(passwordMismatchErrorResponse);
+            }
+
+            var user = _mapper.Map<Customer>(model);
+            var result = await _customerService.AddCustomerAsync(user);
+
+            if (result.data)
+            {
+                var response = new ApiResponse<object>
+                {
+                    message = "Registration successful.",
+                    StatusCode = 200,
+                    data = new
+                    {
+                    }
+                };
+
+                return Ok(response);
+            }
+            else
+            {
+                var errorResponse = new ApiResponse<object>
+                {
+                    message = "Registration failed",
+                    StatusCode = 400,
+                    data = null
+                };
+
+                return BadRequest(errorResponse);
+            }
         }
         //Chưa hoàn thiện 
         [HttpPost("loginwithgoogle")]

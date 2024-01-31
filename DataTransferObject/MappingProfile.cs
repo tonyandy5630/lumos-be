@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using BussinessObject;
+using BussinessObject.AuthenModel;
 using DataTransferObject.DTO;
 
 namespace DataTransferObject
@@ -8,6 +9,10 @@ namespace DataTransferObject
     {
         public MappingProfile()
         {
+            CreateMap<RegistrationModel, Customer>()
+                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
+                .ForMember(dest => dest.Password, opt => opt.MapFrom(src => src.Password));
+
             CreateMap<PartnerService, PartnerServiceDTO>()
                 .ForMember(dto => dto.ServiceId, act => act.MapFrom(src => src.ServiceId))
                 .ForMember(dto => dto.Name, act => act.MapFrom(src => src.Name))
