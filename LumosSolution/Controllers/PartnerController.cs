@@ -19,16 +19,16 @@ namespace LumosSolution.Controllers
             _partnerService = partnerService;
         }
 
-        [HttpGet("service/{id}")]
+        [HttpGet("service/detail/{id}")]
         [Authorize(Roles = "Admin,Customer,Partner")]
         public async Task<ActionResult<PartnerServiceDTO?>> GetaPartnerServiceDetailById(int id){
             ApiResponse<PartnerServiceDTO?> res = await _partnerService.GetPartnerServiceDetailAsync(id);
             return Ok(res);
         }
 
-        [HttpGet, Route("{keyword?}")]
+        [HttpGet("{keyword?}")]
         [Authorize(Roles = "Admin,Customer,Partner")]
-        public async Task<ActionResult<IEnumerable<Partner>>> GetPartnerByPartnerOrServiceName(string? keyword = null)
+        public async Task<ActionResult<IEnumerable<Partner>>> GetPartnerByPartnerOrServiceName(string? keyword = "")
         {
             ApiResponse<IEnumerable<Partner>> res = await _partnerService.SearchPartnerByPartnerOrServiceName(keyword);
 
