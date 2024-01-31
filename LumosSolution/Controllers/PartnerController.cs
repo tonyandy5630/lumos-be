@@ -31,7 +31,7 @@ namespace LumosSolution.Controllers
             };
             try
             {
-                PartnerServiceDTO partnerService = await _partnerService.GetPartnerServiceDetailAsync(id);
+                PartnerServiceDTO? partnerService = await _partnerService.GetPartnerServiceDetailAsync(id);
 
                 if (partnerService == null)
                     return response;
