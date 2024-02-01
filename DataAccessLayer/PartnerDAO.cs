@@ -35,6 +35,16 @@ namespace DataAccessLayer
         {
             return await _context.PartnerServices.FirstOrDefaultAsync(s => s.ServiceId == serviceId);
         }
+
+        public async Task<IEnumerable<Partner>> SearchPartnerByServiceOrPartnerNameAsync(string keyword)
+        {
+            return await _context.Partners.Where(s => s.PartnerName.Contains(keyword) || s.PartnerServices.Any(ps => ps.Name.Contains(keyword))).Include(x => x.PartnerServices.Where(s => s.Name.Contains(keyword))).ToListAsync();
+        }
+
+        public async Task<IEnumerable<PartnerService>> GetServiceOfPartnerByServiceName(string keyword, int partnerId)
+        {
+            return await _context.PartnerServices.Where( s => s.PartnerId == partnerId && s.Name.Contains(keyword)).ToListAsync();
+        }
         public async Task<List<Partner>> GetAllPartnersAsync()
         {
             return await _context.Partners.ToListAsync();
@@ -72,7 +82,7 @@ namespace DataAccessLayer
                 throw new Exception(ex.Message);
             }
         }
-        public async Task<Partner> GetPartnerByEmailAsync(string email)
+        public async Task<Partner?> GetPartnerByEmailAsync(string email)
         {
             try
             {

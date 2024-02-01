@@ -6,6 +6,7 @@ using Repository.Repo;
 using Service.InterfaceService;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -24,28 +25,28 @@ namespace Service.Service
             _mapper = mapper;
         }
 
-       
 
-        public async Task<ApiResponse<PartnerServiceDTO?>> GetPartnerServiceDetailAsync(int serviceId)
+
+        public async Task<PartnerServiceDTO?> GetPartnerServiceDetailAsync(int serviceId)
         {
-            ApiResponse<PartnerServiceDTO?> response = new ApiResponse<PartnerServiceDTO?>
+            try
             {
-                message = MessagesResponse.Error.NotFound,
-                StatusCode = 404
-            };
-            PartnerService? service =  await _unitOfWork.PartnerRepo.GetPartnerServiceDetailByIdAsync(serviceId);
-            IEnumerable<ServiceCategory> serviceCategories = await _unitOfWork.ServiceCategoryRepo.GetCategoriesByServiceIdAsync(serviceId);
-            if(service == null)
-                return response;
+                PartnerService? service = await _unitOfWork.PartnerRepo.GetPartnerServiceDetailByIdAsync(serviceId);
+                IEnumerable<ServiceCategory> serviceCategories = await _unitOfWork.ServiceCategoryRepo.GetCategoriesByServiceIdAsync(serviceId);
 
-            response.message = MessagesResponse.Success.Completed;
-            response.StatusCode = 200;
+                if (service == null)
+                    return null;
 
-            PartnerServiceDTO serviceDTO =  _mapper.Map<PartnerServiceDTO>(service);
-            IEnumerable<ServiceCategoryDTO> serviceCategoryDTOs = _mapper.Map <IEnumerable<ServiceCategoryDTO>>(serviceCategories);
-            serviceDTO.Categories = serviceCategoryDTOs;
-            response.data = serviceDTO;
-            return response;
+                PartnerServiceDTO? serviceDTO = _mapper.Map<PartnerServiceDTO>(service);
+                IEnumerable<ServiceCategoryDTO> serviceCategoryDTOs = _mapper.Map<IEnumerable<ServiceCategoryDTO>>(serviceCategories);
+                serviceDTO.Categories = serviceCategoryDTOs;
+                return serviceDTO;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return null;
+            }
         }
         public async Task<ApiResponse<bool>> AddPartnerAsync(Partner partner)
         {
@@ -237,6 +238,36 @@ namespace Service.Service
             }
 
             return response;
+        }
+
+        public async Task<IEnumerable<SearchPartnerDTO>> SearchPartnerByPartnerOrServiceName(string keyword)
+        {
+            try
+            {
+
+                IEnumerable<Partner> searchedPartner = await _unitOfWork.PartnerRepo.SearchPartnerByPartnerOrServiceNameAsync(keyword.Trim());
+                IEnumerable<SearchPartnerDTO> results = _mapper.Map<IEnumerable<SearchPartnerDTO>>(searchedPartner);
+                // Task for getting details parrallel
+                List<Task<PartnerServiceDTO?>> tasks = new();
+                foreach (var partner in results)
+                {
+                    foreach (var service in partner.PartnerServices)
+                    {
+                        if (service != null)
+                            tasks.Add(GetPartnerServiceDetailAsync(service.ServiceId));
+                    }
+                    // Wait for all the tasks to be done
+                    var resultsForPartner = await Task.WhenAll(tasks);
+                    //* Empty for mutable service detail
+                    partner.PartnerServices = Enumerable.Empty<PartnerServiceDTO>();
+                    partner.PartnerServices.ToList().AddRange(resultsForPartner);
+                }
+                return results;
+            }
+            catch
+            {
+                return null;
+            }
         }
     }
 }
