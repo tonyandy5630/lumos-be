@@ -184,5 +184,20 @@ namespace DataAccessLayer
             }
             return string.Empty;
         }
+
+        public async Task<List<MedicalReport>> GetMedicalReportByCustomerIdAsync(int id)
+        {
+            try
+            {
+                var customer = await dbContext.MedicalReports.Where(u => u.CustomerId == id).ToListAsync();
+                return customer;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetMedicalReportByCustomerIdAsync: {ex.Message}", ex);
+                throw new Exception(ex.Message);
+            }
+        }
+
     }
 }

@@ -17,5 +17,6 @@ namespace Repository.Interface
         Task<bool> AddCustomerAsync(Customer customer);
         Task<bool> UpdateCustomerAsync(Customer customer);
         Task<bool> BanCustomerAsync(int id);
+        Task<List<MedicalReport>> GetMedicalReportByCustomerIdAsync(int id);
     }
 }
