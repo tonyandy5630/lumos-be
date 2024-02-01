@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Utils;
 
 namespace DataAccessLayer
 {
@@ -60,6 +61,7 @@ namespace DataAccessLayer
                 throw new Exception(ex.Message);
             }
         }
+
         public async Task<Customer> GetCustomerByEmailAsync(string email)
         {
             try
@@ -108,7 +110,7 @@ namespace DataAccessLayer
 
                 if (!existingAccount)
                 {
-                    customer.Code = GenerateCustomerCode();
+                    customer.Code = GenerateCode.GenerateCustomerCode();
                     customer.Status = 1;
                     customer.Fullname = ExtractNameFromEmail(customer.Email);
                     DateTime currentDate = DateTime.UtcNow;
@@ -179,11 +181,6 @@ namespace DataAccessLayer
             }
         }
 
-        private string GenerateCustomerCode()
-        {
-            return $"Cus{Guid.NewGuid().ToString("N").Substring(0, 5)}";
-        }
-
         private string ExtractNameFromEmail(string email)
         {
             string[] parts = email.Split('@');
@@ -193,7 +190,6 @@ namespace DataAccessLayer
             }
             return string.Empty;
         }
-
 
         public async Task<List<MedicalReport>> GetMedicalReportByCustomerIdAsync(int id)
         {
@@ -209,13 +205,25 @@ namespace DataAccessLayer
             }
         }
 
-
-
         public async Task<List<Address>> GetCustomerAddressByCustomerIdAsync(int customerId)
         {
             try
             {
                 return await dbContext.Addresses.Where(x => x.CustomerId == customerId).ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<bool> AddCustomerAddressByCustomerIdAsync(int customerId, Address address)
+        {
+            try
+            {
+                dbContext.Addresses.Add(address);
+                await dbContext.SaveChangesAsync();
+                return true;
             }
             catch (Exception ex)
             {
