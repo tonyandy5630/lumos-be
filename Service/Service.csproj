@@ -7,7 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="3rd_Party\" />
+    <Compile Remove="3rd_Party\**" />
+    <EmbeddedResource Remove="3rd_Party\**" />
+    <None Remove="3rd_Party\**" />
   </ItemGroup>
 
   <ItemGroup>

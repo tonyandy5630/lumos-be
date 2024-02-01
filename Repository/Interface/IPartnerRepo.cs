@@ -18,5 +18,9 @@ namespace Repository.Interface
         Task<bool> AddPartnerAsync(Partner partner);
         Task<bool> UpdatePartnerAsync(Partner partner);
         Task<bool> BanPartnerAsync(int partnerId);
+
+        Task<IEnumerable<Partner>> SearchPartnerByPartnerOrServiceNameAsync(string keyword);
+
+        Task<IEnumerable<PartnerService>> GetPartnerServiceByServiceNameAsync(string serviceName, int partnerId);
     }
 }

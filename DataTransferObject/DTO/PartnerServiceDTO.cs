@@ -19,7 +19,6 @@ namespace DataTransferObject.DTO
         public DateTime? CreatedDate { get; set; }
         public DateTime? LastUpdate { get; set; }
         public string? UpdatedBy { get; set; }
-        public Partner? Partner { get; set; }
         public IEnumerable<ServiceCategoryDTO>? Categories { get; set; }
 
     }
