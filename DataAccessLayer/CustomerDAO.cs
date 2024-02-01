@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Utils;
 
 namespace DataAccessLayer
 {
@@ -73,6 +74,7 @@ namespace DataAccessLayer
                 throw new Exception(ex.Message);
             }
         }
+
         public async Task<Customer> GetCustomerByEmailAsync(string email)
         {
             try
@@ -121,7 +123,7 @@ namespace DataAccessLayer
 
                 if (!existingAccount)
                 {
-                    customer.Code = GenerateCustomerCode();
+                    customer.Code = GenerateCode.GenerateCustomerCode();
                     customer.Status = 1;
                     customer.Fullname = ExtractNameFromEmail(customer.Email);
                     DateTime currentDate = DateTime.UtcNow;
@@ -192,11 +194,6 @@ namespace DataAccessLayer
             }
         }
 
-        private string GenerateCustomerCode()
-        {
-            return $"Cus{Guid.NewGuid().ToString("N").Substring(0, 5)}";
-        }
-
         private string ExtractNameFromEmail(string email)
         {
             string[] parts = email.Split('@');
@@ -206,7 +203,6 @@ namespace DataAccessLayer
             }
             return string.Empty;
         }
-
 
         public async Task<List<MedicalReport>> GetMedicalReportByCustomerIdAsync(int id)
         {
