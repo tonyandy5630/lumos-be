@@ -91,7 +91,7 @@ namespace Service.Service
             var accessToken = new JwtSecurityTokenHandler().WriteToken(accessTokenOptions);
             var refreshTokenString = new JwtSecurityTokenHandler().WriteToken(refreshTokenOptions);
 
-            SaveRefreshTokenToDatabase(email, refreshTokenString);
+            await SaveRefreshTokenToDatabase(email, refreshTokenString);
             var accessTokenexpiration = accessTokenOptions.ValidTo;
             var refreshTokenexpires = refreshTokenOptions.ValidTo;
             return (accessToken, accessTokenexpiration, refreshTokenexpires, refreshTokenString);
