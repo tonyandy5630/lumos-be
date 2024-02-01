@@ -210,7 +210,7 @@ namespace DataAccessLayer
         }
 
 
-        public async Task<List<Address>> GetCustomersAddressByCustomerIdAsync(int customerId)
+        public async Task<List<Address>> GetCustomerAddressByCustomerIdAsync(int customerId)
         {
             try
             {
