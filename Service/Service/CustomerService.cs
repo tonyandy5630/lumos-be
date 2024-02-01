@@ -102,6 +102,30 @@ namespace Service.Service
             }
         }
 
+        public async Task<List<MedicalReport>> GetMedicalReportByCustomerIdAsync(int id)
+        {
+            List<MedicalReport> medReport = new List<MedicalReport>();
+            try
+            {
+                medReport = await _unitOfWork.CustomerRepo.GetMedicalReportByCustomerIdAsync(id);
+
+                if(medReport == null || medReport.Count == 0)
+                {
+                    Console.WriteLine($"No medical report found for customer with Id {id}");
+                } else
+                {
+                    Console.WriteLine($"Found {medReport.Count} medical report for customer with Id {id}");
+                }
+
+                return medReport;
+            }
+            catch (Exception ex) 
+            {
+                Console.WriteLine($"Error in GetMedicalReportByCustomerIdAsync: {ex.Message}", ex);
+                throw;
+            }
+        }
+
         public async Task<bool> UpdateCustomerAsync(Customer customer)
         {
             try
@@ -114,9 +138,9 @@ namespace Service.Service
             }
         }
 
-        public async Task<List<Address>?> GetCustomerAddressByCustomerIdAsync(int id)
+        public async Task<List<Address>> GetCustomerAddressByCustomerIdAsync(int id)
         {
-            List<Address> addresses = new List<Address>();
+            List<Address> addresses;
 
             try
             {
