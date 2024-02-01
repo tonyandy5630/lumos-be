@@ -232,13 +232,13 @@ namespace Service.Service
             return response;
         }
 
-        public async Task<List<Address>?> GetCustomerAddressByCustomerIdAsync(int id)
+        public async Task<List<Address>> GetCustomerAddressByCustomerIdAsync(int id)
         {
-            List<Address> addresses = new List<Address>();
+            List<Address> addresses;
 
             try
             {
-                addresses = await _unitOfWork.CustomerRepo.GetCustomerAddressByCustomerIdAsync(id);
+                addresses = await _unitOfWork.CustomerRepo.GetCustomersAddressByCustomerIdAsync(id);
 
                 if (addresses == null || addresses.Count == 0)
                 {
