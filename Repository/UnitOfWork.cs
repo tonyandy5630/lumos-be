@@ -48,6 +48,8 @@ namespace Repository
         public IServiceCategoryRepo ServiceCategoryRepo { get; }
         public ISystemConfigurationRepo SystemConfigurationRepo { get; }
 
+        public IServiceDetailRepo ServiceDetailRepo { get }
+
         public Task CommitTransactionAsync(IDbContextTransaction commit)
         {
             return commit.CommitAsync();
@@ -64,10 +66,9 @@ namespace Repository
             return _Context.SaveChangesAsync();
         }
 
-        public Task StartTransactionAsync(string name)
+        public IDbContextTransaction StartTransactionAsync()
         {
-            var commit = _Context.Database.BeginTransaction();
-            return commit.CreateSavepointAsync(name);
+            return _Context.Database.BeginTransaction();
         }
     }
 }

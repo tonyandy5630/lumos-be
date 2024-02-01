@@ -22,9 +22,10 @@ namespace Repository.Interface.IUnitOfWork
         IServiceBookingRepo ServiceBookingRepo { get; }
         IServiceCategoryRepo ServiceCategoryRepo { get; }
         ISystemConfigurationRepo SystemConfigurationRepo { get; }
+        IServiceDetailRepo ServiceDetailRepo { get; }
 
         Task<int> SaveChangesAsync();
-        Task StartTransactionAsync(string name);
+        IDbContextTransaction StartTransactionAsync();
         Task CommitTransactionAsync(IDbContextTransaction commit);
         Task RollBackAsync(IDbContextTransaction commit, string name);
 
