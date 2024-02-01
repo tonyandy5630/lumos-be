@@ -19,7 +19,6 @@ namespace Repository.Interface
         Task<bool> BanCustomerAsync(int id);
 
         Task<List<MedicalReport>> GetMedicalReportByCustomerIdAsync(int id);
-        Task<List<Address>> GetCustomersAddressByCustomerIdAsync(int id);
-
+        Task<List<Address>> GetCustomerAddressByCustomerIdAsync(int id);
     }
 }
