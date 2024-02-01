@@ -19,5 +19,6 @@ namespace Service.InterfaceService
         Task<ApiResponse<bool>> UpdateCustomerAsync(Customer customer);
         Task<ApiResponse<bool>> BanCustomerAsync(int id);
         Task<List<MedicalReport>> GetMedicalReportByCustomerIdAsync(int id);
+        Task<List<Address>> GetCustomerAddressByCustomerIdAsync(int id);
     }
 }

@@ -1,4 +1,5 @@
 ﻿using BussinessObject;
+using Microsoft.Extensions.Logging;
 using Repository.Interface.IUnitOfWork;
 using Service.InterfaceService;
 using System.Collections.Generic;
@@ -229,6 +230,31 @@ namespace Service.Service
             }
 
             return response;
+        }
+
+        public async Task<List<Address>?> GetCustomerAddressByCustomerIdAsync(int id)
+        {
+            List<Address> addresses = new List<Address>();
+
+            try
+            {
+                addresses = await _unitOfWork.CustomerRepo.GetCustomerAddressByCustomerIdAsync(id);
+
+                if (addresses == null || addresses.Count == 0)
+                {
+                    Console.WriteLine($"No addresses found for customer with ID {id}");
+                } else
+                {
+                    Console.WriteLine($"Found {addresses.Count} addresses for customer with ID {id}");
+                }
+
+                return addresses;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetCustomersAddressByCustomerIdAsync: {ex.Message}", ex);
+                throw;
+            }
         }
     }
 }

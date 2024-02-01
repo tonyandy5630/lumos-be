@@ -171,10 +171,12 @@ namespace DataAccessLayer
                 return false;
             }
         }
+
         private string GenerateCustomerCode()
         {
             return $"Cus{Guid.NewGuid().ToString("N").Substring(0, 5)}";
         }
+
         private string ExtractNameFromEmail(string email)
         {
             string[] parts = email.Split('@');
@@ -184,6 +186,7 @@ namespace DataAccessLayer
             }
             return string.Empty;
         }
+
 
         public async Task<List<MedicalReport>> GetMedicalReportByCustomerIdAsync(int id)
         {
@@ -199,5 +202,17 @@ namespace DataAccessLayer
             }
         }
 
+
+        public async Task<List<Address>> GetCustomersAddressByCustomerIdAsync(int customerId)
+        {
+            try
+            {
+                return await dbContext.Addresses.Where(x => x.CustomerId == customerId).ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
     }
 }
