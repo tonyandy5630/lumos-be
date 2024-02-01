@@ -120,7 +120,7 @@ namespace Service.Service
 
             try
             {
-                addresses = await _unitOfWork.CustomerRepo.GetCustomerAddressByCustomerIdAsync(id);
+                addresses = await _unitOfWork.CustomerRepo.GetCustomersAddressByCustomerIdAsync(id);
 
                 if (addresses == null || addresses.Count == 0)
                 {
