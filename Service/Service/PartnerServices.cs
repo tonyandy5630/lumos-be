@@ -1,9 +1,13 @@
 ﻿using AutoMapper;
 using BussinessObject;
 using DataTransferObject.DTO;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.Storage;
 using Repository.Interface.IUnitOfWork;
 using Repository.Repo;
 using Service.InterfaceService;
+using Service.RequestEntity;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -25,7 +29,67 @@ namespace Service.Service
             _mapper = mapper;
         }
 
+        public async Task<PartnerService?> AddPartnerServiceAsync(AddPartnerServiceResquest service, string? partnerEmail)
+        {
+            const string TRANSACTION = "add-parner-service";
+            IDbContextTransaction commit = _unitOfWork.StartTransactionAsync();
+            try
+            {
+                if (partnerEmail == null)
+                    return null;
 
+               Partner partner = await _unitOfWork.PartnerRepo.GetPartnerByEmailAsync(partnerEmail);
+
+                if(partner == null)
+                    return null;
+                PartnerService partnerService = _mapper.Map<PartnerService>(service);
+                partnerService.PartnerId = partner.PartnerId;
+                partnerService.Partner = partner;
+
+                // Validate categories
+                foreach(int cateId in service.Categories)
+                {
+
+                }
+
+                EntityEntry<PartnerService> newService = await _unitOfWork.PartnerRepo.AddPartnerServiceAsync(partnerService);
+                if (newService.State != EntityState.Added)
+                    return null;
+                
+                List<Task<EntityEntry<ServiceDetail>>> tasks = new();
+                foreach(var cate in service.Categories)
+                {
+                    ServiceCategory serviceCategory = _mapper.Map<ServiceCategory>(cate);
+                    ServiceDetail serviceDetail = new ServiceDetail
+                    {
+                        CreatedDate = DateTime.Now,
+                        ServiceId = newService.Entity.ServiceId,
+                        CategoryId = cate,
+                        Service = newService.Entity,
+                        Category = serviceCategory,
+                    };
+                    Task<EntityEntry<ServiceDetail>> detail = _unitOfWork.ServiceDetailRepo.AddServiceDetailAsync(serviceDetail);
+                    tasks.Add(detail);
+                }
+                await Task.WhenAll(tasks);
+                if(tasks.Count == 0)
+                {
+                    return null;
+                }
+                 await _unitOfWork.CommitTransactionAsync(commit);
+                int success = await _unitOfWork.SaveChangesAsync();
+                if (success == 0)
+                    throw new Exception();
+                return newService.Entity;
+
+            }
+            catch (Exception ex)
+            {
+
+                await _unitOfWork.RollBackAsync(commit, TRANSACTION);
+                throw new Exception(ex.Message);
+            }
+        }
 
         public async Task<PartnerServiceDTO?> GetPartnerServiceDetailAsync(int serviceId)
         {
@@ -269,5 +333,7 @@ namespace Service.Service
                 return null;
             }
         }
+
+       
     }
 }

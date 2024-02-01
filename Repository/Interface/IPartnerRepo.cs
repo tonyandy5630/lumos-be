@@ -1,4 +1,5 @@
 ﻿using BussinessObject;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,5 +23,6 @@ namespace Repository.Interface
         Task<IEnumerable<Partner>> SearchPartnerByPartnerOrServiceNameAsync(string keyword);
 
         Task<IEnumerable<PartnerService>> GetPartnerServiceByServiceNameAsync(string serviceName, int partnerId);
+        Task<EntityEntry<PartnerService>> AddPartnerServiceAsync(PartnerService service);
     }
 }

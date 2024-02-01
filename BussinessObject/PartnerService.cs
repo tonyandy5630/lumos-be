@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
@@ -16,12 +17,15 @@ namespace BussinessObject
 
         public int ServiceId { get; set; }
         [JsonIgnore]
-        public int PartnerId { get; set; }
+        public int? PartnerId { get; set; }
+        [Required]
         public string Name { get; set; }
-        public string Code { get; set; }
+        public string? Code { get; set; }
         public int? Duration { get; set; }
         public int? Status { get; set; }
         public string? Description { get; set; }
+
+        [Required]
         public int Price { get; set; }
         public DateTime? CreatedDate { get; set; }
         public DateTime? LastUpdate { get; set; }

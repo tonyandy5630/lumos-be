@@ -3,7 +3,9 @@ using DataTransferObject.DTO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Service.InterfaceService;
+using Service.RequestEntity;
 using Service.Service;
 using System.Collections.Generic;
 using Utils;
@@ -79,6 +81,32 @@ namespace LumosSolution.Controllers
         {
             ApiResponse<Partner?> res = await _partnerService.GetPartnerByIDAsync(id);
             return Ok(res);
+        }
+
+        [HttpPost("service")]
+        public async Task<ActionResult<PartnerService>> AddPartnerService([FromBody]AddPartnerServiceResquest service)
+        {
+            ApiResponse<PartnerService> response = new ApiResponse<PartnerService>
+            {
+                message = MessagesResponse.Error.OperationFailed,
+                StatusCode = 500
+            };
+            try
+            {
+                if(ModelState.IsValid)
+                {
+                    response.message = MessagesResponse.Error.InvalidInput;
+                    response.StatusCode = 422;
+                    return UnprocessableEntity(response);
+                }
+                string? accessToken = User.Claims.FirstOrDefault(c => c.Type == "Email")?.Value;
+                PartnerService newService = await _partnerService.AddPartnerServiceAsync(service, accessToken);
+                return Ok(response);
+            }catch(Exception ex)
+            {
+                Console.WriteLine(ex.Message) ;
+                return BadRequest(response);
+            }
         }
 
     }

@@ -1,5 +1,6 @@
 ﻿using BussinessObject;
 using DataAccessLayer;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Repository.Interface;
 using System;
 using System.Collections.Generic;
@@ -13,6 +14,7 @@ namespace Repository.Repo
     {
         public PartnerRepo(LumosDBContext context) { }
 
+        public Task<EntityEntry<PartnerService>> AddPartnerServiceAsync(PartnerService service) => PartnerDAO.Instance.AddPartnerServiceAsync(service);
         public Task<bool> AddPartnerAsync(Partner partner) =>PartnerDAO.Instance.AddPartnereAsync(partner);
 
         public Task<bool> BanPartnerAsync(int partnerId) => PartnerDAO.Instance.BanPartnerAsync(partnerId);

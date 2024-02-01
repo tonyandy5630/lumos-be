@@ -47,6 +47,7 @@ namespace Service.DI
             services.AddTransient<IBookingRepo, BookingRepo>();
             services.AddTransient<IBookingService, BookingService>();
 
+
             services.AddTransient<ICustomerRepo, CustomerRepo>();
             services.AddTransient<ICustomerService, CustomerService>();
 
@@ -55,6 +56,9 @@ namespace Service.DI
 
             services.AddTransient<IMedicalReportRepo, MedicalReportRepo>();
             services.AddTransient<IMedicalReportService, MedicalReportService>();
+
+            //ServiceDetail
+            services.AddTransient<IServiceDetailRepo, ServiceDetailRepo>();
 
             // Partner
             services.AddTransient<IPartnerRepo, PartnerRepo>();

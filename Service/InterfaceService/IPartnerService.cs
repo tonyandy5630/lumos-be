@@ -1,5 +1,6 @@
 ﻿using BussinessObject;
 using DataTransferObject.DTO;
+using Service.RequestEntity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,6 +22,6 @@ namespace Service.InterfaceService
         Task<ApiResponse<bool>> UpdatePartnerAsync(Partner partner);
         Task<ApiResponse<bool>> BanPartnerAsync(int partnerId);
         Task<IEnumerable<SearchPartnerDTO>> SearchPartnerByPartnerOrServiceNameAsync(string keyword);
-        Task<PartnerService> AddPartnerServiceAsync(Partner partner);
+        Task<PartnerService> AddPartnerServiceAsync(AddPartnerServiceResquest service, string? partnerEmail);
     }
 }
