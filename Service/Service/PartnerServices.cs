@@ -45,7 +45,6 @@ namespace Service.Service
                 PartnerService partnerService = _mapper.Map<PartnerService>(service);
                 partnerService.PartnerId = partner.PartnerId;
                 partnerService.Partner = partner;
-
                 // Validate categories
                 foreach(int cateId in service.Categories)
                 {

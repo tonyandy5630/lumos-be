@@ -1,5 +1,6 @@
 ﻿using BussinessObject;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -34,6 +35,11 @@ namespace DataAccessLayer
         public async Task<PartnerService?> GetPartnerServiceByIdAsync(int serviceId)
         {
             return await _context.PartnerServices.FirstOrDefaultAsync(s => s.ServiceId == serviceId);
+        }
+
+        public async Task<EntityEntry<PartnerService>> AddPartnerServiceAsync(PartnerService service)
+        {
+            return await _context.PartnerServices.AddAsync(service).AsTask();
         }
 
         public async Task<IEnumerable<Partner>> SearchPartnerByServiceOrPartnerNameAsync(string keyword)
