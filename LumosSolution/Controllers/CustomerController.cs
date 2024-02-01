@@ -1,8 +1,9 @@
-using BussinessObject;
+﻿using BussinessObject;
 using DataTransferObject.DTO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Service.InterfaceService;
+using Service.Service;
 using Utils;
 
 namespace LumosSolution.Controllers
@@ -74,6 +75,36 @@ namespace LumosSolution.Controllers
                 response.message = MessagesResponse.Error.OperationFailed;
                 response.StatusCode = ApiStatusCode.BadRequest;
                 
+                return BadRequest(response);
+            }
+        }
+
+        [HttpGet]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<List<Customer>>> GetCustomerAsync([FromQuery] string? keyword)
+        {
+            ApiResponse<List<Customer>> response = new ApiResponse<List<Customer>>();
+            try
+            {
+                response.data = await _customerService.GetCustomersAsync(keyword);
+                if (response.data == null || response.data.Count == 0)
+                {
+                    response.message = MessagesResponse.Error.NotFound;
+                    response.StatusCode = ApiStatusCode.NotFound;
+                }
+                else
+                {
+                    response.StatusCode = ApiStatusCode.OK;
+                    response.message = MessagesResponse.Success.Completed;
+                }
+
+                return Ok(response);
+            }
+            catch
+            {
+                response.message = MessagesResponse.Error.OperationFailed;
+                response.StatusCode = ApiStatusCode.BadRequest;
+
                 return BadRequest(response);
             }
         }

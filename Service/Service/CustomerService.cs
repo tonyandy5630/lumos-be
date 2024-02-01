@@ -90,11 +90,11 @@ namespace Service.Service
             }
         }
 
-        public async Task<List<Customer>> GetCustomersAsync()
+        public async Task<List<Customer>> GetCustomersAsync(string keyword)
         {
             try
             {
-                return await _unitOfWork.CustomerRepo.GetCustomersAsync();
+                return await _unitOfWork.CustomerRepo.GetCustomersAsync(keyword);
             }
             catch (Exception ex)
             {
@@ -125,33 +125,6 @@ namespace Service.Service
                 throw;
             }
         }
-
-
-        public async Task<List<MedicalReport>> GetMedicalReportByCustomerIdAsync(int id)
-        {
-            List<MedicalReport> medReport = new List<MedicalReport>();
-            try
-            {
-                medReport = await _unitOfWork.CustomerRepo.GetMedicalReportByCustomerIdAsync(id);
-
-                if(medReport == null || medReport.Count == 0)
-                {
-                    Console.WriteLine($"No medical report found for customer with Id {id}");
-                } else
-                {
-                    Console.WriteLine($"Found {medReport.Count} medical report for customer with Id {id}");
-                }
-
-                return medReport;
-            }
-            catch (Exception ex) 
-            {
-                Console.WriteLine($"Error in GetMedicalReportByCustomerIdAsync: {ex.Message}", ex);
-                throw;
-            }
-        }
-
-        
 
         public async Task<bool> UpdateCustomerAsync(Customer customer)
         {
