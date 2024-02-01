@@ -19,195 +19,101 @@ namespace Service.Service
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<ApiResponse<bool>> AddAdminAsync(Admin admin)
+        public async Task<bool> AddAdminAsync(Admin admin)
         {
-            ApiResponse<bool> response = new ApiResponse<bool>();
             try
             {
-                bool result = await _unitOfWork.AdminRepo.AddAdminAsync(admin);
-                response.data = result;
-                response.message = result ? MessagesResponse.Success.Created : MessagesResponse.Error.OperationFailed;
-                response.StatusCode = result ? 201 : 400;
+                return await _unitOfWork.AdminRepo.AddAdminAsync(admin);
             }
-            catch
+            catch(Exception ex)
             {
-                response.message = MessagesResponse.Error.OperationFailed;
-                response.StatusCode = 500;
+                throw new Exception(ex.Message);
             }
-
-            return response;
         }
 
-        public async Task<ApiResponse<bool>> BanAdminAsync(int id)
+        public async Task<bool> BanAdminAsync(int id)
         {
-            ApiResponse<bool> response = new ApiResponse<bool>();
             try
             {
-                bool result = await _unitOfWork.AdminRepo.BanAdminAsync(id);
-                response.data = result;
-                response.message = result ? MessagesResponse.Success.Updated : MessagesResponse.Error.OperationFailed;
-                response.StatusCode = result ? 200 : 400;
+                return await _unitOfWork.AdminRepo.BanAdminAsync(id);
             }
-            catch
+            catch (Exception ex)
             {
-                response.message = MessagesResponse.Error.OperationFailed;
-                response.StatusCode = 500;
+                throw new Exception(ex.Message);
             }
-
-            return response;
         }
 
-        public async Task<ApiResponse<Admin>> GetAdminByCodeAsync(string code)
+        public async Task<Admin> GetAdminByCodeAsync(string code)
         {
-            ApiResponse<Admin> response = new ApiResponse<Admin>();
             try
             {
-                Admin admin = await _unitOfWork.AdminRepo.GetAdminByCodeAsync(code);
-                if (admin == null)
-                {
-                    response.message = MessagesResponse.Error.NotFound;
-                    response.StatusCode = 404;
-                }
-                else
-                {
-                    response.data = admin;
-                    response.message = MessagesResponse.Success.Completed;
-                    response.StatusCode = 200;
-                }
-            }
-            catch
+                return await _unitOfWork.AdminRepo.GetAdminByCodeAsync(code);
+            }catch(Exception ex)
             {
-                response.message = MessagesResponse.Error.OperationFailed;
-                response.StatusCode = 500;
+                throw new Exception(ex.Message);
             }
-
-            return response;
         }
 
-        public async Task<ApiResponse<Admin>> GetAdminByEmailAsync(string email)
+        public async Task<Admin> GetAdminByEmailAsync(string email)
         {
-            ApiResponse<Admin> response = new ApiResponse<Admin>();
             try
             {
-                Admin admin = await _unitOfWork.AdminRepo.GetAdminByEmailAsync(email);
-                if (admin == null)
-                {
-                    response.message = MessagesResponse.Error.NotFound;
-                    response.StatusCode = 404;
-                }
-                else
-                {
-                    response.data = admin;
-                    response.message = MessagesResponse.Success.Completed;
-                    response.StatusCode = 200;
-                }
+                return await _unitOfWork.AdminRepo.GetAdminByEmailAsync(email);               
             }
-            catch
+            catch (Exception ex)
             {
-                response.message = MessagesResponse.Error.OperationFailed;
-                response.StatusCode = 500;
+                throw new Exception(ex.Message);
             }
-
-            return response;
         }
 
-        public async Task<ApiResponse<Admin>> GetAdminByIDAsync(int id)
+        public async Task<Admin> GetAdminByIDAsync(int id)
         {
-            ApiResponse<Admin> response = new ApiResponse<Admin>();
             try
             {
-                Admin admin = await _unitOfWork.AdminRepo.GetAdminByIDAsync(id);
-                if (admin == null)
-                {
-                    response.message = MessagesResponse.Error.NotFound;
-                    response.StatusCode = 404;
-                }
-                else
-                {
-                    response.data = admin;
-                    response.message = MessagesResponse.Success.Completed;
-                    response.StatusCode = 200;
-                }
+                return await _unitOfWork.AdminRepo.GetAdminByIDAsync(id);               
             }
-            catch
+            catch (Exception ex)
             {
-                response.message = MessagesResponse.Error.OperationFailed;
-                response.StatusCode = 500;
+                throw new Exception(ex.Message);
             }
-
-            return response;
         }
 
-        public async Task<ApiResponse<Admin>> GetAdminByRefreshTokenAsync(string token)
+        public async Task<Admin> GetAdminByRefreshTokenAsync(string token)
         {
-            ApiResponse<Admin> response = new ApiResponse<Admin>();
             try
             {
-                Admin admin = await _unitOfWork.AdminRepo.GetAdminByRefreshTokenAsync(token);
-                if (admin == null)
-                {
-                    response.message = MessagesResponse.Error.NotFound;
-                    response.StatusCode = 404;
-                }
-                else
-                {
-                    response.data = admin;
-                    response.message = MessagesResponse.Success.Completed;
-                    response.StatusCode = 200;
-                }
+                return await _unitOfWork.AdminRepo.GetAdminByRefreshTokenAsync(token);               
             }
-            catch
+            catch (Exception ex)
             {
-                response.message = MessagesResponse.Error.OperationFailed;
-                response.StatusCode = 500;
+                throw new Exception(ex.Message);
             }
-            return response;
         }
 
-        public async Task<ApiResponse<List<Admin>>> GetAdminsAsync()
+        public async Task<List<Admin>> GetAdminsAsync()
         {
-            ApiResponse<List<Admin>> response = new ApiResponse<List<Admin>>();
             try
             {
-                List<Admin> admins = await _unitOfWork.AdminRepo.GetAdminsAsync();
-                if (admins == null || admins.Count == 0)
-                {
-                    response.message = MessagesResponse.Error.NotFound;
-                    response.StatusCode = 404;
-                }
-                else
-                {
-                    response.data = admins;
-                    response.message = MessagesResponse.Success.Completed;
-                    response.StatusCode = 200;
-                }
+                return await _unitOfWork.AdminRepo.GetAdminsAsync();
             }
-            catch
+            catch (Exception ex)
             {
-                response.message = MessagesResponse.Error.OperationFailed;
-                response.StatusCode = 500;
+                throw new Exception(ex.Message);
             }
-
-            return response;
         }
 
-        public async Task<ApiResponse<bool>> UpdateAdminAsync(Admin admin)
+        public async Task<bool> UpdateAdminAsync(Admin admin)
         {
-            ApiResponse<bool> response = new ApiResponse<bool>();
+           
             try
             {
-                bool result = await _unitOfWork.AdminRepo.UpdateAdminAsync(admin);
-                response.data = result;
-                response.message = result ? MessagesResponse.Success.Updated : MessagesResponse.Error.OperationFailed;
-                response.StatusCode = result ? 200 : 400;
+                return await _unitOfWork.AdminRepo.UpdateAdminAsync(admin);
+                
             }
-            catch
+            catch (Exception ex)
             {
-                response.message = MessagesResponse.Error.OperationFailed;
-                response.StatusCode = 500;
+                throw new Exception(ex.Message);
             }
-
-            return response;
         }
     }
 }

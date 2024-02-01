@@ -1,4 +1,4 @@
-﻿using BussinessObject;
+using BussinessObject;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -31,12 +31,20 @@ namespace DataAccessLayer
 
         public async Task<List<Customer>> GetCustomersAsync()
         {
+            List<Customer> customers = new List<Customer>();
             try
             {
-                return await dbContext.Customers.ToListAsync();
+                customers = await dbContext.Customers.ToListAsync();
+                if (customers == null || customers.Count == 0)
+                {
+                    Console.WriteLine("No customers was found!");
+                    return null;
+                }
+                return customers;
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"Error in GetCustomersAsync: {ex.Message}", ex);
                 throw new Exception(ex.Message);
             }
         }
@@ -48,6 +56,7 @@ namespace DataAccessLayer
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"Error in GetCustomerByRefreshTokenAsync: {ex.Message}", ex);
                 throw new Exception(ex.Message);
             }
         }
@@ -59,6 +68,7 @@ namespace DataAccessLayer
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"Error in GetCustomerByEmailAsync: {ex.Message}", ex);
                 throw new Exception(ex.Message);
             }
         }
@@ -71,6 +81,7 @@ namespace DataAccessLayer
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"Error in GetCustomerByIDAsync: {ex.Message}", ex);
                 throw new Exception(ex.Message);
             }
         }
@@ -83,6 +94,7 @@ namespace DataAccessLayer
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"Error in GetCustomerByCodeAsync: {ex.Message}", ex);
                 throw new Exception(ex.Message);
             }
         }
@@ -106,13 +118,15 @@ namespace DataAccessLayer
 
                     dbContext.Customers.Add(customer);
                     await dbContext.SaveChangesAsync();
+                    Console.WriteLine("Add customer successfully!");
                     return true;
                 }
                 return false;
             }
             catch (Exception ex)
             {
-                throw new Exception($"Error in Add Customer: {ex.Message}", ex);
+                Console.WriteLine($"Error in AddCustomerAsync: {ex.Message}", ex);
+                throw new Exception(ex.Message);
             }
         }
 
@@ -129,17 +143,14 @@ namespace DataAccessLayer
                     existing.Status = customer.Status;
 
                     await dbContext.SaveChangesAsync();
+                    Console.WriteLine("Customer updated successfully!");
                     return true;
                 }
-                else
-                {
-                    Console.WriteLine("Customer not found for updating.");
-                    return false;
-                }
+                return false;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error in Update Customer: {ex.Message}", ex);
+                Console.WriteLine($"Error in UpdateCustomerAsync: {ex.Message}", ex);
                 return false;
             }
         }
@@ -159,15 +170,11 @@ namespace DataAccessLayer
                     Console.WriteLine("Customer status updated successfully!");
                     return true;
                 }
-                else
-                {
-                    Console.WriteLine("Customer does not exist!");
-                    return false;
-                }
+                return false;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error in BanCustomer: {ex.Message}");
+                Console.WriteLine($"Error in BanCustomerAsync: {ex.Message}");
                 return false;
             }
         }
@@ -203,7 +210,8 @@ namespace DataAccessLayer
         }
 
 
-        public async Task<List<Address>> GetCustomersAddressByCustomerIdAsync(int customerId)
+
+        public async Task<List<Address>> GetCustomerAddressByCustomerIdAsync(int customerId)
         {
             try
             {

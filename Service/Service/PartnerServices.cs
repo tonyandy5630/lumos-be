@@ -48,196 +48,134 @@ namespace Service.Service
                 return null;
             }
         }
-        public async Task<ApiResponse<bool>> AddPartnerAsync(Partner partner)
+
+        public async Task<bool> AddPartnerAsync(Partner partner)
         {
-            ApiResponse<bool> response = new ApiResponse<bool>();
             try
             {
-                bool result = await _unitOfWork.PartnerRepo.AddPartnerAsync(partner);
-                response.data = result;
-                response.message = result ? MessagesResponse.Success.Created : MessagesResponse.Error.OperationFailed;
-                response.StatusCode = result ? 201 : 400;
+                return await _unitOfWork.PartnerRepo.AddPartnerAsync(partner);
             }
-            catch
+            catch (Exception ex)
             {
-                response.message = MessagesResponse.Error.OperationFailed;
-                response.StatusCode = 500;
+                Console.WriteLine(MessagesResponse.Error.OperationFailed);
+                throw new Exception(ex.Message);
             }
-
-            return response;
         }
 
-        public async Task<ApiResponse<bool>> BanPartnerAsync(int partnerId)
+        public async Task<bool> BanPartnerAsync(int partnerId)
         {
-            ApiResponse<bool> response = new ApiResponse<bool>();
             try
             {
-                bool result = await _unitOfWork.PartnerRepo.BanPartnerAsync(partnerId);
-                response.data = result;
-                response.message = result ? MessagesResponse.Success.Updated : MessagesResponse.Error.OperationFailed;
-                response.StatusCode = result ? 200 : 400;
+                return await _unitOfWork.PartnerRepo.BanPartnerAsync(partnerId);
             }
-            catch
+            catch (Exception ex)
             {
-                response.message = MessagesResponse.Error.OperationFailed;
-                response.StatusCode = 500;
+                Console.WriteLine(MessagesResponse.Error.OperationFailed);
+                throw new Exception(ex.Message);
             }
-
-            return response;
         }
 
-        public async Task<ApiResponse<Partner>> GetPartnerByCodeAsync(string code)
+        public async Task<Partner> GetPartnerByCodeAsync(string code)
         {
-            ApiResponse<Partner> response = new ApiResponse<Partner>();
             try
             {
                 Partner partner = await _unitOfWork.PartnerRepo.GetPartnerByCodeAsync(code);
                 if (partner == null)
                 {
-                    response.message = MessagesResponse.Error.NotFound;
-                    response.StatusCode = 404;
+                    Console.WriteLine(MessagesResponse.Error.NotFound);
                 }
-                else
-                {
-                    response.data = partner;
-                    response.message = MessagesResponse.Success.Completed;
-                    response.StatusCode = 200;
-                }
+                return partner;
             }
-            catch
+            catch (Exception ex)
             {
-                response.message = MessagesResponse.Error.OperationFailed;
-                response.StatusCode = 500;
+                Console.WriteLine(MessagesResponse.Error.OperationFailed);
+                throw new Exception(ex.Message);
             }
-
-            return response;
         }
 
-        public async Task<ApiResponse<Partner>> GetPartnerByEmailAsync(string email)
+        public async Task<Partner> GetPartnerByEmailAsync(string email)
         {
-            ApiResponse<Partner> response = new ApiResponse<Partner>();
             try
             {
                 Partner partner = await _unitOfWork.PartnerRepo.GetPartnerByEmailAsync(email);
                 if (partner == null)
                 {
-                    response.message = MessagesResponse.Error.NotFound;
-                    response.StatusCode = 404;
+                    Console.WriteLine(MessagesResponse.Error.NotFound);
                 }
-                else
-                {
-                    response.data = partner;
-                    response.message = MessagesResponse.Success.Completed;
-                    response.StatusCode = 200;
-                }
+                return partner;
             }
-            catch
+            catch (Exception ex)
             {
-                response.message = MessagesResponse.Error.OperationFailed;
-                response.StatusCode = 500;
+                Console.WriteLine(MessagesResponse.Error.OperationFailed);
+                throw new Exception(ex.Message);
             }
-
-            return response;
         }
 
-        public async Task<ApiResponse<Partner>> GetPartnerByIDAsync(int id)
+        public async Task<Partner> GetPartnerByIDAsync(int id)
         {
-            ApiResponse<Partner> response = new ApiResponse<Partner>();
             try
             {
                 Partner partner = await _unitOfWork.PartnerRepo.GetPartnerByIDAsync(id);
                 if (partner == null)
                 {
-                    response.message = MessagesResponse.Error.NotFound;
-                    response.StatusCode = 404;
+                    Console.WriteLine(MessagesResponse.Error.NotFound);
                 }
-                else
-                {
-                    response.data = partner;
-                    response.message = MessagesResponse.Success.Completed;
-                    response.StatusCode = 200;
-                }
+                return partner;
             }
-            catch
+            catch (Exception ex)
             {
-                response.message = MessagesResponse.Error.OperationFailed;
-                response.StatusCode = 500;
+                Console.WriteLine(MessagesResponse.Error.OperationFailed);
+                throw new Exception(ex.Message);
             }
-
-            return response;
         }
 
-        public async Task<ApiResponse<List<Partner>>> GetAllPartnersAsync()
+        public async Task<List<Partner>> GetAllPartnersAsync()
         {
-            ApiResponse<List<Partner>> response = new ApiResponse<List<Partner>>();
             try
             {
                 List<Partner> partners = await _unitOfWork.PartnerRepo.GetAllPartnersAsync();
                 if (partners == null || partners.Count == 0)
                 {
-                    response.message = MessagesResponse.Error.NotFound;
-                    response.StatusCode = 404;
+                    Console.WriteLine(MessagesResponse.Error.NotFound);
                 }
-                else
-                {
-                    response.data = partners;
-                    response.message = MessagesResponse.Success.Completed;
-                    response.StatusCode = 200;
-                }
+                return partners;
             }
-            catch
+            catch (Exception ex)
             {
-                response.message = MessagesResponse.Error.OperationFailed;
-                response.StatusCode = 500;
+                Console.WriteLine(MessagesResponse.Error.OperationFailed);
+                throw new Exception(ex.Message);
             }
-
-            return response;
         }
 
-        public async Task<ApiResponse<bool>> UpdatePartnerAsync(Partner partner)
+        public async Task<bool> UpdatePartnerAsync(Partner partner)
         {
-            ApiResponse<bool> response = new ApiResponse<bool>();
             try
             {
-                bool result = await _unitOfWork.PartnerRepo.UpdatePartnerAsync(partner);
-                response.data = result;
-                response.message = result ? MessagesResponse.Success.Updated : MessagesResponse.Error.OperationFailed;
-                response.StatusCode = result ? 200 : 400;
+                return await _unitOfWork.PartnerRepo.UpdatePartnerAsync(partner);
             }
-            catch
+            catch (Exception ex)
             {
-                response.message = MessagesResponse.Error.OperationFailed;
-                response.StatusCode = 500;
+                Console.WriteLine(MessagesResponse.Error.OperationFailed);
+                throw new Exception(ex.Message);
             }
-
-            return response;
         }
 
-        public async Task<ApiResponse<Partner>> GetPartnerByRefreshTokenAsync(string token)
+        public async Task<Partner> GetPartnerByRefreshTokenAsync(string token)
         {
-            ApiResponse<Partner> response = new ApiResponse<Partner>();
             try
             {
                 Partner partner = await _unitOfWork.PartnerRepo.GetPartnerByRefreshTokenAsync(token);
                 if (partner == null)
                 {
-                    response.message = MessagesResponse.Error.NotFound;
-                    response.StatusCode = 404;
+                    Console.WriteLine(MessagesResponse.Error.NotFound);
                 }
-                else
-                {
-                    response.data = partner;
-                    response.message = MessagesResponse.Success.Completed;
-                    response.StatusCode = 200;
-                }
+                return partner;
             }
-            catch
+            catch (Exception ex)
             {
-                response.message = MessagesResponse.Error.OperationFailed;
-                response.StatusCode = 500;
+                Console.WriteLine(MessagesResponse.Error.OperationFailed);
+                throw new Exception(ex.Message);
             }
-
-            return response;
         }
 
         public async Task<IEnumerable<SearchPartnerDTO>> SearchPartnerByPartnerOrServiceName(string keyword)
