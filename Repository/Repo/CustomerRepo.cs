@@ -27,8 +27,10 @@ namespace Repository.Repo
 
         public Task<List<Customer>> GetCustomersAsync() => CustomerDAO.Instance.GetCustomersAsync();
 
+        public Task<List<MedicalReport>> GetMedicalReportByCustomerIdAsync(int id) => CustomerDAO.Instance.GetMedicalReportByCustomerIdAsync(id);
+
         public Task<bool> UpdateCustomerAsync(Customer customer) => CustomerDAO.Instance.UpdateCustomerAsync(customer);
 
-        public Task<List<Address>> GetCustomerAddressByCustomerIdAsync(int id) => CustomerDAO.Instance.GetCustomerAddressByCustomerIdAsync(id);
+        public Task<List<Address>> GetCustomersAddressByCustomerIdAsync(int id) => CustomerDAO.Instance.GetCustomersAddressByCustomerIdAsync(id);
     }
 }
