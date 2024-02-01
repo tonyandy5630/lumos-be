@@ -9,7 +9,7 @@ namespace Repository.Interface
 {
     public interface ICustomerRepo
     {
-        Task<List<Customer>> GetCustomersAsync();
+        Task<List<Customer>> GetCustomersAsync(string keyword);
         Task<Customer> GetCustomerByEmailAsync(string email);
         Task<Customer> GetCustomerByRefreshTokenAsync(string token);
         Task<Customer> GetCustomerByIDAsync(int id);

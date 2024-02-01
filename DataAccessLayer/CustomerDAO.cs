@@ -29,17 +29,29 @@ namespace DataAccessLayer
             }
         }
 
-        public async Task<List<Customer>> GetCustomersAsync()
+        public async Task<List<Customer>> GetCustomersAsync(string keyword)
         {
-            List<Customer> customers = new List<Customer>();
             try
             {
-                customers = await dbContext.Customers.ToListAsync();
+                List<Customer> customers;
+
+                if (string.IsNullOrWhiteSpace(keyword))
+                {
+                    customers = await dbContext.Customers.ToListAsync();
+                }
+                else
+                {
+                    customers = await dbContext.Customers
+                        .Where(c => c.Fullname.Contains(keyword) || c.Email.Contains(keyword))
+                        .ToListAsync();
+                }
+
                 if (customers == null || customers.Count == 0)
                 {
-                    Console.WriteLine("No customers was found!");
+                    Console.WriteLine("No customers were found!");
                     return null;
                 }
+
                 return customers;
             }
             catch (Exception ex)
@@ -48,6 +60,7 @@ namespace DataAccessLayer
                 throw new Exception(ex.Message);
             }
         }
+
         public async Task<Customer> GetCustomerByRefreshTokenAsync(string token)
         {
             try
@@ -103,7 +116,7 @@ namespace DataAccessLayer
         {
             try
             {
-                bool existingAccount = (await GetCustomersAsync())
+                bool existingAccount = dbContext.Customers
                     .Any(a => a.Email.ToLower().Equals(customer.Email.ToLower()));
 
                 if (!existingAccount)
@@ -209,8 +222,6 @@ namespace DataAccessLayer
             }
         }
 
-
-
         public async Task<List<Address>> GetCustomerAddressByCustomerIdAsync(int customerId)
         {
             try
@@ -222,5 +233,6 @@ namespace DataAccessLayer
                 throw new Exception(ex.Message);
             }
         }
+
     }
 }
