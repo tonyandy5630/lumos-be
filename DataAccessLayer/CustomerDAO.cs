@@ -1,4 +1,4 @@
-﻿using BussinessObject;
+using BussinessObject;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -208,6 +208,7 @@ namespace DataAccessLayer
                 throw new Exception(ex.Message);
             }
         }
+
 
 
         public async Task<List<Address>> GetCustomerAddressByCustomerIdAsync(int customerId)

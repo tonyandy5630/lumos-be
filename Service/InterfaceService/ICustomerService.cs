@@ -1,4 +1,4 @@
-﻿using BussinessObject;
+using BussinessObject;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +10,7 @@ namespace Service.InterfaceService
 {
     public interface ICustomerService
     {
+
         Task<List<Customer>> GetCustomersAsync();
         Task<Customer> GetCustomerByEmailAsync(string email);
         Task<Customer> GetCustomerByRefreshTokenAsync(string token);
@@ -18,6 +19,7 @@ namespace Service.InterfaceService
         Task<bool> AddCustomerAsync(Customer customer);
         Task<bool> UpdateCustomerAsync(Customer customer);
         Task<bool> BanCustomerAsync(int id);
+
         Task<List<MedicalReport>> GetMedicalReportByCustomerIdAsync(int id);
         Task<List<Address>> GetCustomerAddressByCustomerIdAsync(int id);
     }
