@@ -33,7 +33,15 @@ namespace DataAccessLayer
 
         public async Task<PartnerService?> GetPartnerServiceByIdAsync(int serviceId)
         {
-            return await _context.PartnerServices.FirstOrDefaultAsync(s => s.ServiceId == serviceId);
+            try
+            {
+                return await _context.PartnerServices.FirstOrDefaultAsync(s => s.ServiceId == serviceId);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetPartnerServiceByIdAsync: {ex.Message}", ex);
+                throw new Exception(ex.Message);
+            }
         }
 
         public async Task<IEnumerable<Partner>> SearchPartnerByServiceOrPartnerNameAsync(string keyword)
@@ -47,7 +55,22 @@ namespace DataAccessLayer
         }
         public async Task<List<Partner>> GetAllPartnersAsync()
         {
-            return await _context.Partners.ToListAsync();
+            List<Partner> partners = new List<Partner>();
+            try
+            {
+                partners = await _context.Partners.ToListAsync();
+                if (partners == null || partners.Count == 0)
+                {
+                    Console.WriteLine("No partners was found!");
+                    return null;
+                }
+                return partners;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetAllPartnersAsync: {ex.Message}", ex);
+                throw new Exception(ex.Message);
+            }
         }
         public async Task<Partner> GetPartnerByIDAsync(int id)
         {
@@ -57,6 +80,7 @@ namespace DataAccessLayer
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"Error in GetPartnerByIDAsync: {ex.Message}", ex);
                 throw new Exception(ex.Message);
             }
         }
@@ -68,6 +92,7 @@ namespace DataAccessLayer
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"Error in GetPartnerByRefreshTokenAsync: {ex.Message}", ex);
                 throw new Exception(ex.Message);
             }
         }
@@ -79,6 +104,7 @@ namespace DataAccessLayer
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"Error in GetPartnerByCodeAsync: {ex.Message}", ex);
                 throw new Exception(ex.Message);
             }
         }
@@ -90,6 +116,7 @@ namespace DataAccessLayer
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"Error in GetPartnerByEmailAsync: {ex.Message}", ex);
                 throw new Exception(ex.Message);
             }
         }
@@ -104,6 +131,7 @@ namespace DataAccessLayer
                 {
                     _context.Partners.Add(partner);
                     await _context.SaveChangesAsync();
+                    Console.WriteLine("Add partner successfully!");
                     return true;
                 }
 
@@ -111,7 +139,8 @@ namespace DataAccessLayer
             }
             catch (Exception ex)
             {
-                throw new Exception($"Error in Add Partner: {ex.Message}", ex);
+                Console.WriteLine($"Error in AddPartnereAsync: {ex.Message}", ex);
+                throw new Exception(ex.Message);
             }
         }
 
@@ -128,17 +157,14 @@ namespace DataAccessLayer
                     existing.Status = partner.Status;
 
                     await _context.SaveChangesAsync();
+                    Console.WriteLine("Partner updated successfully!");
                     return true;
                 }
-                else
-                {
-                    Console.WriteLine("Partner not found for updating.");
-                    return false;
-                }
+                return false;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error in Update Partner: {ex.Message}", ex);
+                Console.WriteLine($"Error in UpdatePartnerAsync: {ex.Message}", ex);
                 return false;
             }
         }
@@ -158,11 +184,7 @@ namespace DataAccessLayer
                     Console.WriteLine("Partner status updated successfully!");
                     return true;
                 }
-                else
-                {
-                    Console.WriteLine("Partner does not exist!");
-                    return false;
-                }
+                return false;
             }
             catch (Exception ex)
             {

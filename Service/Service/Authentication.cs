@@ -2,9 +2,7 @@
 using Microsoft.IdentityModel.Tokens;
 using Service.InterfaceService;
 using System;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -21,155 +19,232 @@ namespace Service.Service
 
         public Authentication(IConfiguration configuration, IAdminService adminService, ICustomerService customerService, IPartnerService partnerService)
         {
-            _configuration = configuration;
-            _adminService = adminService;
-            _customerService = customerService;
-            _partnerService = partnerService;
+            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            _adminService = adminService ?? throw new ArgumentNullException(nameof(adminService));
+            _customerService = customerService ?? throw new ArgumentNullException(nameof(customerService));
+            _partnerService = partnerService ?? throw new ArgumentNullException(nameof(partnerService));
         }
+
         public async Task<(bool, string)> IsUserAuthenticatedAsync(string email, string password)
         {
-            string role = null;
-            bool authenticated = false;
-
-            var adminResponse = await _adminService.GetAdminByEmailAsync(email);
-            if (adminResponse != null && adminResponse.data != null && adminResponse.data.Password == password)
+            try
             {
-                authenticated = true;
-                role = "Admin";
-            }
+                string role = null;
+                bool authenticated = false;
 
-            if (!authenticated)
-            {
-                var partnerResponse = await _partnerService.GetPartnerByEmailAsync(email);
-                if (partnerResponse != null && partnerResponse.data != null && partnerResponse.data.Password == password)
+                var adminResponse = await _adminService.GetAdminByEmailAsync(email);
+                if (adminResponse != null && adminResponse.Password == password)
                 {
                     authenticated = true;
-                    role = "Partner";
+                    role = "Admin";
                 }
-            }
 
-            if (!authenticated)
-            {
-                var customerResponse = await _customerService.GetCustomerByEmailAsync(email);
-                if (customerResponse != null && customerResponse.data != null && customerResponse.data.Password == password)
+                if (!authenticated)
                 {
-                    authenticated = true;
-                    role = "Customer";
+                    var partnerResponse = await _partnerService.GetPartnerByEmailAsync(email);
+                    if (partnerResponse != null && partnerResponse.Password == password)
+                    {
+                        authenticated = true;
+                        role = "Partner";
+                    }
                 }
-            }
 
-            return (authenticated, role);
+                if (!authenticated)
+                {
+                    var customerResponse = await _customerService.GetCustomerByEmailAsync(email);
+                    if (customerResponse != null && customerResponse.Password == password)
+                    {
+                        authenticated = true;
+                        role = "Customer";
+                    }
+                }
+
+                if (authenticated && role != "Admin")
+                {
+                    await UpdateLastLoginTime(email);
+                }
+
+                return (authenticated, role);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Exception in IsUserAuthenticatedAsync: {ex.Message}");
+                return (false, null);
+            }
         }
 
         public async Task<(string, DateTime, DateTime, string)> GenerateToken(string email, string role)
         {
-            var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
-            var signingCredentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
-            var refreshTokenSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
-            var refreshTokenSigningCredentials = new SigningCredentials(refreshTokenSigningKey, SecurityAlgorithms.HmacSha256);
-            var accessTokenExpiration = DateTime.UtcNow.AddHours(3);
-            var refreshTokenExpiration = DateTime.UtcNow.AddHours(24);
-
-            var claims = new[]
+            try
             {
-                new Claim(ClaimTypes.Email, email),
-                new Claim(ClaimTypes.Role, role),
-            };
+                var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
+                var signingCredentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
+                var refreshTokenSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
+                var refreshTokenSigningCredentials = new SigningCredentials(refreshTokenSigningKey, SecurityAlgorithms.HmacSha256);
+                var accessTokenExpiration = DateTime.UtcNow.AddHours(3);
+                var refreshTokenExpiration = DateTime.UtcNow.AddHours(24);
 
-            var accessTokenOptions = new JwtSecurityToken(
-                claims: claims,
-                expires: accessTokenExpiration,
-                signingCredentials: signingCredentials
-            );
+                var claims = new[]
+                {
+                    new Claim(ClaimTypes.Email, email),
+                    new Claim(ClaimTypes.Role, role),
+                };
 
-            var refreshTokenOptions = new JwtSecurityToken(
-                claims: claims,
-                expires: refreshTokenExpiration,
-                signingCredentials: refreshTokenSigningCredentials
-            );
+                var accessTokenOptions = new JwtSecurityToken(
+                    claims: claims,
+                    expires: accessTokenExpiration,
+                    signingCredentials: signingCredentials
+                );
 
-            var accessToken = new JwtSecurityTokenHandler().WriteToken(accessTokenOptions);
-            var refreshTokenString = new JwtSecurityTokenHandler().WriteToken(refreshTokenOptions);
+                var refreshTokenOptions = new JwtSecurityToken(
+                    claims: claims,
+                    expires: refreshTokenExpiration,
+                    signingCredentials: refreshTokenSigningCredentials
+                );
 
-            await SaveRefreshTokenToDatabase(email, refreshTokenString);
-            var accessTokenexpiration = accessTokenOptions.ValidTo;
-            var refreshTokenexpires = refreshTokenOptions.ValidTo;
-            return (accessToken, accessTokenexpiration, refreshTokenexpires, refreshTokenString);
+                var accessToken = new JwtSecurityTokenHandler().WriteToken(accessTokenOptions);
+                var refreshTokenString = new JwtSecurityTokenHandler().WriteToken(refreshTokenOptions);
+
+                await SaveRefreshTokenToDatabase(email, refreshTokenString);
+                var accessTokenexpiration = accessTokenOptions.ValidTo;
+                var refreshTokenexpires = refreshTokenOptions.ValidTo;
+                return (accessToken, accessTokenexpiration, refreshTokenexpires, refreshTokenString);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Exception in GenerateToken: {ex.Message}");
+                throw;
+            }
         }
 
         public async Task SaveRefreshTokenToDatabase(string email, string refreshToken)
         {
-            var adminResponse = await _adminService.GetAdminByEmailAsync(email);
-            var customerResponse = await _customerService.GetCustomerByEmailAsync(email);
-            var partnerResponse = await _partnerService.GetPartnerByEmailAsync(email);
-
-            switch (adminResponse?.data, customerResponse?.data, partnerResponse?.data)
+            try
             {
-                case (BussinessObject.Admin admin, _, _):
-                    admin.RefreshToken = refreshToken;
-                    await _adminService.UpdateAdminAsync(admin);
-                    break;
+                var adminResponse = await _adminService.GetAdminByEmailAsync(email);
+                var customerResponse = await _customerService.GetCustomerByEmailAsync(email);
+                var partnerResponse = await _partnerService.GetPartnerByEmailAsync(email);
 
-                case (_, BussinessObject.Customer customer, _):
-                    customer.RefreshToken = refreshToken;
-                    await _customerService.UpdateCustomerAsync(customer);
-                    break;
+                switch (adminResponse, customerResponse, partnerResponse)
+                {
+                    case (BussinessObject.Admin admin, _, _):
+                        admin.RefreshToken = refreshToken;
+                        await _adminService.UpdateAdminAsync(admin);
+                        break;
 
-                case (_, _, BussinessObject.Partner partner):
-                    partner.RefreshToken = refreshToken;
-                    await _partnerService.UpdatePartnerAsync(partner);
-                    break;
+                    case (_, BussinessObject.Customer customer, _):
+                        customer.RefreshToken = refreshToken;
+                        await _customerService.UpdateCustomerAsync(customer);
+                        break;
 
-                default:
-                    break;
+                    case (_, _, BussinessObject.Partner partner):
+                        partner.RefreshToken = refreshToken;
+                        await _partnerService.UpdatePartnerAsync(partner);
+                        break;
+
+                    default:
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Exception in SaveRefreshTokenToDatabase: {ex.Message}");
+                throw;
             }
         }
 
         public async Task<(bool, string)> ValidateRefreshToken(string refreshToken)
         {
-            var adminResponse = await _adminService.GetAdminByRefreshTokenAsync(refreshToken);
-            var customerResponse = await _customerService.GetCustomerByRefreshTokenAsync(refreshToken);
-            var partnerResponse = await _partnerService.GetPartnerByRefreshTokenAsync(refreshToken);
+            try
+            {
+                var adminResponse = await _adminService.GetAdminByRefreshTokenAsync(refreshToken);
+                var customerResponse = await _customerService.GetCustomerByRefreshTokenAsync(refreshToken);
+                var partnerResponse = await _partnerService.GetPartnerByRefreshTokenAsync(refreshToken);
 
-            if (adminResponse?.data != null)
-            {
-                return (true, adminResponse.data.Email);
+                if (adminResponse != null)
+                {
+                    return (true, adminResponse.Email);
+                }
+                else if (customerResponse != null)
+                {
+                    return (true, customerResponse.Email);
+                }
+                else if (partnerResponse != null)
+                {
+                    return (true, partnerResponse.Email);
+                }
+                else
+                {
+                    return (false, null);
+                }
             }
-            else if (customerResponse?.data != null)
+            catch (Exception ex)
             {
-                return (true, customerResponse.data.Email);
-            }
-            else if (partnerResponse?.data != null)
-            {
-                return (true, partnerResponse.data.Email);
-            }
-            else
-            {
+                Console.WriteLine($"Exception in ValidateRefreshToken: {ex.Message}");
                 return (false, null);
             }
         }
 
         public async Task<(bool, string)> CheckRole(string email)
         {
-            var adminResponse = await _adminService.GetAdminByEmailAsync(email);
-            var customerResponse = await _customerService.GetCustomerByEmailAsync(email);
-            var partnerResponse = await _partnerService.GetPartnerByEmailAsync(email);
+            try
+            {
+                var adminResponse = await _adminService.GetAdminByEmailAsync(email);
+                var customerResponse = await _customerService.GetCustomerByEmailAsync(email);
+                var partnerResponse = await _partnerService.GetPartnerByEmailAsync(email);
 
-            if (adminResponse?.data != null)
-            {
-                return (true, "Admin");
+                if (adminResponse != null)
+                {
+                    return (true, "Admin");
+                }
+                else if (customerResponse != null)
+                {
+                    return (true, "Customer");
+                }
+                else if (partnerResponse != null)
+                {
+                    return (true, "Partner");
+                }
+                else
+                {
+                    return (false, null);
+                }
             }
-            else if (customerResponse?.data != null)
+            catch (Exception ex)
             {
-                return (true, "Customer");
-            }
-            else if (partnerResponse?.data != null)
-            {
-                return (true, "Partner");
-            }
-            else
-            {
+                Console.WriteLine($"Exception in CheckRole: {ex.Message}");
                 return (false, null);
+            }
+        }
+
+        public async Task UpdateLastLoginTime(string email)
+        {
+            try
+            {
+                var customerResponse = await _customerService.GetCustomerByEmailAsync(email);
+                var partnerResponse = await _partnerService.GetPartnerByEmailAsync(email);
+
+                DateTime now = DateTime.UtcNow;
+
+                switch (customerResponse, partnerResponse)
+                {
+                    case (BussinessObject.Customer customer, _):
+                        customer.LastLogin = now;
+                        await _customerService.UpdateCustomerAsync(customer);
+                        break;
+
+                    case (_, BussinessObject.Partner partner):
+                        partner.LastLogin = now;
+                        await _partnerService.UpdatePartnerAsync(partner);
+                        break;
+
+                    default:
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Exception in UpdateLastLoginTime: {ex.Message}");
             }
         }
     }

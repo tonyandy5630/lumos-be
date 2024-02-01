@@ -10,13 +10,13 @@ namespace Service.InterfaceService
 {
     public interface IAdminService
     {
-        Task<ApiResponse<List<Admin>>> GetAdminsAsync();
-        Task<ApiResponse<Admin>> GetAdminByEmailAsync(string email);
-        Task<ApiResponse<Admin>> GetAdminByRefreshTokenAsync(string token);
-        Task<ApiResponse<Admin>> GetAdminByIDAsync(int id);
-        Task<ApiResponse<Admin>> GetAdminByCodeAsync(string code);
-        Task<ApiResponse<bool>> AddAdminAsync(Admin admin);
-        Task<ApiResponse<bool>> UpdateAdminAsync(Admin admin);
-        Task<ApiResponse<bool>> BanAdminAsync(int id);
+        Task<List<Admin>> GetAdminsAsync();
+        Task<Admin> GetAdminByEmailAsync(string email);
+        Task<Admin> GetAdminByRefreshTokenAsync(string token);
+        Task<Admin> GetAdminByIDAsync(int id);
+        Task<Admin> GetAdminByCodeAsync(string code);
+        Task<bool> AddAdminAsync(Admin admin);
+        Task<bool> UpdateAdminAsync(Admin admin);
+        Task<bool> BanAdminAsync(int id);
     }
 }
