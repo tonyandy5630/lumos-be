@@ -240,7 +240,7 @@ namespace Service.Service
             return response;
         }
 
-        public async Task<IEnumerable<SearchPartnerDTO>> SearchPartnerByPartnerOrServiceName(string keyword)
+        public async Task<IEnumerable<SearchPartnerDTO>> SearchPartnerByPartnerOrServiceNameAsync(string keyword)
         {
             try
             {

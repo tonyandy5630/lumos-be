@@ -20,6 +20,7 @@ namespace Service.InterfaceService
         Task<ApiResponse<bool>> AddPartnerAsync(Partner partner);
         Task<ApiResponse<bool>> UpdatePartnerAsync(Partner partner);
         Task<ApiResponse<bool>> BanPartnerAsync(int partnerId);
-        Task<IEnumerable<SearchPartnerDTO>> SearchPartnerByPartnerOrServiceName(string keyword);
+        Task<IEnumerable<SearchPartnerDTO>> SearchPartnerByPartnerOrServiceNameAsync(string keyword);
+        Task<PartnerService> AddPartnerServiceAsync(Partner partner);
     }
 }
