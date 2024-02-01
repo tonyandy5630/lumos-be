@@ -15,6 +15,7 @@ namespace BussinessObject
         }
 
         public int ServiceId { get; set; }
+        [JsonIgnore]
         public int? PartnerId { get; set; }
         public string? Name { get; set; }
         public string? Code { get; set; }
@@ -31,6 +32,7 @@ namespace BussinessObject
         [JsonIgnore]
         public virtual ICollection<ServiceBooking> ServiceBookings { get; set; }
 
+        [JsonIgnore]
         public virtual ICollection<ServiceDetail> ServiceDetails { get; set; }
         
 
