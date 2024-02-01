@@ -48,28 +48,6 @@ namespace Service.Service
                 return null;
             }
         }
-        public async Task<ApiResponse<bool>> AddPartnerAsync(Partner partner)
-        {
-            ApiResponse<bool> response = new ApiResponse<bool>();
-            try
-            {
-                PartnerService? service = await _unitOfWork.PartnerRepo.GetPartnerServiceDetailByIdAsync(serviceId);
-                if (service == null)
-                    return null;
-
-                IEnumerable<ServiceCategory> serviceCategories = await _unitOfWork.ServiceCategoryRepo.GetCategoriesByServiceIdAsync(serviceId);
-
-                PartnerServiceDTO serviceDTO = _mapper.Map<PartnerServiceDTO>(service);
-                IEnumerable<ServiceCategoryDTO> serviceCategoryDTOs = _mapper.Map<IEnumerable<ServiceCategoryDTO>>(serviceCategories);
-                serviceDTO.Categories = serviceCategoryDTOs;
-                return serviceDTO;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(MessagesResponse.Error.OperationFailed);
-                throw new Exception(ex.Message);
-            }
-        }
 
         public async Task<bool> AddPartnerAsync(Partner partner)
         {
@@ -105,7 +83,6 @@ namespace Service.Service
                 if (partner == null)
                 {
                     Console.WriteLine(MessagesResponse.Error.NotFound);
-                    throw new Exception();
                 }
                 return partner;
             }
@@ -124,7 +101,6 @@ namespace Service.Service
                 if (partner == null)
                 {
                     Console.WriteLine(MessagesResponse.Error.NotFound);
-                    throw new Exception();
                 }
                 return partner;
             }
@@ -143,7 +119,6 @@ namespace Service.Service
                 if (partner == null)
                 {
                     Console.WriteLine(MessagesResponse.Error.NotFound);
-                    throw new Exception();
                 }
                 return partner;
             }
@@ -162,7 +137,6 @@ namespace Service.Service
                 if (partners == null || partners.Count == 0)
                 {
                     Console.WriteLine(MessagesResponse.Error.NotFound);
-                    throw new Exception();
                 }
                 return partners;
             }
@@ -194,7 +168,6 @@ namespace Service.Service
                 if (partner == null)
                 {
                     Console.WriteLine(MessagesResponse.Error.NotFound);
-                    throw new Exception();
                 }
                 return partner;
             }

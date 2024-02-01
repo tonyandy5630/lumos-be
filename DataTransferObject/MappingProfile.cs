@@ -13,7 +13,7 @@ namespace DataTransferObject
                 .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
                 .ForMember(dest => dest.Password, opt => opt.MapFrom(src => src.Password));
 
-            CreateMap<Customer, CustomerServiceDTO>()
+            CreateMap<CustomerServiceDTO, Customer>()
                 .ForMember(dto => dto.Code, opt => opt.MapFrom(src => src.Code))
                 .ForMember(dto => dto.Email, opt => opt.MapFrom(src => src.Email))
                 .ForMember(dto => dto.Fullname, opt => opt.MapFrom(src => src.Fullname))

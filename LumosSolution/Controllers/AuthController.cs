@@ -119,6 +119,11 @@ namespace LumosSolution.Controllers
                         response.message = MessagesResponse.Success.Completed;
                         response.StatusCode = ApiStatusCode.OK;
                     }
+                    else
+                    {
+                        response.message = MessagesResponse.Error.RegisterFailed;
+                        response.StatusCode = ApiStatusCode.BadRequest;
+                    }
                 }
 
                 return Ok(response);
@@ -153,22 +158,24 @@ namespace LumosSolution.Controllers
                     response.StatusCode = ApiStatusCode.Unauthorized;
                     return Unauthorized(response);
                 }
-
-                var (token, accessTokenTime, refreshTokentime, refreshToken) = await _authentication.GenerateToken(userEmail, userRole);
-
-                var accessTokenRemainingTime = accessTokenTime - DateTime.UtcNow;
-                var refreshTokenRemainingTime = refreshTokentime - DateTime.UtcNow;
-
-                response.message = MessagesResponse.Success.Completed;
-                response.StatusCode = ApiStatusCode.OK;
-                response.data = new
+                else
                 {
-                    Token = token,
-                    AccessTokenExpiration = accessTokenRemainingTime,
-                    RefreshToken = refreshToken,
-                    RefreshTokenExpiration = refreshTokenRemainingTime
-                };
+                    await _authentication.UpdateLastLoginTime(userEmail);
+                    var (token, accessTokenTime, refreshTokentime, refreshToken) = await _authentication.GenerateToken(userEmail, userRole);
 
+                    var accessTokenRemainingTime = accessTokenTime - DateTime.UtcNow;
+                    var refreshTokenRemainingTime = refreshTokentime - DateTime.UtcNow;
+                    
+                    response.message = MessagesResponse.Success.Completed;
+                    response.StatusCode = ApiStatusCode.OK;
+                    response.data = new
+                    {
+                        Token = token,
+                        AccessTokenExpiration = accessTokenRemainingTime,
+                        RefreshToken = refreshToken,
+                        RefreshTokenExpiration = refreshTokenRemainingTime
+                    };
+                }
                 return Ok(response);
             }
             catch (Exception ex)
@@ -189,6 +196,7 @@ namespace LumosSolution.Controllers
 
                 if (authenticated)
                 {
+                    await _authentication.UpdateLastLoginTime(model.Email);
                     var (token, accessTokenTime, refreshTokentime, refreshToken) = await _authentication.GenerateToken(model.Email, role);
 
                     var accessTokenRemainingTime = accessTokenTime - DateTime.UtcNow;
