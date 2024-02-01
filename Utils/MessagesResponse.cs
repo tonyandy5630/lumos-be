@@ -24,6 +24,8 @@ namespace Utils
             public const string OperationFailed = "Operation failed. Please try again.";
             public const string Unauthorized = "Unauthorized access.";
             public const string DuplicateResource = "Resource already exists.";
+            public const string LoginFailed = "Login Failed!";
+            public const string RegisterFailed = "Register Failed!";
 
         }
 
@@ -31,7 +33,6 @@ namespace Utils
         {
             public const string FieldIsRequired = "The {0} field is required.";
             public const string InvalidEmailFormat = "Invalid email format.";
-
         }
     }
 }
