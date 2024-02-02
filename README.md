@@ -1,12 +1,15 @@
 # <center>Lumos - Home Healthcare Platform for Maternal and Infant Care</center>
+<center>
+<div style="text-align:center; background-color: #ffffff;">
+  <img src="https://github.com/tonyandy5630/lumos-be/blob/main/LumosLogo/Lumos.png" alt="Lumos Logo" style="display:block; margin:auto;">
+</div>
+</center>center>
 
-![Lumos Logo](https://github.com/tonyandy5630/lumos-be/tree/main/LumosLogo/Lumos.png)
-
-Lumos is an academic project developed within the framework of courses PRN231 - Building Cross-Platform Back-End Application With .NET and EXE201 - Experiential Entrepreneurship 2. This project is part of the 8th semester curriculum for the Software Engineering program with a specialization in Cross-Platform Programming with .NET at FPT University.
+<p style="text-align:justify;">Lumos is an academic project developed within the framework of courses PRN231 - Building Cross-Platform Back-End Application With .NET and EXE201 - Experiential Entrepreneurship 2. This project is part of the 8th semester curriculum for the Software Engineering program with a specialization in Cross-Platform Programming with .NET at FPT University.</p>
 
 ## Project Overview
 
-Lumos is a specialized home healthcare platform designed to provide comprehensive services for mothers and infants postpartum. The project focuses on building a cross-platform back-end application using C# .NET, alongside a Flutter-based mobile app for customers and a Nest.js web system for system administrators and healthcare partners.
+<p style="text-align:justify;">Lumos is a specialized home healthcare platform designed to provide comprehensive services for mothers and infants postpartum. The project focuses on building a cross-platform back-end application using C# .NET, alongside a Flutter-based mobile app for customers and a Nest.js web system for system administrators and healthcare partners.</p>
 
 ## Academic Objectives
 
