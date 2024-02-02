@@ -73,7 +73,7 @@ namespace LumosSolution.Controllers
             }
         }
 
-        [HttpGet("/{id}")]
+        [HttpGet("{id}")]
         [Authorize(Roles = "Admin,Customer,Partner")]
         public async Task<ActionResult<ApiResponse<Partner?>>> GetPartnerById(int id)
         {
