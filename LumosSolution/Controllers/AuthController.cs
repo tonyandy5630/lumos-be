@@ -86,7 +86,7 @@ namespace LumosSolution.Controllers
 
         }
 
-        [HttpPost("register/google")]
+        [HttpPost("google/register")]
         public async Task<IActionResult> RegisterGoogle([FromBody] string credential)
         {
             ApiResponse<object> response = new ApiResponse<object>();
@@ -136,7 +136,7 @@ namespace LumosSolution.Controllers
             }
         }
 
-        [HttpPost("loginwithgoogle")]
+        [HttpPost("google/login")]
         public async Task<IActionResult> LoginWithGoogle([FromBody] string credential)
         {
             ApiResponse<object>? response = new ApiResponse<object>();

@@ -31,7 +31,7 @@ namespace Utils
 
             codePrefix += roleCodePrefix + year.Substring(2, 2);
 
-            return $"{codePrefix}{Guid.NewGuid().ToString("N").Substring(0, 5)}";
+            return $"{codePrefix}{Guid.NewGuid().ToString("N").Substring(0, 5).ToUpper()}";
         }
 
         public static string GenerateTableCode(string tableName)
@@ -69,7 +69,7 @@ namespace Utils
 
             codePrefix += tableCodePrefix + year.Substring(2, 2);
 
-            return $"{codePrefix}{Guid.NewGuid().ToString("N").Substring(0, 5)}";
+            return $"{codePrefix}{Guid.NewGuid().ToString("N").Substring(0, 5).ToUpper()}";
         }
     }
 }
