@@ -1,4 +1,4 @@
-# Lumos - Home Healthcare Platform for Maternal and Infant Care
+# <center>Lumos - Home Healthcare Platform for Maternal and Infant Care</center>
 
 ![Lumos Logo](https://github.com/tonyandy5630/lumos-be/tree/main/LumosLogo/Lumos.png)
 
@@ -10,15 +10,15 @@ Lumos is a specialized home healthcare platform designed to provide comprehensiv
 
 ## Academic Objectives
 
-- PRN231: Building Cross-Platform Back-End Application With .NET
+* PRN231: Building Cross-Platform Back-End Application With .NET
 
-* Understand and apply principles of building cross-platform back-end applications.
-* Gain proficiency in using C# .NET for developing robust and scalable APIs.
+  - Understand and apply principles of building cross-platform back-end applications.
+  - Gain proficiency in using C# .NET for developing robust and scalable APIs.
 
 * EXE201: Experiential Entrepreneurship 2
 
-- Apply entrepreneurial principles in the development and management of a real-world project.
-- Gain hands-on experience in building and maintaining a healthcare platform.
+  - Apply entrepreneurial principles in the development and management of a real-world project.
+  - Gain hands-on experience in building and maintaining a healthcare platform.
 
 ## Backend API (C# .NET)
 
