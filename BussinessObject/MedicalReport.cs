@@ -16,7 +16,7 @@ namespace BussinessObject
         public string? Fullname { get; set; }
         public string? Phone { get; set; }
         public DateTime? Dob { get; set; }
-        public bool? Gender { get; set; }
+        public bool? Gender { get; set; } //true = nam
         public int? Pronounce { get; set; }
         public int? BloodType { get; set; }
         public string? Note { get; set; }

@@ -1,4 +1,4 @@
-﻿using BussinessObject;
+using BussinessObject;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Repository.Interface;
@@ -35,6 +35,9 @@ namespace Repository
             SystemConfigurationRepo = new SystemConfigurationRepo(context);
             ServiceDetailRepo = new ServiceDetailRepo(context);
             PartnerServiceRepo = new PartnerServiceRepo(context);
+            MedicalReportRepo = new MedicalReportRepo(context);
+            PartnerTypeRepo = new PartnerTypeRepo(context);
+
         }
         public LumosDBContext Context { get { return _Context; } }
         public IAddressRepo AddressRepo { get; }
@@ -50,14 +53,16 @@ namespace Repository
         public IServiceCategoryRepo ServiceCategoryRepo { get; }
         public ISystemConfigurationRepo SystemConfigurationRepo { get; }
         public IPartnerServiceRepo PartnerServiceRepo { get; }
-
         public IServiceDetailRepo ServiceDetailRepo { get; }
-
+        public IMedicalReportRepo MedicalReportRepo { get; }
+        public IPartnerTypeRepo PartnerTypeRepo { get; }
+        
         public Task AttachDbContext(LumosDBContext dbContext)
         {
             _Context = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
             return Task.CompletedTask;
         }
+
 
         public Task CommitTransactionAsync(IDbContextTransaction commit)
         {

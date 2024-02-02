@@ -11,7 +11,6 @@ namespace Repository.Interface.IUnitOfWork
 {
      public interface IUnitOfWork
     {
-
         IAddressRepo AddressRepo { get; }
         IAdminRepo AdminRepo { get; }
         IBookingRepo BookingRepo { get; }
@@ -26,6 +25,9 @@ namespace Repository.Interface.IUnitOfWork
         ISystemConfigurationRepo SystemConfigurationRepo { get; }
         IServiceDetailRepo ServiceDetailRepo { get; }
         IPartnerServiceRepo PartnerServiceRepo { get; }
+        IMedicalReportRepo MedicalReportRepo { get; }
+        IPartnerTypeRepo PartnerTypeRepo { get; }
+
         Task<int> SaveChangesAsync();
         Task<IDbContextTransaction> StartTransactionAsync(string name);
         Task CommitTransactionAsync(IDbContextTransaction commit);
@@ -34,8 +36,6 @@ namespace Repository.Interface.IUnitOfWork
         public Task AttachDbContext(LumosDBContext dbContext);
 
         public Task DetachDbContext();
-
-
 
     }
 }

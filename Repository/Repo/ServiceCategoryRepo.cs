@@ -1,4 +1,4 @@
-﻿using BussinessObject;
+using BussinessObject;
 using DataAccessLayer;
 using Repository.Interface;
 using System;
@@ -9,15 +9,10 @@ using System.Threading.Tasks;
 
 namespace Repository.Repo
 {
-    public class ServiceCategoryRepo:IServiceCategoryRepo
+    public class ServiceCategoryRepo : IServiceCategoryRepo
     {
-        private readonly ServiceCategoryDAO serviceCategoryDAO;
-        public ServiceCategoryRepo(LumosDBContext context) {
-            serviceCategoryDAO = new ServiceCategoryDAO(context);
-        }
-
-        public Task<IEnumerable<ServiceCategory>> GetCategoriesByServiceIdAsync(int serviceId) => serviceCategoryDAO.GetCategoriesOfServiceByServiceIdAsync(serviceId);
-
-        public Task<ServiceCategory?> GetCategoryByIdAsync(int cateId) =>  serviceCategoryDAO.GetCategoryByIdAsync(cateId);
+        public ServiceCategoryRepo(LumosDBContext context) { }
+        public async Task<IEnumerable<ServiceCategory>> GetCategoriesByServiceIdAsync(int serviceId) => await ServiceCategoryDAO.Instance.GetCategoriesOfServiceByServiceIdAsync(serviceId);
+        public Task<List<ServiceCategory>> GetCategorysAsync(string? keyword) => ServiceCategoryDAO.Instance.GetCategorysAsync(keyword);
     }
 }

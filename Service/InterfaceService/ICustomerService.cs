@@ -1,4 +1,4 @@
-﻿using BussinessObject;
+using BussinessObject;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,13 +10,19 @@ namespace Service.InterfaceService
 {
     public interface ICustomerService
     {
-        Task<ApiResponse<List<Customer>>> GetCustomersAsync();
-        Task<ApiResponse<Customer>> GetCustomerByEmailAsync(string email);
-        Task<ApiResponse<Customer>> GetCustomerByRefreshTokenAsync(string token);
-        Task<ApiResponse<Customer>> GetCustomerByIDAsync(int id);
-        Task<ApiResponse<Customer>> GetCustomerByCodeAsync(string code);
-        Task<ApiResponse<bool>> AddCustomerAsync(Customer customer);
-        Task<ApiResponse<bool>> UpdateCustomerAsync(Customer customer);
-        Task<ApiResponse<bool>> BanCustomerAsync(int id);
+
+        Task<List<Customer>> GetCustomersAsync(string keyword);
+        Task<Customer> GetCustomerByEmailAsync(string email);
+        Task<Customer> GetCustomerByRefreshTokenAsync(string token);
+        Task<Customer> GetCustomerByIDAsync(int id);
+        Task<Customer> GetCustomerByCodeAsync(string code);
+        Task<bool> AddCustomerAsync(Customer customer);
+        Task<bool> UpdateCustomerAsync(Customer customer);
+        Task<bool> BanCustomerAsync(int id);
+        Task<List<MedicalReport>> GetMedicalReportByCustomerIdAsync(int id);
+        Task<List<Address>> GetCustomerAddressByCustomerIdAsync(int id);
+        Task<MedicalReport> AddMedicalReportAsyn(MedicalReport medicalReport);
+        Task<Address> AddCustomerAddressAsync(Address address);
+        Task<MedicalReport> GetMedicalReportByIdAsync(int id);
     }
 }

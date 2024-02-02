@@ -33,12 +33,20 @@ namespace DataAccessLayer
 
         public async Task<List<Admin>> GetAdminsAsync()
         {
+            List<Admin> admins = new List<Admin>(); 
             try
             {
-                return await dbContext.Admins.ToListAsync();
+                admins =  await dbContext.Admins.ToListAsync();
+                if(admins == null || admins.Count == 0)
+                {
+                    Console.WriteLine("No admins was found!");
+                    return null;
+                }
+                return admins;
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"Error in GetAdminsAsync: {ex.Message}", ex);
                 throw new Exception(ex.Message);
             }
         }
@@ -51,6 +59,7 @@ namespace DataAccessLayer
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"Error in GetAdminByEmailAsync: {ex.Message}", ex);
                 throw new Exception(ex.Message);
             }
         }
@@ -62,6 +71,7 @@ namespace DataAccessLayer
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"Error in GetAdminByRefreshTokenAsync: {ex.Message}", ex);
                 throw new Exception(ex.Message);
             }
         }
@@ -74,6 +84,7 @@ namespace DataAccessLayer
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"Error in GetAdminByIDAsync: {ex.Message}", ex);
                 throw new Exception(ex.Message);
             }
         }
@@ -86,6 +97,7 @@ namespace DataAccessLayer
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"Error in GetAdminByCodeAsync: {ex.Message}", ex);
                 throw new Exception(ex.Message);
             }
         }
@@ -103,14 +115,17 @@ namespace DataAccessLayer
                     admin.Role = 1;
                     dbContext.Admins.Add(admin);
                     await dbContext.SaveChangesAsync();
+                    Console.WriteLine("Add admin successfully!");
                     return true;
                 }
 
                 return false;
+
             }
             catch (Exception ex)
             {
-                throw new Exception($"Error in Add Admin: {ex.Message}", ex);
+                Console.WriteLine($"Error in AddAdminAsync: {ex.Message}", ex);
+                throw new Exception(ex.Message);
             }
         }
 
@@ -127,17 +142,15 @@ namespace DataAccessLayer
                     existing.Status = admin.Status;
 
                     await dbContext.SaveChangesAsync();
+                    Console.WriteLine("Admin updated successfully!");
                     return true;
                 }
-                else
-                {
-                    Console.WriteLine("Admin not found for updating.");
-                    return false;
-                }
+                return false;
+
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error in Update Admin: {ex.Message}", ex);
+                Console.WriteLine($"Error in UpdateAdminAsync: {ex.Message}", ex);
                 return false;
             }
         }
@@ -157,15 +170,11 @@ namespace DataAccessLayer
                     Console.WriteLine("Admin status updated successfully!");
                     return true;
                 }
-                else
-                {
-                    Console.WriteLine("Account does not exist!");
-                    return false;
-                }
+                return false;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error in BanAdmin: {ex.Message}");
+                Console.WriteLine($"Error in BanAdminAsync: {ex.Message}");
                 return false;
             }
         }

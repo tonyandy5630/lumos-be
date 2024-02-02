@@ -1,6 +1,8 @@
-﻿using BussinessObject;
+using BussinessObject;
+using Microsoft.Extensions.Logging;
 using Repository.Interface.IUnitOfWork;
 using Service.InterfaceService;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Utils;
@@ -10,201 +12,213 @@ namespace Service.Service
     public class CustomerService : ICustomerService
     {
         private readonly IUnitOfWork _unitOfWork;
+
         public CustomerService(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<ApiResponse<bool>> AddCustomerAsync(Customer customer)
+        public async Task<bool> AddCustomerAsync(Customer customer)
         {
-            ApiResponse<bool> response = new ApiResponse<bool>();
             try
             {
-                bool result = await _unitOfWork.CustomerRepo.AddCustomerAsync(customer);
-                response.data = result;
-                response.message = result ? MessagesResponse.Success.Created : MessagesResponse.Error.OperationFailed;
-                response.StatusCode = result ? 201 : 400;
+                return await _unitOfWork.CustomerRepo.AddCustomerAsync(customer);
             }
-            catch
+            catch (Exception ex)
             {
-                response.message = MessagesResponse.Error.OperationFailed;
-                response.StatusCode = 500;
+                throw new Exception(ex.Message);
             }
-
-            return response;
         }
 
-        public async Task<ApiResponse<bool>> BanCustomerAsync(int id)
+        public async Task<bool> BanCustomerAsync(int id)
         {
-            ApiResponse<bool> response = new ApiResponse<bool>();
             try
             {
-                bool result = await _unitOfWork.CustomerRepo.BanCustomerAsync(id);
-                response.data = result;
-                response.message = result ? MessagesResponse.Success.Updated : MessagesResponse.Error.OperationFailed;
-                response.StatusCode = result ? 200 : 400;
+                return await _unitOfWork.CustomerRepo.BanCustomerAsync(id);
             }
-            catch
+            catch (Exception ex)
             {
-                response.message = MessagesResponse.Error.OperationFailed;
-                response.StatusCode = 500;
+                throw new Exception(ex.Message);
             }
-
-            return response;
         }
 
-        public async Task<ApiResponse<Customer>> GetCustomerByCodeAsync(string code)
+        public async Task<Customer> GetCustomerByCodeAsync(string code)
         {
-            ApiResponse<Customer> response = new ApiResponse<Customer>();
             try
             {
-                Customer customer = await _unitOfWork.CustomerRepo.GetCustomerByCodeAsync(code);
-                if (customer == null)
+                return await _unitOfWork.CustomerRepo.GetCustomerByCodeAsync(code);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<Customer> GetCustomerByEmailAsync(string email)
+        {
+            try
+            {
+                return await _unitOfWork.CustomerRepo.GetCustomerByEmailAsync(email);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<Customer> GetCustomerByIDAsync(int id)
+        {
+            try
+            {
+                return await _unitOfWork.CustomerRepo.GetCustomerByIDAsync(id);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<Customer> GetCustomerByRefreshTokenAsync(string token)
+        {
+            try
+            {
+                return await _unitOfWork.CustomerRepo.GetCustomerByRefreshTokenAsync(token);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<List<Customer>> GetCustomersAsync(string keyword)
+        {
+            try
+            {
+                return await _unitOfWork.CustomerRepo.GetCustomersAsync(keyword);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<List<MedicalReport>> GetMedicalReportByCustomerIdAsync(int id)
+        {
+            List<MedicalReport> medReport = new List<MedicalReport>();
+            try
+            {
+                medReport = await _unitOfWork.MedicalReportRepo.GetMedicalReportByCustomerIdAsync(id);
+
+                if(medReport == null || medReport.Count == 0)
                 {
-                    response.message = MessagesResponse.Error.NotFound;
-                    response.StatusCode = 404;
+                    Console.WriteLine($"No medical report found for customer with Id {id}");
+                } else
+                {
+                    Console.WriteLine($"Found {medReport.Count} medical report for customer with Id {id}");
+                }
+
+                return medReport;
+            }
+            catch (Exception ex) 
+            {
+                Console.WriteLine($"Error in GetMedicalReportByCustomerIdAsync: {ex.Message}", ex);
+                throw;
+            }
+        }
+
+        public async Task<bool> UpdateCustomerAsync(Customer customer)
+        {
+            try
+            {
+                return await _unitOfWork.CustomerRepo.UpdateCustomerAsync(customer);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<List<Address>> GetCustomerAddressByCustomerIdAsync(int id)
+        {
+            List<Address> addresses;
+
+            try
+            {
+                addresses = await _unitOfWork.CustomerRepo.GetCustomersAddressByCustomerIdAsync(id);
+
+                if (addresses == null || addresses.Count == 0)
+                {
+                    Console.WriteLine($"No addresses found for customer with ID {id}");
+                } else
+                {
+                    Console.WriteLine($"Found {addresses.Count} addresses for customer with ID {id}");
+                }
+
+                return addresses;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetCustomersAddressByCustomerIdAsync: {ex.Message}", ex);
+                throw;
+            }
+        }
+
+        public Task<MedicalReport> AddMedicalReportAsyn(MedicalReport medicalReport)
+        {
+            try
+            {
+                return _unitOfWork.MedicalReportRepo.AddMedicalReportAsyn(medicalReport);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+        
+        public async Task<Address> AddCustomerAddressAsync(Address address) 
+        {
+            try
+            {
+                Address addedAddress = await _unitOfWork.CustomerRepo.AddCustomerAddressAsync(address);
+                if (addedAddress != null)
+                {
+                       Console.WriteLine("Address added successfully!");
+                } else
+                {
+                    Console.WriteLine("Failed to add address!");    
+                }
+
+                return addedAddress;
+            } catch (Exception ex)
+            {
+                Console.WriteLine($"Error in AddCustomerAddressAsync: {ex.Message}", ex);
+                throw;
+            }
+        }
+
+        public async Task<MedicalReport> GetMedicalReportByIdAsync(int id)
+        {
+
+            try
+            {
+                MedicalReport med = await _unitOfWork.MedicalReportRepo.GetMedicalReportByIdAsync(id);
+
+                if (med == null)
+                {
+                    Console.WriteLine($"No medical report found with ID {id}");
                 }
                 else
                 {
-                    response.data = customer;
-                    response.message = MessagesResponse.Success.Completed;
-                    response.StatusCode = 200;
+                    Console.WriteLine($"Found medical report with ID {id}");
                 }
-            }
-            catch
-            {
-                response.message = MessagesResponse.Error.OperationFailed;
-                response.StatusCode = 500;
-            }
 
-            return response;
-        }
-
-        public async Task<ApiResponse<Customer>> GetCustomerByEmailAsync(string email)
-        {
-            ApiResponse<Customer> response = new ApiResponse<Customer>();
-            try
-            {
-                Customer customer = await _unitOfWork.CustomerRepo.GetCustomerByEmailAsync(email);
-                if (customer == null)
-                {
-                    response.message = MessagesResponse.Error.NotFound;
-                    response.StatusCode = 404;
-                }
-                else
-                {
-                    response.data = customer;
-                    response.message = MessagesResponse.Success.Completed;
-                    response.StatusCode = 200;
-                }
+                return med;
             }
-            catch
+            catch (Exception ex)
             {
-                response.message = MessagesResponse.Error.OperationFailed;
-                response.StatusCode = 500;
+                Console.WriteLine($"Error in GetMedicalReportByIdAsync: {ex.Message}", ex);
+                throw;
             }
-
-            return response;
-        }
-
-        public async Task<ApiResponse<Customer>> GetCustomerByIDAsync(int id)
-        {
-            ApiResponse<Customer> response = new ApiResponse<Customer>();
-            try
-            {
-                Customer customer = await _unitOfWork.CustomerRepo.GetCustomerByIDAsync(id);
-                if (customer == null)
-                {
-                    response.message = MessagesResponse.Error.NotFound;
-                    response.StatusCode = 404;
-                }
-                else
-                {
-                    response.data = customer;
-                    response.message = MessagesResponse.Success.Completed;
-                    response.StatusCode = 200;
-                }
-            }
-            catch
-            {
-                response.message = MessagesResponse.Error.OperationFailed;
-                response.StatusCode = 500;
-            }
-
-            return response;
-        }
-
-        public async Task<ApiResponse<Customer>> GetCustomerByRefreshTokenAsync(string token)
-        {
-            ApiResponse<Customer> response = new ApiResponse<Customer>();
-            try
-            {
-                Customer customer = await _unitOfWork.CustomerRepo.GetCustomerByRefreshTokenAsync(token);
-                if (customer == null)
-                {
-                    response.message = MessagesResponse.Error.NotFound;
-                    response.StatusCode = 404;
-                }
-                else
-                {
-                    response.data = customer;
-                    response.message = MessagesResponse.Success.Completed;
-                    response.StatusCode = 200;
-                }
-            }
-            catch
-            {
-                response.message = MessagesResponse.Error.OperationFailed;
-                response.StatusCode = 500;
-            }
-
-            return response;
-        }
-
-        public async Task<ApiResponse<List<Customer>>> GetCustomersAsync()
-        {
-            ApiResponse<List<Customer>> response = new ApiResponse<List<Customer>>();
-            try
-            {
-                List<Customer> customers = await _unitOfWork.CustomerRepo.GetCustomersAsync();
-                if (customers == null || customers.Count == 0)
-                {
-                    response.message = MessagesResponse.Error.NotFound;
-                    response.StatusCode = 404;
-                }
-                else
-                {
-                    response.data = customers;
-                    response.message = MessagesResponse.Success.Completed;
-                    response.StatusCode = 200;
-                }
-            }
-            catch
-            {
-                response.message = MessagesResponse.Error.OperationFailed;
-                response.StatusCode = 500;
-            }
-
-            return response;
-        }
-
-        public async Task<ApiResponse<bool>> UpdateCustomerAsync(Customer customer)
-        {
-            ApiResponse<bool> response = new ApiResponse<bool>();
-            try
-            {
-                bool result = await _unitOfWork.CustomerRepo.UpdateCustomerAsync(customer);
-                response.data = result;
-                response.message = result ? MessagesResponse.Success.Updated : MessagesResponse.Error.OperationFailed;
-                response.StatusCode = result ? 200 : 400;
-            }
-            catch
-            {
-                response.message = MessagesResponse.Error.OperationFailed;
-                response.StatusCode = 500;
-            }
-
-            return response;
         }
     }
 }

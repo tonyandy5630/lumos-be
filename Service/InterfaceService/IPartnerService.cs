@@ -1,4 +1,4 @@
-﻿using BussinessObject;
+using BussinessObject;
 using DataTransferObject.DTO;
 using RequestEntity;
 using System;
@@ -13,14 +13,18 @@ namespace Service.InterfaceService
     public interface IPartnerService
     {
         Task<PartnerServiceDTO?> GetPartnerServiceDetailAsync(int serviceId);
-        Task<ApiResponse<List<Partner>>> GetAllPartnersAsync();
-        Task<ApiResponse<Partner>> GetPartnerByIDAsync(int id);
-        Task<ApiResponse<Partner>> GetPartnerByRefreshTokenAsync(string token);
-        Task<ApiResponse<Partner>> GetPartnerByEmailAsync(string email);
-        Task<ApiResponse<Partner>> GetPartnerByCodeAsync(string code);
-        Task<ApiResponse<bool>> AddPartnerAsync(Partner partner);
-        Task<ApiResponse<bool>> UpdatePartnerAsync(Partner partner);
-        Task<ApiResponse<bool>> BanPartnerAsync(int partnerId);
+        Task<List<Partner>> GetAllPartnersAsync();
+        Task<Partner> GetPartnerByIDAsync(int id);
+        Task<Partner> GetPartnerByRefreshTokenAsync(string token);
+        Task<Partner> GetPartnerByEmailAsync(string email);
+        Task<Partner> GetPartnerByCodeAsync(string code);
+        Task<Partner> AddPartnereAsync(Partner partner);
+        Task<bool> UpdatePartnerAsync(Partner partner);
+        Task<bool> BanPartnerAsync(int partnerId);
+        Task<IEnumerable<SearchPartnerDTO>> SearchPartnerByPartnerOrServiceName(string keyword);
+        Task<List<Schedule>> GetScheduleByPartnerIdAsyn(int id);
+        Task<List<PartnerType>> GetPartnerTypesAsync(string? keyword);
+        Task<Schedule> AddPartnerScheduleAsync(Schedule schedule);
         Task<IEnumerable<SearchPartnerDTO>> SearchPartnerByPartnerOrServiceNameAsync(string keyword);
         Task<PartnerService> AddPartnerServiceAsync(AddPartnerServiceResquest service, string? partnerEmail);
     }

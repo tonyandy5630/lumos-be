@@ -13,7 +13,14 @@ namespace DataAccessLayer
         private static ServiceCategoryDAO instance = null;
         private LumosDBContext _context;
 
-        public ServiceCategoryDAO(LumosDBContext context)
+
+
+        public ServiceCategoryDAO()
+        {
+            _context = new LumosDBContext();
+        }
+
+        public static ServiceCategoryDAO Instance
         {
             _context = context;
         }
@@ -37,10 +44,34 @@ namespace DataAccessLayer
             return await query.ToListAsync();
         }
 
+
         public async Task<ServiceCategory?> GetCategoryByIdAsync(int cateId)
         {
             return await _context.ServiceCategories.FirstOrDefaultAsync(c => c.CategoryId == cateId);
         }
 
+
+        public async Task<List<ServiceCategory>> GetCategorysAsync(string? keyword)
+        {
+            List<ServiceCategory> categories = new List<ServiceCategory>();
+            try
+            {
+                if (keyword != null)
+                {
+                    categories = await _context.ServiceCategories.Where(s => s.Category.ToLower().Contains(keyword.ToLower())).ToListAsync();
+                }
+                else
+                {
+                    categories = await _context.ServiceCategories.ToListAsync();
+                }
+                Console.WriteLine("GetCategorysAsync: " + categories.Count);
+                return categories;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetCategorysAsync: {ex.Message}", ex);
+                throw new Exception(ex.Message);
+            }
+        }
     }
 }

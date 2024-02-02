@@ -1,9 +1,6 @@
-﻿using BussinessObject;
+using BussinessObject;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Utils;
 
 namespace DataAccessLayer
 {
@@ -29,17 +26,38 @@ namespace DataAccessLayer
             }
         }
 
-        public async Task<List<Customer>> GetCustomersAsync()
+        public async Task<List<Customer>> GetCustomersAsync(string keyword)
         {
             try
             {
-                return await dbContext.Customers.ToListAsync();
+                List<Customer> customers;
+
+                if (string.IsNullOrWhiteSpace(keyword))
+                {
+                    customers = await dbContext.Customers.ToListAsync();
+                }
+                else
+                {
+                    customers = await dbContext.Customers
+                        .Where(c => c.Fullname.Contains(keyword) || c.Email.Contains(keyword))
+                        .ToListAsync();
+                }
+
+                if (customers == null || customers.Count == 0)
+                {
+                    Console.WriteLine("No customers were found!");
+                    return null;
+                }
+
+                return customers;
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"Error in GetCustomersAsync: {ex.Message}", ex);
                 throw new Exception(ex.Message);
             }
         }
+
         public async Task<Customer> GetCustomerByRefreshTokenAsync(string token)
         {
             try
@@ -48,9 +66,11 @@ namespace DataAccessLayer
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"Error in GetCustomerByRefreshTokenAsync: {ex.Message}", ex);
                 throw new Exception(ex.Message);
             }
         }
+
         public async Task<Customer> GetCustomerByEmailAsync(string email)
         {
             try
@@ -59,6 +79,7 @@ namespace DataAccessLayer
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"Error in GetCustomerByEmailAsync: {ex.Message}", ex);
                 throw new Exception(ex.Message);
             }
         }
@@ -71,6 +92,7 @@ namespace DataAccessLayer
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"Error in GetCustomerByIDAsync: {ex.Message}", ex);
                 throw new Exception(ex.Message);
             }
         }
@@ -83,6 +105,7 @@ namespace DataAccessLayer
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"Error in GetCustomerByCodeAsync: {ex.Message}", ex);
                 throw new Exception(ex.Message);
             }
         }
@@ -91,12 +114,12 @@ namespace DataAccessLayer
         {
             try
             {
-                bool existingAccount = (await GetCustomersAsync())
+                bool existingAccount = dbContext.Customers
                     .Any(a => a.Email.ToLower().Equals(customer.Email.ToLower()));
 
                 if (!existingAccount)
                 {
-                    customer.Code = GenerateCustomerCode();
+                    customer.Code = GenerateCode.GenerateRoleCode("customer");
                     customer.Status = 1;
                     customer.Fullname = ExtractNameFromEmail(customer.Email);
                     DateTime currentDate = DateTime.UtcNow;
@@ -106,15 +129,18 @@ namespace DataAccessLayer
 
                     dbContext.Customers.Add(customer);
                     await dbContext.SaveChangesAsync();
+                    Console.WriteLine("Add customer successfully!");
                     return true;
                 }
                 return false;
             }
             catch (Exception ex)
             {
-                throw new Exception($"Error in Add Customer: {ex.Message}", ex);
+                Console.WriteLine($"Error in AddCustomerAsync: {ex.Message}", ex);
+                throw new Exception(ex.Message);
             }
         }
+
 
         public async Task<bool> UpdateCustomerAsync(Customer customer)
         {
@@ -129,17 +155,14 @@ namespace DataAccessLayer
                     existing.Status = customer.Status;
 
                     await dbContext.SaveChangesAsync();
+                    Console.WriteLine("Customer updated successfully!");
                     return true;
                 }
-                else
-                {
-                    Console.WriteLine("Customer not found for updating.");
-                    return false;
-                }
+                return false;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error in Update Customer: {ex.Message}", ex);
+                Console.WriteLine($"Error in UpdateCustomerAsync: {ex.Message}", ex);
                 return false;
             }
         }
@@ -159,22 +182,15 @@ namespace DataAccessLayer
                     Console.WriteLine("Customer status updated successfully!");
                     return true;
                 }
-                else
-                {
-                    Console.WriteLine("Customer does not exist!");
-                    return false;
-                }
+                return false;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error in BanCustomer: {ex.Message}");
+                Console.WriteLine($"Error in BanCustomerAsync: {ex.Message}");
                 return false;
             }
         }
-        private string GenerateCustomerCode()
-        {
-            return $"Cus{Guid.NewGuid().ToString("N").Substring(0, 5)}";
-        }
+
         private string ExtractNameFromEmail(string email)
         {
             string[] parts = email.Split('@');
@@ -183,6 +199,51 @@ namespace DataAccessLayer
                 return parts[0];
             }
             return string.Empty;
+        }
+
+        public async Task<List<Address>> GetCustomerAddressByCustomerIdAsync(int customerId)
+        {
+            try
+            {
+                return await dbContext.Addresses.Where(x => x.CustomerId == customerId).ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<Address> AddCustomerAddressAsync(Address address)
+        {
+            try
+            {
+                //check if address existed via displayname and Address
+                bool existedAddress = dbContext.Addresses
+                    .Where(x => x.CustomerId == address.CustomerId)
+                    .Any(x => x.DisplayName.ToLower().Equals(address.DisplayName.ToLower()) || 
+                              x.Address1.ToLower().Equals(address.Address1.ToLower()));
+
+                if (!existedAddress)
+                {
+                    address.Code = GenerateCode.GenerateTableCode("address");
+                    address.Status = 1;
+                    address.CreatedDate = DateTime.UtcNow;
+                    address.LastUpdate = DateTime.UtcNow;
+                    //address.UpdatedBy = "admin";
+                    //address.CreatedBy = "admin";
+
+                    dbContext.Addresses.Add(address);
+                    await dbContext.SaveChangesAsync();
+                    Console.WriteLine("Add address successfully!");
+                    return await dbContext.Addresses.SingleOrDefaultAsync(x => x.Code.Equals(address.Code));
+                }
+
+                return null;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
         }
     }
 }

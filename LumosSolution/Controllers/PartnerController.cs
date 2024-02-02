@@ -1,4 +1,4 @@
-﻿using BussinessObject;
+using BussinessObject;
 using DataTransferObject.DTO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -77,13 +77,35 @@ namespace LumosSolution.Controllers
             }
         }
 
-        [HttpGet("/{id}")]
+        [HttpGet("{id}")]
         [Authorize(Roles = "Admin,Customer,Partner")]
-        public async Task<ActionResult<Partner?>> GetPartnerById(int id)
+        public async Task<ActionResult<ApiResponse<Partner?>>> GetPartnerById(int id)
         {
-            ApiResponse<Partner?> res = await _partnerService.GetPartnerByIDAsync(id);
-            return Ok(res);
+            ApiResponse<Partner?> res = new ApiResponse<Partner?>
+            {
+                message = MessagesResponse.Error.NotFound,
+                StatusCode = 404
+            };
+            try
+            {
+                Partner? partner = await _partnerService.GetPartnerByIDAsync(id);
+
+                if (partner == null)
+                    return res;
+
+                res.message = MessagesResponse.Success.Completed;
+                res.StatusCode = 200;
+                res.data = partner;
+
+                return Ok(res);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return BadRequest(res);
+            }
         }
+
 
         [HttpPost("service")]
         [Authorize(Roles ="Partner")]
@@ -120,5 +142,128 @@ namespace LumosSolution.Controllers
             }
         }
 
+
+        [HttpGet("{id}/schedule")]
+        [Authorize(Roles = "Partner,Customer")]
+        public async Task<ActionResult<List<Schedule>>> GetScheduleByPartnerId(int id)
+        {
+            ApiResponse<List<Schedule>> res = new ApiResponse<List<Schedule>>();
+            try
+            {
+                res.data = await _partnerService.GetScheduleByPartnerIdAsyn(id);
+                if (res.data == null || res.data.Count == 0)
+                {
+                    res.message = MessagesResponse.Error.NotFound;
+                    res.StatusCode = ApiStatusCode.NotFound;
+                }
+                else
+                {
+                    {
+                        res.message = MessagesResponse.Success.Completed;
+                        res.StatusCode = ApiStatusCode.OK;
+                    }
+                }
+
+                return Ok(res);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetScheduleByPartnerId: {ex.Message}", ex);
+                res.message = MessagesResponse.Error.OperationFailed;
+                res.StatusCode = ApiStatusCode.BadRequest;
+                return BadRequest(res);
+            }
+        }
+
+        [HttpGet("type")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<ApiResponse<List<PartnerType>>>> GetPartnerTypesAsync([FromQuery] string? keyword)
+        {
+            ApiResponse<List<PartnerType>> res = new ApiResponse<List<PartnerType>>();
+            try
+            {
+                List<PartnerType> partnerTypes = await _partnerService.GetPartnerTypesAsync(keyword);
+                if (partnerTypes.Count == 0)
+                {
+                    res.message = MessagesResponse.Error.NotFound;
+                    res.StatusCode = ApiStatusCode.NotFound;
+                    return Ok(res);
+                }
+
+                else
+                {
+                    res.message = MessagesResponse.Success.Completed;
+                    res.StatusCode = ApiStatusCode.OK;
+                    res.data = partnerTypes;
+                    return Ok(res);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetPartnerTypesAsync: {ex.Message}", ex);
+                res.message = MessagesResponse.Error.OperationFailed;
+                res.StatusCode = ApiStatusCode.BadRequest;
+                return BadRequest(res);
+            }
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<ApiResponse<Partner>>> AddPartnerAsync([FromBody] Partner partner)
+        {
+            ApiResponse<Partner> response = new ApiResponse<Partner>();
+            try
+            {
+                response.data = await _partnerService.AddPartnereAsync(partner);
+                if (response.data == null)
+                {
+                    response.message = MessagesResponse.Error.OperationFailed;
+                    response.StatusCode = ApiStatusCode.BadRequest;
+                }
+                else
+                {
+                    response.StatusCode = ApiStatusCode.OK;
+                    response.message = MessagesResponse.Success.Completed;
+                }
+
+                return Ok(response);
+            }
+            catch
+            {
+                response.message = MessagesResponse.Error.OperationFailed;
+                response.StatusCode = ApiStatusCode.BadRequest;
+
+                return BadRequest(response);
+            }
+        }
+        
+        [HttpPost("schedule")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<ApiResponse<Schedule>>> AddPartnerSchedule([FromBody] Schedule schedule)
+        {
+            ApiResponse<Schedule> res = new ApiResponse<Schedule>();
+            try
+            {
+                Schedule addedSchedule = await _partnerService.AddPartnerScheduleAsync(schedule);
+                if (addedSchedule == null)
+                {
+                    throw new Exception("Something wrong, Schedule not added");
+                }
+                else
+                {
+                    res.message = MessagesResponse.Success.Completed;
+                    res.StatusCode = ApiStatusCode.OK;
+                    res.data = addedSchedule;
+                    return Ok(res);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in AddPartnerSchedule: {ex.Message}", ex);
+                res.message = MessagesResponse.Error.OperationFailed;
+                res.StatusCode = ApiStatusCode.BadRequest;
+                return BadRequest(res);
+            }
+        }
     }
 }
