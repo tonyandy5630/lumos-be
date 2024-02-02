@@ -165,5 +165,35 @@ namespace LumosSolution.Controllers
                 return BadRequest(res);
             }
         }
+
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<ApiResponse<Partner>>> AddPartnerAsync([FromBody] Partner partner)
+        {
+            ApiResponse<Partner> response = new ApiResponse<Partner>();
+            try
+            {
+                response.data = await _partnerService.AddPartnereAsync(partner);
+                if (response.data == null)
+                {
+                    response.message = MessagesResponse.Error.OperationFailed;
+                    response.StatusCode = ApiStatusCode.BadRequest;
+                }
+                else
+                {
+                    response.StatusCode = ApiStatusCode.OK;
+                    response.message = MessagesResponse.Success.Completed;
+                }
+
+                return Ok(response);
+            }
+            catch
+            {
+                response.message = MessagesResponse.Error.OperationFailed;
+                response.StatusCode = ApiStatusCode.BadRequest;
+
+                return BadRequest(response);
+            }
+        }
     }
 }

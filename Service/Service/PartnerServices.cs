@@ -49,11 +49,20 @@ namespace Service.Service
             }
         }
 
-        public async Task<bool> AddPartnerAsync(Partner partner)
+        public async Task<Partner> AddPartnereAsync(Partner partner)
         {
             try
             {
-                return await _unitOfWork.PartnerRepo.AddPartnerAsync(partner);
+                Partner part = await _unitOfWork.PartnerRepo.AddPartnereAsync(partner);
+                if(partner == null)
+                {
+                    Console.WriteLine("Failed to add partner!");
+                } 
+                else
+                {
+                    Console.WriteLine("Partner added successfully!");
+                }
+                return part;
             }
             catch (Exception ex)
             {
@@ -245,5 +254,6 @@ namespace Service.Service
                 throw;
             }
         }
+
     }
 }
