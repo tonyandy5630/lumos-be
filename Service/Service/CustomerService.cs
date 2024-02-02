@@ -162,5 +162,26 @@ namespace Service.Service
                 throw;
             }
         }
+
+        public async Task<Address> AddCustomerAddressAsync(Address address) 
+        {
+            try
+            {
+                Address addedAddress = await _unitOfWork.CustomerRepo.AddCustomerAddressAsync(address);
+                if (addedAddress != null)
+                {
+                       Console.WriteLine("Address added successfully!");
+                } else
+                {
+                    Console.WriteLine("Failed to add address!");    
+                }
+
+                return addedAddress;
+            } catch (Exception ex)
+            {
+                Console.WriteLine($"Error in AddCustomerAddressAsync: {ex.Message}", ex);
+                throw;
+            }
+        }
     }
 }

@@ -1,9 +1,5 @@
 using BussinessObject;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Utils;
 
 namespace DataAccessLayer
@@ -116,10 +112,10 @@ namespace DataAccessLayer
 
         public async Task<bool> AddCustomerAsync(Customer customer)
         {
-           try
-           {
-               bool existingAccount = dbContext.Customers
-                   .Any(a => a.Email.ToLower().Equals(customer.Email.ToLower()));
+            try
+            {
+                bool existingAccount = dbContext.Customers
+                    .Any(a => a.Email.ToLower().Equals(customer.Email.ToLower()));
 
                 if (!existingAccount)
                 {
@@ -131,18 +127,18 @@ namespace DataAccessLayer
                     customer.UpdateBy = customer.Email;
                     customer.CreatedDate = currentDate;
 
-                   dbContext.Customers.Add(customer);
-                   await dbContext.SaveChangesAsync();
-                   Console.WriteLine("Add customer successfully!");
-                   return true;
-               }
-               return false;
-           }
-           catch (Exception ex)
-           {
-               Console.WriteLine($"Error in AddCustomerAsync: {ex.Message}", ex);
-               throw new Exception(ex.Message);
-           }
+                    dbContext.Customers.Add(customer);
+                    await dbContext.SaveChangesAsync();
+                    Console.WriteLine("Add customer successfully!");
+                    return true;
+                }
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in AddCustomerAsync: {ex.Message}", ex);
+                throw new Exception(ex.Message);
+            }
         }
 
         public async Task<bool> UpdateCustomerAsync(Customer customer)
@@ -230,5 +226,37 @@ namespace DataAccessLayer
             }
         }
 
+        public async Task<Address> AddCustomerAddressAsync(Address address)
+        {
+            try
+            {
+                //check if address existed via displayname and Address
+                bool existedAddress = dbContext.Addresses
+                    .Where(x => x.CustomerId == address.CustomerId)
+                    .Any(x => x.DisplayName.ToLower().Equals(address.DisplayName.ToLower()) || 
+                              x.Address1.ToLower().Equals(address.Address1.ToLower()));
+
+                if (!existedAddress)
+                {
+                    address.Code = GenerateCode.GenerateTableCode("address");
+                    address.Status = 1;
+                    address.CreatedDate = DateTime.UtcNow;
+                    address.LastUpdate = DateTime.UtcNow;
+                    //address.UpdatedBy = "admin";
+                    //address.CreatedBy = "admin";
+
+                    dbContext.Addresses.Add(address);
+                    await dbContext.SaveChangesAsync();
+                    Console.WriteLine("Add address successfully!");
+                    return await dbContext.Addresses.SingleOrDefaultAsync(x => x.Code.Equals(address.Code));
+                }
+
+                return null;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
     }
 }
