@@ -22,7 +22,7 @@ namespace LumosSolution.Controllers
 {
     [Route("api/")]
     [ApiController]
-    public class AuthController : Controller
+    public class AuthController : ControllerBase
     {
         private readonly IConfiguration _configuration;
         private readonly IAdminService _adminService;
