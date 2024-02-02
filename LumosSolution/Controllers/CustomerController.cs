@@ -11,7 +11,7 @@ namespace LumosSolution.Controllers
 {
     [Route("api/customer")]
     [ApiController]
-    public class CustomerController : Controller
+    public class CustomerController : ControllerBase
     {
         private readonly ICustomerService _customerService;
         public CustomerController(ICustomerService customerService)
