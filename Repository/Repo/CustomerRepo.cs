@@ -13,7 +13,7 @@ namespace Repository.Repo
     {
         public CustomerRepo(LumosDBContext context) { }
 
-        public Task<bool> AddCustomerAsync(Customer customer) =>CustomerDAO.Instance.AddCustomerAsync(customer);
+        //public Task<bool> AddCustomerAsync(Customer customer) =>CustomerDAO.Instance.AddCustomerAsync(customer);
 
         public Task<bool> BanCustomerAsync(int id) => CustomerDAO.Instance.BanCustomerAsync(id);
 
@@ -26,8 +26,6 @@ namespace Repository.Repo
         public Task<Customer> GetCustomerByRefreshTokenAsync(string token) => CustomerDAO.Instance.GetCustomerByRefreshTokenAsync(token);
 
         public Task<List<Customer>> GetCustomersAsync(string keyword) => CustomerDAO.Instance.GetCustomersAsync(keyword);
-
-        public Task<List<MedicalReport>> GetMedicalReportByCustomerIdAsync(int id) => CustomerDAO.Instance.GetMedicalReportByCustomerIdAsync(id);
 
         public Task<bool> UpdateCustomerAsync(Customer customer) => CustomerDAO.Instance.UpdateCustomerAsync(customer);
 
