@@ -114,36 +114,36 @@ namespace DataAccessLayer
             }
         }
 
-        //public async Task<bool> AddCustomerAsync(Customer customer)
-        //{
-        //    try
-        //    {
-        //        bool existingAccount = dbContext.Customers
-        //            .Any(a => a.Email.ToLower().Equals(customer.Email.ToLower()));
+        public async Task<bool> AddCustomerAsync(Customer customer)
+        {
+           try
+           {
+               bool existingAccount = dbContext.Customers
+                   .Any(a => a.Email.ToLower().Equals(customer.Email.ToLower()));
 
-        //        if (!existingAccount)
-        //        {
-        //            customer.Code = GenerateCode.GenerateCustomerCode();
-        //            customer.Status = 1;
-        //            customer.Fullname = ExtractNameFromEmail(customer.Email);
-        //            DateTime currentDate = DateTime.UtcNow;
-        //            customer.LastUpdate = currentDate;
-        //            customer.UpdateBy = customer.Email;
-        //            customer.CreatedDate = currentDate;
+                if (!existingAccount)
+                {
+                    customer.Code = GenerateCode.GenerateRoleCode("customer");
+                    customer.Status = 1;
+                    customer.Fullname = ExtractNameFromEmail(customer.Email);
+                    DateTime currentDate = DateTime.UtcNow;
+                    customer.LastUpdate = currentDate;
+                    customer.UpdateBy = customer.Email;
+                    customer.CreatedDate = currentDate;
 
-        //            dbContext.Customers.Add(customer);
-        //            await dbContext.SaveChangesAsync();
-        //            Console.WriteLine("Add customer successfully!");
-        //            return true;
-        //        }
-        //        return false;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Console.WriteLine($"Error in AddCustomerAsync: {ex.Message}", ex);
-        //        throw new Exception(ex.Message);
-        //    }
-        //}
+                   dbContext.Customers.Add(customer);
+                   await dbContext.SaveChangesAsync();
+                   Console.WriteLine("Add customer successfully!");
+                   return true;
+               }
+               return false;
+           }
+           catch (Exception ex)
+           {
+               Console.WriteLine($"Error in AddCustomerAsync: {ex.Message}", ex);
+               throw new Exception(ex.Message);
+           }
+        }
 
 
         public async Task<bool> UpdateCustomerAsync(Customer customer)
