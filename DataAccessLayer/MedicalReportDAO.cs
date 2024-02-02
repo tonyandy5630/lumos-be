@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Utils;
 
 namespace DataAccessLayer
 {
@@ -30,7 +31,7 @@ namespace DataAccessLayer
             }
         }
 
-        public async Task<bool> AddMedicalReportAsyn(MedicalReport medicalReport)
+        public async Task<MedicalReport> AddMedicalReportAsyn(MedicalReport medicalReport)
         {
             try
             {
@@ -40,13 +41,15 @@ namespace DataAccessLayer
                 if (!existMed)
                 {
                     medicalReport.Status = 1;
+                    medicalReport.Code = GenerateCode.GenerateTableCode("medicalreport");
                     medicalReport.CreatedDate = DateTime.Now;
                     medicalReport.LastUpdate = DateTime.Now;
                     dbContext.MedicalReports.Add(medicalReport);
                     await dbContext.SaveChangesAsync();
-                    return true;
+                    Console.WriteLine("Add medical report successfully!");
+                    return await dbContext.MedicalReports.SingleOrDefaultAsync(x => x.Code.Equals(medicalReport.Code));
                 }
-                return false;
+                return null;
             } catch (Exception ex)
             {
                 Console.WriteLine($"Error in AddMedicalReportAsyn: {ex.Message}", ex);

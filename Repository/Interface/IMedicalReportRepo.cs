@@ -10,6 +10,6 @@ namespace Repository.Interface
     public interface IMedicalReportRepo
     { 
         Task<List<MedicalReport>> GetMedicalReportByCustomerIdAsync(int id);
-        Task<bool> AddMedicalReportAsyn(MedicalReport medicalReport);
+        Task<MedicalReport> AddMedicalReportAsyn(MedicalReport medicalReport);
     }
 }

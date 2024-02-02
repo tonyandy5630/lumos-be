@@ -13,10 +13,7 @@ namespace Repository.Repo
     {
         public MedicalReportRepo(LumosDBContext context) { }
 
-        public Task<bool> AddMedicalReportAsyn(MedicalReport medicalReport)
-        {
-            throw new NotImplementedException();
-        }
+        public Task<MedicalReport> AddMedicalReportAsyn(MedicalReport medicalReport) => MedicalReportDAO.Instance.AddMedicalReportAsyn(medicalReport);
 
         public Task<List<MedicalReport>> GetMedicalReportByCustomerIdAsync(int id) => MedicalReportDAO.Instance.GetMedicalReportByCustomerIdAsync(id);
     }

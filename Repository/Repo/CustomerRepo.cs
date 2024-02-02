@@ -13,7 +13,7 @@ namespace Repository.Repo
     {
         public CustomerRepo(LumosDBContext context) { }
 
-        //public Task<bool> AddCustomerAsync(Customer customer) =>CustomerDAO.Instance.AddCustomerAsync(customer);
+        public Task<bool> AddCustomerAsync(Customer customer) =>CustomerDAO.Instance.AddCustomerAsync(customer);
 
         public Task<bool> BanCustomerAsync(int id) => CustomerDAO.Instance.BanCustomerAsync(id);
 

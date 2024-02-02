@@ -22,6 +22,7 @@ namespace Repository.Interface.IUnitOfWork
         IServiceBookingRepo ServiceBookingRepo { get; }
         IServiceCategoryRepo ServiceCategoryRepo { get; }
         ISystemConfigurationRepo SystemConfigurationRepo { get; }
+        IMedicalReportRepo MedicalReportRepo { get; }
 
         Task<int> SaveChangesAsync();
         Task StartTransactionAsync(string name);
