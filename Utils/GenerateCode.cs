@@ -36,38 +36,37 @@ namespace Utils
 
         public static string GenerateTableCode(string tableName)
         {
-            string codePrefix = "VN";
+            string codePrefix = "";
             string year = DateTime.Now.Year.ToString();
-            string tableCodePrefix = "";
 
             switch (tableName.ToLower())
             {
                 case "schedule":
-                    tableCodePrefix = "SCH";
+                    codePrefix = "SCH";
                     break;
                 case "partnertype":
-                    tableCodePrefix = "PTP";
+                    codePrefix = "PTP";
                     break;
                 case "servicecategory":
-                    tableCodePrefix = "SCC";
+                    codePrefix = "SCC";
                     break;
                 case "booking":
-                    tableCodePrefix = "BOK";
+                    codePrefix = "BOK";
                     break;
                 case "paymentmethod":
-                    tableCodePrefix = "PMT";
+                    codePrefix = "PMT";
                     break;
                 case "address":
-                    tableCodePrefix = "ADR";
+                    codePrefix = "ADR";
                     break;
                 case "medicalreport":
-                    tableCodePrefix = "MDR";
+                    codePrefix = "MDR";
                     break;
                 default:
                     throw new ArgumentException("Invalid table name");
             }
 
-            codePrefix += tableCodePrefix + year.Substring(2, 2);
+            codePrefix += codePrefix + year.Substring(2, 2);
 
             return $"{codePrefix}{Guid.NewGuid().ToString("N").Substring(0, 5).ToUpper()}";
         }
