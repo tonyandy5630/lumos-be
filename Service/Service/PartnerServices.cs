@@ -255,5 +255,25 @@ namespace Service.Service
             }
         }
 
+        public async Task<Schedule> AddPartnerScheduleAsync(Schedule schedule)
+        {
+            try
+            {
+                Schedule addedSchedule = await _unitOfWork.ScheduleRepo.AddPartnerScheduleAsync(schedule);
+                if (addedSchedule == null)
+                {
+                    throw new Exception("Something wrong, Schedule not added");
+                }
+                else
+                {
+                    Console.WriteLine("Schedule added successfully");
+                }
+                return addedSchedule;
+            } catch (Exception ex)
+            {
+                Console.WriteLine($"Error in AddPartnerScheduleAsync: {ex.Message}", ex);
+                throw new Exception(ex.Message);
+            }
+        }
     }
 }

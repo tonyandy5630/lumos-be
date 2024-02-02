@@ -23,5 +23,6 @@ namespace Service.InterfaceService
         Task<IEnumerable<SearchPartnerDTO>> SearchPartnerByPartnerOrServiceName(string keyword);
         Task<List<Schedule>> GetScheduleByPartnerIdAsyn(int id);
         Task<List<PartnerType>> GetPartnerTypesAsync(string? keyword);
+        Task<Schedule> AddPartnerScheduleAsync(Schedule schedule);
     }
 }

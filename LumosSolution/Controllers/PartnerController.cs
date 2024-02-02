@@ -195,5 +195,34 @@ namespace LumosSolution.Controllers
                 return BadRequest(response);
             }
         }
+        
+        [HttpPost("schedule")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<ApiResponse<Schedule>>> AddPartnerSchedule([FromBody] Schedule schedule)
+        {
+            ApiResponse<Schedule> res = new ApiResponse<Schedule>();
+            try
+            {
+                Schedule addedSchedule = await _partnerService.AddPartnerScheduleAsync(schedule);
+                if (addedSchedule == null)
+                {
+                    throw new Exception("Something wrong, Schedule not added");
+                }
+                else
+                {
+                    res.message = MessagesResponse.Success.Completed;
+                    res.StatusCode = ApiStatusCode.OK;
+                    res.data = addedSchedule;
+                    return Ok(res);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in AddPartnerSchedule: {ex.Message}", ex);
+                res.message = MessagesResponse.Error.OperationFailed;
+                res.StatusCode = ApiStatusCode.BadRequest;
+                return BadRequest(res);
+            }
+        }
     }
 }
