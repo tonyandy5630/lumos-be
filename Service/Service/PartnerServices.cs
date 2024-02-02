@@ -220,5 +220,30 @@ namespace Service.Service
                 throw new Exception(ex.Message);
             }
         }
+
+        public async Task<List<Schedule>> GetScheduleByPartnerIdAsyn(int id)
+        {
+            List<Schedule> schedules = new List<Schedule>();
+            try
+            {
+                schedules = await _unitOfWork.ScheduleRepo.GetScheduleByPartnerIdAsyn(id);
+
+                if (schedules == null || schedules.Count == 0)
+                {
+                    Console.WriteLine($"No schedule found for partner with Id {id}");
+                }
+                else
+                {
+                    Console.WriteLine($"Found {schedules.Count} schedules for partner with Id {id}");
+                }
+
+                return schedules;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetScheduleByPartnerIdAsyn: {ex.Message}", ex);
+                throw;
+            }
+        }
     }
 }

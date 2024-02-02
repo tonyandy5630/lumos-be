@@ -21,6 +21,7 @@ namespace Service.InterfaceService
         Task<bool> UpdatePartnerAsync(Partner partner);
         Task<bool> BanPartnerAsync(int partnerId);
         Task<IEnumerable<SearchPartnerDTO>> SearchPartnerByPartnerOrServiceName(string keyword);
+        Task<List<Schedule>> GetScheduleByPartnerIdAsyn(int id);
         Task<List<PartnerType>> GetPartnerTypesAsync(string? keyword);
     }
 }

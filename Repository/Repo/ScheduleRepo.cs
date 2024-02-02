@@ -1,4 +1,5 @@
 ﻿using BussinessObject;
+using DataAccessLayer;
 using Repository.Interface;
 using System;
 using System.Collections.Generic;
@@ -11,5 +12,7 @@ namespace Repository.Repo
     public class ScheduleRepo:IScheduleRepo
     {
         public ScheduleRepo(LumosDBContext context) { }
+
+        public Task<List<Schedule>> GetScheduleByPartnerIdAsyn(int id) => ScheduleDAO.Instance.GetScheduleByPartnerIdAsyn(id);
     }
 }
