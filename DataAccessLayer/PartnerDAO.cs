@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Utils;
 
 namespace DataAccessLayer
 {
@@ -120,22 +121,28 @@ namespace DataAccessLayer
                 throw new Exception(ex.Message);
             }
         }
-        public async Task<bool> AddPartnereAsync(Partner partner)
+        public async Task<Partner> AddPartnereAsync(Partner partner)
         {
             try
             {
                 bool existing = (await GetAllPartnersAsync())
-                    .Any(s => s.Code.ToLower().Equals(partner.Code.ToLower()));
+                    .Any(p => p.PartnerName.ToLower().Equals(partner.PartnerName.ToLower())
+                        || p.DisplayName.ToLower().Equals(partner.DisplayName.ToLower())
+                        || p.Email.ToLower().Equals(partner.Email.ToLower())
+                        || p.BusinessLicenseNumber.ToLower().Equals(partner.BusinessLicenseNumber.ToLower()));                   
 
                 if (!existing)
                 {
+                    partner.Code = GenerateCode.GenerateRoleCode("partner");
+                    partner.CreatedDate = DateTime.Now;
+                    partner.LastUpdate = DateTime.Now;
                     _context.Partners.Add(partner);
                     await _context.SaveChangesAsync();
-                    Console.WriteLine("Add partner successfully!");
-                    return true;
+                    
+                    return await _context.Partners.SingleOrDefaultAsync(p => p.Code.Equals(partner.Code));
                 }
 
-                return false;
+                return null;
             }
             catch (Exception ex)
             {

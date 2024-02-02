@@ -13,7 +13,7 @@ namespace Repository.Repo
     {
         public PartnerRepo(LumosDBContext context) { }
 
-        public Task<bool> AddPartnerAsync(Partner partner) =>PartnerDAO.Instance.AddPartnereAsync(partner);
+        public Task<Partner> AddPartnereAsync(Partner partner) => PartnerDAO.Instance.AddPartnereAsync(partner);
 
         public Task<bool> BanPartnerAsync(int partnerId) => PartnerDAO.Instance.BanPartnerAsync(partnerId);
 
