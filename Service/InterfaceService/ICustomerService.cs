@@ -21,6 +21,7 @@ namespace Service.InterfaceService
         Task<bool> BanCustomerAsync(int id);
         Task<List<MedicalReport>> GetMedicalReportByCustomerIdAsync(int id);
         Task<List<Address>> GetCustomerAddressByCustomerIdAsync(int id);
+        Task<MedicalReport> AddMedicalReportAsyn(MedicalReport medicalReport);
         Task<Address> AddCustomerAddressAsync(Address address);
     }
 }

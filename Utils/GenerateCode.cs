@@ -60,6 +60,9 @@ namespace Utils
                 case "address":
                     tableCodePrefix = "ADR";
                     break;
+                case "medicalreport":
+                    tableCodePrefix = "MDR";
+                    break;
                 default:
                     throw new ArgumentException("Invalid table name");
             }

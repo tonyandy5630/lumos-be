@@ -107,7 +107,7 @@ namespace Service.Service
             List<MedicalReport> medReport = new List<MedicalReport>();
             try
             {
-                medReport = await _unitOfWork.CustomerRepo.GetMedicalReportByCustomerIdAsync(id);
+                medReport = await _unitOfWork.MedicalReportRepo.GetMedicalReportByCustomerIdAsync(id);
 
                 if(medReport == null || medReport.Count == 0)
                 {
@@ -163,6 +163,18 @@ namespace Service.Service
             }
         }
 
+        public Task<MedicalReport> AddMedicalReportAsyn(MedicalReport medicalReport)
+        {
+            try
+            {
+                return _unitOfWork.MedicalReportRepo.AddMedicalReportAsyn(medicalReport);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+        
         public async Task<Address> AddCustomerAddressAsync(Address address) 
         {
             try
