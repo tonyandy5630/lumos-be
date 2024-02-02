@@ -47,8 +47,8 @@ namespace LumosSolution.Controllers
                 res.message = MessagesResponse.Error.OperationFailed;
                 res.StatusCode = ApiStatusCode.BadRequest;
                 return BadRequest(res);
-             }
-         }
+            }
+        }
          
         [HttpGet("{id}/address")]
         [Authorize(Roles = "Admin,Customer")]
@@ -136,6 +136,7 @@ namespace LumosSolution.Controllers
             {
                 response.message = MessagesResponse.Error.OperationFailed;
                 response.StatusCode = ApiStatusCode.BadRequest;
+                return BadRequest(response);
             }
         }
         
@@ -161,6 +162,36 @@ namespace LumosSolution.Controllers
                 return Ok(response);
             }
             catch
+            {
+                response.message = MessagesResponse.Error.OperationFailed;
+                response.StatusCode = ApiStatusCode.BadRequest;
+
+                return BadRequest(response);
+            }
+        }
+
+        [HttpGet("medical-report/{id}")]
+        [Authorize(Roles = "Admin,Customer")]
+        public async Task<ActionResult<MedicalReport>> GetMedicalReportById(int id)
+        {
+            ApiResponse<MedicalReport> response = new ApiResponse<MedicalReport>();
+            try
+            {
+                response.data = await _customerService.GetMedicalReportByIdAsync(id);
+                if (response.data == null)
+                {
+                    response.message = MessagesResponse.Error.NotFound;
+                    response.StatusCode = ApiStatusCode.NotFound;
+                }
+                else
+                {
+                    response.StatusCode = ApiStatusCode.OK;
+                    response.message = MessagesResponse.Success.Completed;
+                }
+
+                return Ok(response);
+            }
+            catch (Exception ex)
             {
                 response.message = MessagesResponse.Error.OperationFailed;
                 response.StatusCode = ApiStatusCode.BadRequest;

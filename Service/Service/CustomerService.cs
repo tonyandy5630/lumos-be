@@ -195,5 +195,30 @@ namespace Service.Service
                 throw;
             }
         }
+
+        public async Task<MedicalReport> GetMedicalReportByIdAsync(int id)
+        {
+
+            try
+            {
+                MedicalReport med = await _unitOfWork.MedicalReportRepo.GetMedicalReportByIdAsync(id);
+
+                if (med == null)
+                {
+                    Console.WriteLine($"No medical report found with ID {id}");
+                }
+                else
+                {
+                    Console.WriteLine($"Found medical report with ID {id}");
+                }
+
+                return med;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetMedicalReportByIdAsync: {ex.Message}", ex);
+                throw;
+            }
+        }
     }
 }
