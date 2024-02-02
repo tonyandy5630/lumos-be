@@ -1,11 +1,15 @@
-﻿using BussinessObject;
+using BussinessObject;
 using DataTransferObject.DTO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.DotNet.Scaffolding.Shared.Messaging;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using RequestEntity;
 using Service.InterfaceService;
 using Service.Service;
 using System.Collections.Generic;
+using System.Security.Claims;
 using Utils;
 
 namespace LumosSolution.Controllers
@@ -49,9 +53,9 @@ namespace LumosSolution.Controllers
             }
         }
 
-        [HttpGet, Route("{keyword?}")]
+        [HttpGet]
         [Authorize(Roles = "Admin,Customer")]
-        public async Task<ActionResult<IEnumerable<SearchPartnerDTO>>> GetPartnerByPartnerOrServiceName(string? keyword = "")
+        public async Task<ActionResult<IEnumerable<SearchPartnerDTO>>> GetPartnerByPartnerOrServiceName([FromQuery]string? keyword = "")
         {
             ApiResponse<IEnumerable<SearchPartnerDTO>> res = new ApiResponse<IEnumerable<SearchPartnerDTO>>
             {
@@ -60,7 +64,7 @@ namespace LumosSolution.Controllers
             };
             try
             {
-                IEnumerable<SearchPartnerDTO> searchPartnerDTOs = await _partnerService.SearchPartnerByPartnerOrServiceName(keyword);
+                IEnumerable<SearchPartnerDTO> searchPartnerDTOs = await _partnerService.SearchPartnerByPartnerOrServiceNameAsync(keyword);
                 res.message = MessagesResponse.Success.Completed;
                 res.StatusCode = 200;
                 res.data = searchPartnerDTOs;
@@ -101,6 +105,43 @@ namespace LumosSolution.Controllers
                 return BadRequest(res);
             }
         }
+
+
+        [HttpPost("service")]
+        [Authorize(Roles ="Partner")]
+        public async Task<ActionResult<PartnerService>> AddPartnerService([FromBody]AddPartnerServiceResquest service)
+        {
+            ApiResponse<PartnerService> response = new ApiResponse<PartnerService>
+            {
+                StatusCode = 500
+            };
+            try
+            {
+                if(!ModelState.IsValid)
+                {
+                    response.message = MessagesResponse.Error.InvalidInput;
+                    response.StatusCode = 422;
+                    return UnprocessableEntity(response);
+                }
+
+                string? email = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+                PartnerService newService = await _partnerService.AddPartnerServiceAsync(service, email);
+
+                if (newService == null)
+                    throw new Exception("Added sevice failed");
+
+                response.message = MessagesResponse.Success.Created;
+                response.StatusCode = 200;
+                response.data = newService;
+                return Ok(response);
+            }catch(Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                response.message = ex.Message;
+                return BadRequest(response);
+            }
+        }
+
 
         [HttpGet("{id}/schedule")]
         [Authorize(Roles = "Partner,Customer")]

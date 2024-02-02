@@ -1,5 +1,6 @@
 ﻿using BussinessObject;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +13,7 @@ namespace DataAccessLayer
     public class PartnerDAO
     {
         private static PartnerDAO instance = null;
-        private LumosDBContext _context = null;
+        private readonly LumosDBContext _context = null;
 
         public PartnerDAO()
         {
@@ -45,14 +46,29 @@ namespace DataAccessLayer
             }
         }
 
+        public async Task<PartnerService?> AddPartnerServiceAsync(PartnerService service)
+        {
+            await _context.PartnerServices.AddAsync(service);
+
+            if (await _context.SaveChangesAsync() == 1)
+                return service;
+            return null;
+        }
+
         public async Task<IEnumerable<Partner>> SearchPartnerByServiceOrPartnerNameAsync(string keyword)
         {
-            return await _context.Partners.Where(s => s.PartnerName.Contains(keyword) || s.PartnerServices.Any(ps => ps.Name.Contains(keyword))).Include(x => x.PartnerServices.Where(s => s.Name.Contains(keyword))).ToListAsync();
+            var result = _context.Partners
+                        .Where(p => p.PartnerName.Contains(keyword) || p.PartnerServices.Any(s => s.Name.Contains(keyword)))
+                        .Include(s => s.PartnerServices
+                        .Where(s => s.Name.Contains(keyword)))
+                        .AsNoTracking()
+                        .ToListAsync();
+            return await result;
         }
 
         public async Task<IEnumerable<PartnerService>> GetServiceOfPartnerByServiceName(string keyword, int partnerId)
         {
-            return await _context.PartnerServices.Where( s => s.PartnerId == partnerId && s.Name.Contains(keyword)).ToListAsync();
+            return await _context.PartnerServices.Where(s => s.PartnerId == partnerId && s.Name.Contains(keyword)).ToListAsync();
         }
         public async Task<List<Partner>> GetAllPartnersAsync()
         {

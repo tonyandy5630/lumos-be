@@ -13,6 +13,8 @@ namespace DataAccessLayer
         private static ServiceCategoryDAO instance = null;
         private LumosDBContext _context;
 
+
+
         public ServiceCategoryDAO()
         {
             _context = new LumosDBContext();
@@ -20,15 +22,19 @@ namespace DataAccessLayer
 
         public static ServiceCategoryDAO Instance
         {
-            get
-            {
-                if (instance == null)
-                {
-                    instance = new ServiceCategoryDAO();
-                }
-                return instance;
-            }
+            _context = context;
         }
+        //public static ServiceCategoryDAO Instance
+        //{
+        //    get
+        //    {
+        //        if (instance == null)
+        //        {
+        //            instance = new ServiceCategoryDAO();
+        //        }
+        //        return instance;
+        //    }
+        //}
 
         public async Task<IEnumerable<ServiceCategory>> GetCategoriesOfServiceByServiceIdAsync(int serviceId)
         {
@@ -37,6 +43,13 @@ namespace DataAccessLayer
                         select cat;
             return await query.ToListAsync();
         }
+
+
+        public async Task<ServiceCategory?> GetCategoryByIdAsync(int cateId)
+        {
+            return await _context.ServiceCategories.FirstOrDefaultAsync(c => c.CategoryId == cateId);
+        }
+
 
         public async Task<List<ServiceCategory>> GetCategorysAsync(string? keyword)
         {

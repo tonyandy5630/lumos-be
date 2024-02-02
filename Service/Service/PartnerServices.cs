@@ -1,6 +1,9 @@
 ﻿using AutoMapper;
 using BussinessObject;
 using DataTransferObject.DTO;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.Storage;
 using Repository.Interface.IUnitOfWork;
 using Repository.Repo;
 using Service.InterfaceService;
@@ -10,7 +13,9 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using RequestEntity;
 using Utils;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Service.Service
 {
@@ -18,14 +23,84 @@ namespace Service.Service
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-
-        public PartnerServices(IUnitOfWork unitOfWork, IMapper mapper)
+        private readonly IServiceProvider _serviceProvider;
+        public PartnerServices(IUnitOfWork unitOfWork, IMapper mapper, IServiceProvider serviceProvider)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _serviceProvider = serviceProvider;
         }
 
+        public async Task<PartnerService?> AddPartnerServiceAsync(AddPartnerServiceResquest service, string? partnerEmail)
+        {
+            const string TRANSACTION = "add-parner-service";
+            IDbContextTransaction commit = await _unitOfWork.StartTransactionAsync(TRANSACTION);
+            try
+            {
+                List<Task<ServiceCategory>> categoryTasks = new(); // parallel category validation
+                List<Task<ServiceDetail?>> serviceDetailTasks = new(); // add service detail parallel
+                List<ServiceCategory> categories = new();
 
+                if (partnerEmail == null)
+                    throw new Exception("Not found partner email");
+
+
+                Partner partner = await _unitOfWork.PartnerRepo.GetPartnerByEmailAsync(partnerEmail);
+
+                if (partner == null)
+                    throw new Exception("Not found partner");
+
+                PartnerService? existedService = await _unitOfWork.PartnerServiceRepo.GetPartnerServiceByServiceNameAsync(service.Name, partner.PartnerId);
+                if (existedService != null)
+                    throw new Exception("Service with same name has existed");
+
+                PartnerService partnerService = _mapper.Map<PartnerService>(service);
+                partnerService.PartnerId = partner.PartnerId;
+                partnerService.Partner = partner;
+                partnerService.CreatedDate = DateTime.Now;
+                // Validate categories
+                // better if can do concurrently
+                foreach (int cateId in service.Categories)
+                {
+                    ServiceCategory? cate = await _unitOfWork.ServiceCategoryRepo.GetCategoryByIdAsync(cateId);
+                    categories.Add(cate);
+                }
+
+                if (categories.Count != service.Categories.ToList().Count)
+                    throw new Exception("Categories is not matched");
+
+                PartnerService? newService = await _unitOfWork.PartnerRepo.AddPartnerServiceAsync(partnerService);
+
+                if (newService == null)
+                    throw new Exception("Added faield");
+
+
+                foreach (var cate in categories)
+                {
+                    if (cate == null)
+                        throw new Exception("One of the categories is not available");
+
+                    ServiceDetail serviceDetail = new ServiceDetail
+                    {
+                        CreatedDate = DateTime.Now,
+                        ServiceId = newService.ServiceId,
+                        CategoryId = cate.CategoryId,
+                    };
+
+                    ServiceDetail? detail = await _unitOfWork.ServiceDetailRepo.AddServiceDetailAsync(serviceDetail);
+                    if (detail == null)
+                        throw new Exception("Error when adding 1 of the details");
+                }
+
+                await _unitOfWork.CommitTransactionAsync(commit);
+                return newService;
+            }
+            catch (Exception ex)
+            {
+                await _unitOfWork.RollBackAsync(commit, TRANSACTION);
+                throw new Exception(ex.Message);
+            }
+        }
 
         public async Task<PartnerServiceDTO?> GetPartnerServiceDetailAsync(int serviceId)
         {
@@ -187,26 +262,24 @@ namespace Service.Service
             }
         }
 
-        public async Task<IEnumerable<SearchPartnerDTO>> SearchPartnerByPartnerOrServiceName(string keyword)
+        public async Task<IEnumerable<SearchPartnerDTO>> SearchPartnerByPartnerOrServiceNameAsync(string keyword)
         {
             try
             {
                 IEnumerable<Partner> searchedPartner = await _unitOfWork.PartnerRepo.SearchPartnerByPartnerOrServiceNameAsync(keyword.Trim());
                 IEnumerable<SearchPartnerDTO> results = _mapper.Map<IEnumerable<SearchPartnerDTO>>(searchedPartner);
-                // Task for getting details parrallel
-                List<Task<PartnerServiceDTO?>> tasks = new();
+                List<PartnerServiceDTO?> serviceDetails = new List<PartnerServiceDTO?>();
                 foreach (var partner in results)
                 {
                     foreach (var service in partner.PartnerServices)
                     {
                         if (service != null)
-                            tasks.Add(GetPartnerServiceDetailAsync(service.ServiceId));
+                        {
+                            var sd = await GetPartnerServiceDetailAsync(service.ServiceId);
+                            serviceDetails.Add(sd);
+                        }
                     }
-                    // Wait for all the tasks to be done
-                    var resultsForPartner = await Task.WhenAll(tasks);
-                    //* Empty for mutable service detail
-                    partner.PartnerServices = Enumerable.Empty<PartnerServiceDTO>();
-                    partner.PartnerServices.ToList().AddRange(resultsForPartner);
+                    partner.PartnerServices = serviceDetails.Where(result => result != null).ToList();
                 }
                 return results;
             }
@@ -275,5 +348,7 @@ namespace Service.Service
                 throw new Exception(ex.Message);
             }
         }
+
+
     }
 }

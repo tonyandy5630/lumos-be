@@ -14,13 +14,13 @@ namespace BussinessObject
         }
 
         public int PartnerId { get; set; }
-        public int? TypeId { get; set; }
+        public int TypeId { get; set; }
         public string? Code { get; set; }
         public string? Email { get; set; }
-        public string? PartnerName { get; set; }
+        public string PartnerName { get; set; }
         public string? DisplayName { get; set; }
         [JsonIgnore]
-        public string? Password { get; set; }
+        public string Password { get; set; }
         public string? Phone { get; set; }
         public string? Address { get; set; }
         public string? Description { get; set; }
