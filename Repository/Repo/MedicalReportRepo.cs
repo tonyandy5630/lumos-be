@@ -16,5 +16,7 @@ namespace Repository.Repo
         public Task<MedicalReport> AddMedicalReportAsyn(MedicalReport medicalReport) => MedicalReportDAO.Instance.AddMedicalReportAsyn(medicalReport);
 
         public Task<List<MedicalReport>> GetMedicalReportByCustomerIdAsync(int id) => MedicalReportDAO.Instance.GetMedicalReportByCustomerIdAsync(id);
+
+        public Task<MedicalReport> GetMedicalReportByIdAsync(int id) => MedicalReportDAO.Instance.GetMedicalReportByIdAsync(id);   
     }
 }

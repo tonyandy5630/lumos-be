@@ -70,5 +70,18 @@ namespace DataAccessLayer
                 throw new Exception(ex.Message);
             }
         }
+
+        public async Task<MedicalReport> GetMedicalReportByIdAsync(int id)
+        {
+            try
+            {
+                return await dbContext.MedicalReports.FirstOrDefaultAsync(u => u.ReportId == id);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetMedicalReportByIdAsync: {ex.Message}", ex);
+                throw new Exception(ex.Message);
+            }
+        }
     }
 }
