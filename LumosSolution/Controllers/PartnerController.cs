@@ -102,5 +102,35 @@ namespace LumosSolution.Controllers
             }
         }
 
+        [HttpGet("{id}/schedule")]
+        [Authorize(Roles = "Partner,Customer")]
+        public async Task<ActionResult<List<Schedule>>> GetScheduleByPartnerId(int id)
+        {
+            ApiResponse<List<Schedule>> res = new ApiResponse<List<Schedule>>();
+            try
+            {
+                res.data = await _partnerService.GetScheduleByPartnerIdAsyn(id);
+                if (res.data == null || res.data.Count == 0)
+                {
+                    res.message = MessagesResponse.Error.NotFound;
+                    res.StatusCode = ApiStatusCode.NotFound;
+                }
+                else
+                {
+                    {
+                        res.message = MessagesResponse.Success.Completed;
+                        res.StatusCode = ApiStatusCode.OK;
+                    }
+                }
+
+                return Ok(res);
+            }
+            catch
+            {
+                res.message = MessagesResponse.Error.OperationFailed;
+                res.StatusCode = ApiStatusCode.BadRequest;
+                return BadRequest(res);
+            }
+        }
     }
 }
