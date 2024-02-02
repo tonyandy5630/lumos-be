@@ -23,6 +23,6 @@ namespace Repository.Interface
         Task<IEnumerable<Partner>> SearchPartnerByPartnerOrServiceNameAsync(string keyword);
 
         Task<IEnumerable<PartnerService>> GetPartnerServiceByServiceNameAsync(string serviceName, int partnerId);
-        Task<EntityEntry<PartnerService>> AddPartnerServiceAsync(PartnerService service);
+        Task<PartnerService?> AddPartnerServiceAsync(PartnerService service);
     }
 }

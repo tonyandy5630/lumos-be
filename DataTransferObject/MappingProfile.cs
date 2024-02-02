@@ -46,6 +46,7 @@ namespace DataTransferObject
                 .ForMember(dto => dto.Duration, act => act.MapFrom(src => src.Duration))
                 .ForMember(dto => dto.Description, act => act.MapFrom(src => src.Description))
                 .ForMember(dto => dto.Price, act => act.MapFrom(src => src.Price));
+            
                 
                 
         }

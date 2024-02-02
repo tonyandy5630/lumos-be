@@ -14,7 +14,7 @@ namespace Repository.Repo
     {
         public PartnerRepo(LumosDBContext context) { }
 
-        public Task<EntityEntry<PartnerService>> AddPartnerServiceAsync(PartnerService service) => PartnerDAO.Instance.AddPartnerServiceAsync(service);
+        public Task<PartnerService?> AddPartnerServiceAsync(PartnerService service) => PartnerDAO.Instance.AddPartnerServiceAsync(service);
         public Task<bool> AddPartnerAsync(Partner partner) =>PartnerDAO.Instance.AddPartnereAsync(partner);
 
         public Task<bool> BanPartnerAsync(int partnerId) => PartnerDAO.Instance.BanPartnerAsync(partnerId);

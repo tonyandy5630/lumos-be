@@ -11,10 +11,13 @@ namespace Repository.Repo
 {
     public class ServiceCategoryRepo:IServiceCategoryRepo
     {
-        public ServiceCategoryRepo(LumosDBContext context) { }
+        private readonly ServiceCategoryDAO serviceCategoryDAO;
+        public ServiceCategoryRepo(LumosDBContext context) {
+            serviceCategoryDAO = new ServiceCategoryDAO(context);
+        }
 
-        public Task<IEnumerable<ServiceCategory>> GetCategoriesByServiceIdAsync(int serviceId) =>  ServiceCategoryDAO.Instance.GetCategoriesOfServiceByServiceIdAsync(serviceId);
+        public Task<IEnumerable<ServiceCategory>> GetCategoriesByServiceIdAsync(int serviceId) => serviceCategoryDAO.GetCategoriesOfServiceByServiceIdAsync(serviceId);
 
-        public Task<ServiceCategory?> GetCategoryByIdAsync(int cateId) =>  ServiceCategoryDAO.Instance.GetCategoryByIdAsync(cateId);
+        public Task<ServiceCategory?> GetCategoryByIdAsync(int cateId) =>  serviceCategoryDAO.GetCategoryByIdAsync(cateId);
     }
 }

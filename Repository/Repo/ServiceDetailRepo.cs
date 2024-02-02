@@ -14,6 +14,6 @@ namespace Repository.Repo
     {
         public ServiceDetailRepo(LumosDBContext context) { }
 
-        public Task<EntityEntry<ServiceDetail>> AddServiceDetailAsync(ServiceDetail serviceDetail) => ServiceDetailDAO.Instance.AddServiceDetailAsync(serviceDetail);
+        public Task<ServiceDetail?> AddServiceDetailAsync(ServiceDetail serviceDetail) => ServiceDetailDAO.Instance.AddServiceDetailAsync(serviceDetail);
     }
 }

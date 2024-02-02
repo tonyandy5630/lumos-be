@@ -1,5 +1,4 @@
 ﻿using BussinessObject;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,8 +7,8 @@ using System.Threading.Tasks;
 
 namespace Repository.Interface
 {
-    public interface IServiceDetailRepo
+    public interface IPartnerServiceRepo
     {
-        Task<ServiceDetail?> AddServiceDetailAsync(ServiceDetail serviceDetail);
+        Task<PartnerService?> GetPartnerServiceByServiceNameAsync(string serviceName, int partnerId);
     }
 }

@@ -3,11 +3,13 @@ using DataTransferObject.DTO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.DotNet.Scaffolding.Shared.Messaging;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using RequestEntity;
 using Service.InterfaceService;
-using Service.RequestEntity;
 using Service.Service;
 using System.Collections.Generic;
+using System.Security.Claims;
 using Utils;
 
 namespace LumosSolution.Controllers
@@ -51,9 +53,9 @@ namespace LumosSolution.Controllers
             }
         }
 
-        [HttpGet, Route("{keyword?}")]
+        [HttpGet]
         [Authorize(Roles = "Admin,Customer")]
-        public async Task<ActionResult<IEnumerable<SearchPartnerDTO>>> GetPartnerByPartnerOrServiceName(string keyword = "")
+        public async Task<ActionResult<IEnumerable<SearchPartnerDTO>>> GetPartnerByPartnerOrServiceName([FromQuery]string? keyword = "")
         {
             ApiResponse<IEnumerable<SearchPartnerDTO>> res = new ApiResponse<IEnumerable<SearchPartnerDTO>>
             {
@@ -84,27 +86,36 @@ namespace LumosSolution.Controllers
         }
 
         [HttpPost("service")]
+        [Authorize(Roles ="Partner")]
         public async Task<ActionResult<PartnerService>> AddPartnerService([FromBody]AddPartnerServiceResquest service)
         {
             ApiResponse<PartnerService> response = new ApiResponse<PartnerService>
             {
-                message = MessagesResponse.Error.OperationFailed,
                 StatusCode = 500
             };
             try
             {
-                if(ModelState.IsValid)
+                if(!ModelState.IsValid)
                 {
                     response.message = MessagesResponse.Error.InvalidInput;
                     response.StatusCode = 422;
                     return UnprocessableEntity(response);
                 }
-                string? accessToken = User.Claims.FirstOrDefault(c => c.Type == "Email")?.Value;
-                PartnerService newService = await _partnerService.AddPartnerServiceAsync(service, accessToken);
+
+                string? email = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+                PartnerService newService = await _partnerService.AddPartnerServiceAsync(service, email);
+
+                if (newService == null)
+                    throw new Exception("Added sevice failed");
+
+                response.message = MessagesResponse.Success.Created;
+                response.StatusCode = 200;
+                response.data = newService;
                 return Ok(response);
             }catch(Exception ex)
             {
-                Console.WriteLine(ex.Message) ;
+                Console.WriteLine(ex.Message);
+                response.message = ex.Message;
                 return BadRequest(response);
             }
         }
