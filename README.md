@@ -1,12 +1,5 @@
 # <center>Lumos - Home Healthcare Platform for Maternal and Infant Care</center>
 
-<style>
-  .center-image {
-    text-align: center;
-    background-color: #ffffff;
-  }
-</style>
-
 <div class="center-image">
   <img src="https://github.com/tonyandy5630/lumos-be/blob/main/LumosLogo/Lumos.png" alt="Lumos Logo">
 </div>
