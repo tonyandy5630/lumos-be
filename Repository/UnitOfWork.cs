@@ -34,6 +34,7 @@ namespace Repository
             ServiceCategoryRepo = new ServiceCategoryRepo(context);
             SystemConfigurationRepo = new SystemConfigurationRepo(context);
             MedicalReportRepo = new MedicalReportRepo(context);
+            PartnerTypeRepo = new PartnerTypeRepo(context);
         }
         public LumosDBContext Context { get { return _Context; } }
         public IAddressRepo AddressRepo { get; }
@@ -49,6 +50,7 @@ namespace Repository
         public IServiceCategoryRepo ServiceCategoryRepo { get; }
         public ISystemConfigurationRepo SystemConfigurationRepo { get; }
         public IMedicalReportRepo MedicalReportRepo { get; }
+        public IPartnerTypeRepo PartnerTypeRepo { get; }
 
         public Task CommitTransactionAsync(IDbContextTransaction commit)
         {

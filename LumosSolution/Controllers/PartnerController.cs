@@ -73,7 +73,7 @@ namespace LumosSolution.Controllers
             }
         }
 
-        [HttpGet("/{id}")]
+        [HttpGet("{id}")]
         [Authorize(Roles = "Admin,Customer,Partner")]
         public async Task<ActionResult<ApiResponse<Partner?>>> GetPartnerById(int id)
         {
@@ -125,8 +125,41 @@ namespace LumosSolution.Controllers
 
                 return Ok(res);
             }
-            catch
+            catch (Exception ex)
             {
+                Console.WriteLine($"Error in GetScheduleByPartnerId: {ex.Message}", ex);
+                res.message = MessagesResponse.Error.OperationFailed;
+                res.StatusCode = ApiStatusCode.BadRequest;
+                return BadRequest(res);
+            }
+        }
+
+        [HttpGet("type")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<ApiResponse<List<PartnerType>>>> GetPartnerTypesAsync([FromQuery] string? keyword)
+        {
+            ApiResponse<List<PartnerType>> res = new ApiResponse<List<PartnerType>>();
+            try
+            {
+                List<PartnerType> partnerTypes = await _partnerService.GetPartnerTypesAsync(keyword);
+                if (partnerTypes.Count == 0)
+                {
+                    res.message = MessagesResponse.Error.NotFound;
+                    res.StatusCode = ApiStatusCode.NotFound;
+                    return Ok(res);
+                }
+
+                else
+                {
+                    res.message = MessagesResponse.Success.Completed;
+                    res.StatusCode = ApiStatusCode.OK;
+                    res.data = partnerTypes;
+                    return Ok(res);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetPartnerTypesAsync: {ex.Message}", ex);
                 res.message = MessagesResponse.Error.OperationFailed;
                 res.StatusCode = ApiStatusCode.BadRequest;
                 return BadRequest(res);

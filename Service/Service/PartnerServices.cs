@@ -182,7 +182,6 @@ namespace Service.Service
         {
             try
             {
-
                 IEnumerable<Partner> searchedPartner = await _unitOfWork.PartnerRepo.SearchPartnerByPartnerOrServiceNameAsync(keyword.Trim());
                 IEnumerable<SearchPartnerDTO> results = _mapper.Map<IEnumerable<SearchPartnerDTO>>(searchedPartner);
                 // Task for getting details parrallel
@@ -202,9 +201,23 @@ namespace Service.Service
                 }
                 return results;
             }
-            catch
+            catch (Exception ex)
             {
-                return null;
+                Console.WriteLine($"Error in SearchPartnerByPartnerOrServiceName: { ex.Message}", ex);
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<List<PartnerType>> GetPartnerTypesAsync(string? keyword)
+        {
+            try
+            {   List<PartnerType> partnerTypes =  await _unitOfWork.PartnerTypeRepo.GetPartnerTypesAsync(keyword);
+                Console.WriteLine("GetPartnerTypesAsync: " + partnerTypes.Count);
+                return partnerTypes;
+            } catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetPartnerTypesAsync: {ex.Message}", ex);
+                throw new Exception(ex.Message);
             }
         }
 
