@@ -136,6 +136,35 @@ namespace LumosSolution.Controllers
             {
                 response.message = MessagesResponse.Error.OperationFailed;
                 response.StatusCode = ApiStatusCode.BadRequest;
+            }
+        }
+        
+        [HttpPost("address")]
+        [Authorize(Roles = "Customer")]
+        public async Task<ActionResult<ApiResponse<Address>>> AddCustomerAddressAsync([FromBody] Address address)
+        {
+            ApiResponse<Address> response = new ApiResponse<Address>();
+            try
+            {
+                response.data = await _customerService.AddCustomerAddressAsync(address);
+                if (response.data == null)
+                {
+                    response.message = MessagesResponse.Error.OperationFailed;
+                    response.StatusCode = ApiStatusCode.BadRequest;
+                }
+                else
+                {
+                    response.StatusCode = ApiStatusCode.OK;
+                    response.message = MessagesResponse.Success.Completed;
+                }
+
+                return Ok(response);
+            }
+            catch
+            {
+                response.message = MessagesResponse.Error.OperationFailed;
+                response.StatusCode = ApiStatusCode.BadRequest;
+
                 return BadRequest(response);
             }
         }
