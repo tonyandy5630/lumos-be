@@ -22,19 +22,15 @@ namespace DataAccessLayer
 
         public static ServiceCategoryDAO Instance
         {
-            _context = context;
+            get
+            {
+                if (instance == null)
+                {
+                    instance = new ServiceCategoryDAO();
+                }
+                return instance;
+            }
         }
-        //public static ServiceCategoryDAO Instance
-        //{
-        //    get
-        //    {
-        //        if (instance == null)
-        //        {
-        //            instance = new ServiceCategoryDAO();
-        //        }
-        //        return instance;
-        //    }
-        //}
 
         public async Task<IEnumerable<ServiceCategory>> GetCategoriesOfServiceByServiceIdAsync(int serviceId)
         {
