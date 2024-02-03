@@ -14,6 +14,7 @@ namespace Service.InterfaceService
         Task<(bool, string)> ValidateRefreshToken(string refreshToken);
         Task<(bool, string)> CheckRole(string email);
         Task UpdateLastLoginTime(string email);
-        Task<bool> SignOutAsync(string email, string roles);
+        Task<bool> SignOutAsync(string accessToken);
+
     }
 }

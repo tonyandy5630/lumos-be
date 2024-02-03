@@ -23,12 +23,10 @@ namespace Service.Service
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly IServiceProvider _serviceProvider;
-        public PartnerServices(IUnitOfWork unitOfWork, IMapper mapper, IServiceProvider serviceProvider)
+        public PartnerServices(IUnitOfWork unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
-            _serviceProvider = serviceProvider;
         }
 
         public async Task<PartnerService?> AddPartnerServiceAsync(AddPartnerServiceResquest service, string? partnerEmail)
