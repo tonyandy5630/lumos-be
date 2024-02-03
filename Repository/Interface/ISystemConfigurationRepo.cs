@@ -10,5 +10,6 @@ namespace Repository.Interface
     public interface ISystemConfigurationRepo
     {
         Task<IEnumerable<SystemConfiguration>> SearchSystemConfigByNameAsync(string name);
+        Task<SystemConfiguration?> GetSystemConfigDetailByIdAsync(int id);
     }
 }

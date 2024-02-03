@@ -17,6 +17,20 @@ namespace Service.Service
             _unitOfWork = unitOfWork;
         }
 
+        public async Task<SystemConfiguration?> GetSystemConfigurationDetailById(int id)
+        {
+            try
+            {
+                SystemConfiguration? systemConfig = await _unitOfWork.SystemConfigurationRepo.GetSystemConfigDetailByIdAsync(id);
+                if (systemConfig == null)
+                    return null;
+                return systemConfig;
+            }catch(Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
         public async Task<IEnumerable<SystemConfiguration>> SearchSystemConfigByNameAsync(string name)
         {
             try

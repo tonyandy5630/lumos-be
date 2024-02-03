@@ -18,6 +18,37 @@ namespace LumosSolution.Controllers
             _systemService = systemService;
         }
 
+        [HttpGet("detail/{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<ApiResponse<SystemConfiguration>>> GetSystemConfigurationDetail(int id)
+        {
+            ApiResponse<SystemConfiguration> response = new ApiResponse<SystemConfiguration>
+            {
+                message = MessagesResponse.Error.OperationFailed,
+                StatusCode = 500
+            };
+            try
+            {
+                SystemConfiguration? config = await _systemService.GetSystemConfigurationDetailById(id);
+                if(config == null)
+                {
+                    response.message = MessagesResponse.Error.NotFound;
+                        response.StatusCode = 404;
+                        return NotFound(response);
+                };
+                response.message = MessagesResponse.Success.Completed;
+                response.StatusCode = 200;
+                response.data = config;
+                return Ok(response);
+            }catch(Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                response.message = ex.Message;
+                return BadRequest(response);
+            }
+        }
+
+
         [HttpGet]
         [Authorize(Roles ="Admin")]
         public async Task<ActionResult<IEnumerable<SystemConfiguration>>> SearchSystemConfigByName(string? keyword)

@@ -14,5 +14,7 @@ namespace Repository.Repo
         public SystemConfigurationRepo(LumosDBContext context) { }
 
         public Task<IEnumerable<SystemConfiguration>> SearchSystemConfigByNameAsync(string name) => SystemConfigurationDAO.Instance.SearchSystemConfigByNameAsync(name);
+
+        public Task<SystemConfiguration?> GetSystemConfigDetailByIdAsync(int id) => SystemConfigurationDAO.Instance.GetSystemConfigDetailByIdAsync(id);
     }
 }

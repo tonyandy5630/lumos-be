@@ -10,5 +10,6 @@ namespace Service.InterfaceService
     public interface ISystemConfigurationService
     {
         Task<IEnumerable<SystemConfiguration>> SearchSystemConfigByNameAsync(string name);
+        Task<SystemConfiguration?> GetSystemConfigurationDetailById(int id);
     }
 }

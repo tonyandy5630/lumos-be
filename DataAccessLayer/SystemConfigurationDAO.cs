@@ -35,5 +35,10 @@ namespace DataAccessLayer
         {
             return await _context.SystemConfigurations.Where(s => s.Field.ToLower().Contains(config.ToLower())).ToListAsync();
         }
+
+        public async Task<SystemConfiguration?> GetSystemConfigDetailByIdAsync(int id)
+        {
+            return await _context.SystemConfigurations.FirstOrDefaultAsync(s => s.ConfigId == id);
+        }
     }
 }
