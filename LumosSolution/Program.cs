@@ -52,7 +52,7 @@ builder.Services
         options.Events = new JwtBearerEvents
         {
             OnChallenge = ctx => LogAttempt(ctx.Request.Headers, "OnChallenge"),
-            OnTokenValidated = ctx => LogAttempt(ctx.Request.Headers, "OnTokenValidated")
+            OnTokenValidated = ctx => LogAttempt(ctx.Request.Headers, "OnTokenValidated"),
         };
     })
     .AddGoogle(options =>
