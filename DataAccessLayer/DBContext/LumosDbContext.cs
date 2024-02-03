@@ -636,7 +636,8 @@ namespace BussinessObject
 
                 entity.Property(e => e.Config).HasColumnType("text");
 
-                entity.Property(e => e.Field).HasColumnType("text");
+                entity.Property(e => e.Field).HasMaxLength(50)
+                    .IsUnicode(false);
 
                 entity.Property(e => e.LastUpdate).HasColumnType("datetime");
 
