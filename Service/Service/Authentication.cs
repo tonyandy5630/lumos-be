@@ -1,4 +1,4 @@
-﻿using BussinessObject;
+using BussinessObject;
 using Enum;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -251,6 +251,7 @@ namespace Service.Service
             }
         }
 
+
         public async Task<bool> SignOutAsync(string accessToken)
         {
             try
@@ -289,7 +290,7 @@ namespace Service.Service
                 throw new Exception(ex.Message);
             }
         }
-
+        
         private async Task<string> GetRefreshToken(string? refreshToken)
         {
             try
@@ -313,5 +314,6 @@ namespace Service.Service
             string? role = decodedToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
             return await Task.FromResult((email, role));
         }
+
     }
 }
