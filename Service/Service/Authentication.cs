@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Enum;
+using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Service.InterfaceService;
 using System;
@@ -36,7 +37,7 @@ namespace Service.Service
                 if (adminResponse != null && adminResponse.Password == password)
                 {
                     authenticated = true;
-                    role = "Admin";
+                    role = nameof(RolesEnum.Admin);
                 }
 
                 if (!authenticated)
@@ -45,7 +46,8 @@ namespace Service.Service
                     if (partnerResponse != null && partnerResponse.Password == password)
                     {
                         authenticated = true;
-                        role = "Partner";
+                        role = nameof(RolesEnum.Partner);
+
                     }
                 }
 
@@ -55,7 +57,8 @@ namespace Service.Service
                     if (customerResponse != null && customerResponse.Password == password)
                     {
                         authenticated = true;
-                        role = "Customer";
+                        role = nameof(RolesEnum.Customer);
+
                     }
                 }
 
@@ -195,15 +198,15 @@ namespace Service.Service
 
                 if (adminResponse != null)
                 {
-                    return (true, "Admin");
+                    return (true, nameof(RolesEnum.Admin));
                 }
                 else if (customerResponse != null)
                 {
-                    return (true, "Customer");
+                    return (true, nameof(RolesEnum.Customer));
                 }
                 else if (partnerResponse != null)
                 {
-                    return (true, "Partner");
+                    return (true, nameof(RolesEnum.Partner));
                 }
                 else
                 {
@@ -245,6 +248,18 @@ namespace Service.Service
             catch (Exception ex)
             {
                 Console.WriteLine($"Exception in UpdateLastLoginTime: {ex.Message}");
+            }
+        }
+
+        public Task<bool> SignOutAsync(string email, string roles)
+        {
+            try
+            {
+
+                return Task.FromResult(false);
+            }catch(Exception ex)
+            {
+                throw new Exception(ex.Message);
             }
         }
     }
