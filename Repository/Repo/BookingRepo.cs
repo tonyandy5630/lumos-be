@@ -1,4 +1,5 @@
 ﻿using BussinessObject;
+using DataAccessLayer;
 using Repository.Interface;
 using System;
 using System.Collections.Generic;
@@ -8,8 +9,12 @@ using System.Threading.Tasks;
 
 namespace Repository.Repo
 {
-    public class BookingRepo:IBookingRepo
+    public class BookingRepo: IBookingRepo
     {
         public BookingRepo(LumosDBContext context) { }
+
+        public Task<BookingDetail> GetBookingDetailByBookingIdAsync(int id) =>BookingDAO.Instance.GetBookingDetailByBookingIdAsync(id);
+
+        public Task<List<Booking>> GetBookingsByMedicalReportIdAsync(int medicalReportId) => BookingDAO.Instance.GetBookingsByMedicalReportIdAsync(medicalReportId);
     }
 }
