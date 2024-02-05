@@ -22,6 +22,7 @@ namespace LumosSolution.Controllers
         }
 
         [HttpGet("bookingdetail/{id}/booking")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<ApiResponse<object>>> GetBookingDetailById(int id)
         {
             ApiResponse<object> response = new ApiResponse<object>();
@@ -51,6 +52,7 @@ namespace LumosSolution.Controllers
         }
 
         [HttpGet("/medical-report/{reportId}/booking")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<ApiResponse<object>>> GetBookingsByMedicalReportId(int reportId)
         {
             ApiResponse<object> response = new ApiResponse<object>();

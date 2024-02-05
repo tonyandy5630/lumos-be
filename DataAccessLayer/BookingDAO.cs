@@ -47,9 +47,12 @@ namespace DataAccessLayer
             try
             {
                 var bookings = await dbContext.BookingDetails
-                    .Where(bd => bd.ReportId == medicalReportId)
-                    .Select(bd => bd.Booking)
-                    .ToListAsync();
+                .Where(bd => bd.ReportId == medicalReportId)
+                .Select(bd => bd.Booking)
+                .Include(b => b.Payment)
+                .Include(b => b.BookingDetails)
+                .Include(b => b.BookingLogs)
+                .ToListAsync();
 
                 return bookings;
             }
