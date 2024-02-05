@@ -1,4 +1,5 @@
 ﻿using BussinessObject;
+using DataTransferObject.DTO;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using System;
@@ -33,11 +34,29 @@ namespace DataAccessLayer
             }
         }
 
-        public async Task<PartnerService?> GetPartnerServiceByIdAsync(int serviceId)
+        public async Task<PartnerServiceDTO?> GetPartnerServiceByIdAsync(int serviceId)
         {
             try
             {
-                return await _context.PartnerServices.FirstOrDefaultAsync(s => s.ServiceId == serviceId);
+                var result = from ps in _context.PartnerServices
+                             join sb in _context.ServiceBookings 
+                             on ps.ServiceId equals sb.ServiceId
+                             group new { ps, sb } by new { ps.ServiceId, ps.Name, ps.Description, ps.Code, ps.Status, ps.CreatedDate, ps.UpdatedBy, ps.Duration, ps.LastUpdate } into grouped
+                             select new PartnerServiceDTO
+                             {
+                                 ServiceId = grouped.Key.ServiceId,
+                                 Name = grouped.Key.Name,
+                                 Description = grouped.Key.Description,
+                                 Code = grouped.Key.Code,
+                                 Status = grouped.Key.Status,
+                                 CreatedDate = grouped.Key.CreatedDate,
+                                 UpdatedBy = grouped.Key.UpdatedBy,
+                                 LastUpdate = grouped.Key.LastUpdate,
+                                 Duration = grouped.Key.Duration,
+                                 BookedQuantity = grouped.Count()
+                             };
+
+                return await result.FirstOrDefaultAsync(s => s.ServiceId == serviceId);
             }
             catch (Exception ex)
             {

@@ -1,5 +1,6 @@
 ﻿using BussinessObject;
 using DataAccessLayer;
+using DataTransferObject.DTO;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Repository.Interface;
 using System;
@@ -32,7 +33,7 @@ namespace Repository.Repo
 
         public Task<IEnumerable<PartnerService>> GetPartnerServiceByServiceNameAsync(string serviceName, int partnerId) => PartnerDAO.Instance.GetServiceOfPartnerByServiceName(serviceName, partnerId);
 
-        public Task<PartnerService?> GetPartnerServiceDetailByIdAsync(int id) => PartnerDAO.Instance.GetPartnerServiceByIdAsync(id);
+        public Task<PartnerServiceDTO?> GetPartnerServiceDetailByIdAsync(int id) => PartnerDAO.Instance.GetPartnerServiceByIdAsync(id);
 
         public Task<IEnumerable<Partner>> SearchPartnerByPartnerOrServiceNameAsync(string keyword) => PartnerDAO.Instance.SearchPartnerByServiceOrPartnerNameAsync(keyword);
 
