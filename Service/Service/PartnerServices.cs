@@ -104,16 +104,15 @@ namespace Service.Service
         {
             try
             {
-                PartnerService? service = await _unitOfWork.PartnerRepo.GetPartnerServiceDetailByIdAsync(serviceId);
+                PartnerServiceDTO? service = await _unitOfWork.PartnerRepo.GetPartnerServiceDetailByIdAsync(serviceId);
                 IEnumerable<ServiceCategory> serviceCategories = await _unitOfWork.ServiceCategoryRepo.GetCategoriesByServiceIdAsync(serviceId);
 
                 if (service == null)
                     return null;
 
-                PartnerServiceDTO? serviceDTO = _mapper.Map<PartnerServiceDTO>(service);
                 IEnumerable<ServiceCategoryDTO> serviceCategoryDTOs = _mapper.Map<IEnumerable<ServiceCategoryDTO>>(serviceCategories);
-                serviceDTO.Categories = serviceCategoryDTOs;
-                return serviceDTO;
+                service.Categories = serviceCategoryDTOs;
+                return service;
             }
             catch (Exception ex)
             {

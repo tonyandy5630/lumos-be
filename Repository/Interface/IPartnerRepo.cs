@@ -1,4 +1,5 @@
 ﻿using BussinessObject;
+using DataTransferObject.DTO;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using System;
 using System.Collections.Generic;
@@ -10,7 +11,7 @@ namespace Repository.Interface
 {
     public interface IPartnerRepo
     {
-        Task<PartnerService?> GetPartnerServiceDetailByIdAsync(int id);
+        Task<PartnerServiceDTO?> GetPartnerServiceDetailByIdAsync(int id);
         Task<List<Partner>> GetAllPartnersAsync();
         Task<Partner> GetPartnerByIDAsync(int id);
         Task<Partner> GetPartnerByRefreshTokenAsync(string token);

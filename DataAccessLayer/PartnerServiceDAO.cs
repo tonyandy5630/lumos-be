@@ -35,5 +35,6 @@ namespace DataAccessLayer
         {
             return await _context.PartnerServices.FirstOrDefaultAsync(s => s.PartnerId == partnerId && s.Name.ToLower().Contains(serviceName.ToLower()));
         }
+
     }
 }

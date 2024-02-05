@@ -14,5 +14,6 @@ namespace Repository.Repo
         public PartnerServiceRepo(LumosDBContext context) { }
 
         public Task<PartnerService?> GetPartnerServiceByServiceNameAsync(string serviceName, int partnerId) => PartnerServiceDAO.Instance.GetServiceOfPartnerByServiceNameAsync(serviceName, partnerId);
+
     }
 }
