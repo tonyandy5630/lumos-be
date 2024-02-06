@@ -193,7 +193,6 @@ namespace DataAccessLayer
                 var existing = await _context.Partners.SingleOrDefaultAsync(s => s.PartnerId == partner.PartnerId);
                 if (existing != null)
                 {
-                    existing.Code = partner.Code;
                     existing.PartnerName = partner.PartnerName;
                     existing.Description = partner.Description;
                     existing.Status = partner.Status;
