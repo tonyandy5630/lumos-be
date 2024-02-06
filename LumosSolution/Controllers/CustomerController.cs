@@ -112,25 +112,25 @@ namespace LumosSolution.Controllers
 
         [HttpPost, Route("medical-report")]
         [Authorize(Roles = "Customer")]
-        public async Task<ActionResult<MedicalReport>> AddMedicalReport([FromBody] MedicalReport medicalReport)
+        public async Task<ActionResult<ApiResponse<MedicalReportDTO?>>> AddMedicalReport([FromBody] MedicalReport medicalReport)
         {
-            ApiResponse<MedicalReport> response = new ApiResponse<MedicalReport>();
+            ApiResponse<MedicalReportDTO?> response = new ApiResponse<MedicalReportDTO?>
+            {
+                message = MessagesResponse.Error.NotFound,
+                StatusCode = 404
+            };
             try
             {
-                response.data = await _customerService.AddMedicalReportAsyn(medicalReport);
+                MedicalReportDTO? med = await _customerService.AddMedicalReportAsyn(medicalReport);
 
-                if (response.data != null)
-                {
-                    response.message = MessagesResponse.Success.Completed;
-                    response.StatusCode = ApiStatusCode.OK;
-                    return Ok(response);
-                }
-                else
-                {
-                    response.message = MessagesResponse.Error.OperationFailed;
-                    response.StatusCode = ApiStatusCode.BadRequest;
-                    return BadRequest(response);
-                }
+                if (med == null)
+                    return response;
+
+                response.message = MessagesResponse.Success.Completed;
+                response.StatusCode = 200;
+                response.data = med;
+
+                return Ok(response);
             }
             catch (Exception ex)
             {

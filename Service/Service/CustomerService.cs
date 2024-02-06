@@ -1,4 +1,6 @@
+using AutoMapper;
 using BussinessObject;
+using DataTransferObject.DTO;
 using Microsoft.Extensions.Logging;
 using Repository.Interface.IUnitOfWork;
 using Service.InterfaceService;
@@ -12,10 +14,12 @@ namespace Service.Service
     public class CustomerService : ICustomerService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
 
-        public CustomerService(IUnitOfWork unitOfWork)
+        public CustomerService(IUnitOfWork unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
+            _mapper = mapper;
         }
 
         public async Task<bool> AddCustomerAsync(Customer customer)
@@ -163,11 +167,14 @@ namespace Service.Service
             }
         }
 
-        public Task<MedicalReport> AddMedicalReportAsyn(MedicalReport medicalReport)
+        public async Task<MedicalReportDTO> AddMedicalReportAsyn(MedicalReport medicalReport)
         {
             try
             {
-                return _unitOfWork.MedicalReportRepo.AddMedicalReportAsyn(medicalReport);
+                MedicalReport med = await _unitOfWork.MedicalReportRepo.AddMedicalReportAsyn(medicalReport);
+                MedicalReportDTO medDTO = _mapper.Map<MedicalReportDTO>(med);
+
+                return medDTO;
             }
             catch (Exception ex)
             {
