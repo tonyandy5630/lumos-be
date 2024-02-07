@@ -7,6 +7,8 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Utils;
+using DataTransferObject.DTO;
+using AutoMapper;
 
 namespace LumosSolution.Controllers
 {
@@ -15,10 +17,11 @@ namespace LumosSolution.Controllers
     public class BookingController : ControllerBase
     {
         private readonly IBookingService _bookingService;
-
-        public BookingController(IBookingService bookingService)
+        private readonly IMapper _mapper;
+        public BookingController(IBookingService bookingService, IMapper mapper)
         {
             _bookingService = bookingService;
+            _mapper = mapper;
         }
 
         [HttpGet("bookingdetail/{id}/booking")]
@@ -72,6 +75,40 @@ namespace LumosSolution.Controllers
                 response.StatusCode = ApiStatusCode.OK;
 
                 return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                response.message = MessagesResponse.Error.OperationFailed;
+                response.StatusCode = ApiStatusCode.BadRequest;
+                return BadRequest(response);
+            }
+        }
+
+        [HttpPost("booking")]
+        /*        [Authorize(Roles = "Admin")]*/
+        public async Task<ActionResult<ApiResponse<object>>> CreateBookingAsync([FromBody] CreateBookingDTO createBookingDTO)
+        {
+            ApiResponse<object> response = new ApiResponse<object>();
+            try
+            {
+                // Chuyển đổi CreateBookingDTO thành Booking
+                var booking = _mapper.Map<Booking>(createBookingDTO);
+
+                // Gọi phương thức tạo mới booking từ BookingService
+                bool result = await _bookingService.CreateBookingAsync(booking,createBookingDTO);
+
+                if (result)
+                {
+                    response.message = MessagesResponse.Success.Created;
+                    response.StatusCode = ApiStatusCode.OK;
+                    return Ok(response);
+                }
+                else
+                {
+                    response.message = MessagesResponse.Error.OperationFailed;
+                    response.StatusCode = ApiStatusCode.BadRequest;
+                    return BadRequest(response);
+                }
             }
             catch (Exception ex)
             {
