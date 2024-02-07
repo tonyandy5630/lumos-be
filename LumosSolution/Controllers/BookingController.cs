@@ -10,7 +10,7 @@ using Utils;
 
 namespace LumosSolution.Controllers
 {
-    [Route("api/admin")]
+    [Route("api/admin/")]
     [ApiController]
     public class BookingController : ControllerBase
     {
@@ -51,7 +51,7 @@ namespace LumosSolution.Controllers
             }
         }
 
-        [HttpGet("/medical-report/{reportId}/booking")]
+        [HttpGet("medical-report/{reportId}/booking")]
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult<ApiResponse<object>>> GetBookingsByMedicalReportId(int reportId)
         {
