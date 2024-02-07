@@ -2,6 +2,7 @@
 using BussinessObject;
 using BussinessObject.AuthenModel;
 using DataTransferObject.DTO;
+using RequestEntity;
 
 namespace DataTransferObject
 {
@@ -9,6 +10,14 @@ namespace DataTransferObject
     {
         public MappingProfile()
         {
+            CreateMap<CreateBookingDTO, Booking>()
+            .ForMember(dest => dest.PaymentId, opt => opt.MapFrom(src => src.PaymentId))
+            .ForMember(dest => dest.TotalPrice, opt => opt.MapFrom(src => src.TotalPrice))
+            .ForMember(dest => dest.BookingDate, opt => opt.MapFrom(src => src.BookingDate))
+            .ForMember(dest => dest.From, opt => opt.MapFrom(src => TimeSpan.Parse(src.From)))
+            .ForMember(dest => dest.CreatedBy, opt => opt.MapFrom(src => src.CreatedBy))
+            .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Address));
+
             CreateMap<RegistrationModel, Customer>()
                 .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
                 .ForMember(dest => dest.Password, opt => opt.MapFrom(src => src.Password));
@@ -66,6 +75,13 @@ namespace DataTransferObject
                 .ForMember(dto => dto.BloodType, act => act.MapFrom(src => src.BloodType))
                 .ForMember(dto => dto.Note, act => act.MapFrom(src => src.Note))
                 .ForMember(dto => dto.Status, act => act.MapFrom(src => src.Status));
+
+            CreateMap<AddPartnerServiceResquest, PartnerService>()
+                .ForMember(dto => dto.Name, act => act.MapFrom(src => src.Name))
+                .ForMember(dto => dto.Code, act => act.MapFrom(src => src.Code))
+                .ForMember(dto => dto.Duration, act => act.MapFrom(src => src.Duration))
+                .ForMember(dto => dto.Description, act => act.MapFrom(src => src.Description))
+                .ForMember(dto => dto.Price, act => act.MapFrom(src => src.Price));
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using BussinessObject;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,9 +8,8 @@ using System.Threading.Tasks;
 
 namespace Repository.Interface
 {
-    public interface IScheduleRepo
+    public interface IServiceDetailRepo
     {
-        Task<List<Schedule>> GetScheduleByPartnerIdAsyn(int id);
-        Task<Schedule> AddPartnerScheduleAsync(Schedule schedule);
+        Task<ServiceDetail?> AddServiceDetailAsync(ServiceDetail serviceDetail);
     }
 }

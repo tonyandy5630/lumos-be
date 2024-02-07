@@ -1,7 +1,12 @@
-﻿using Microsoft.Extensions.Configuration;
+using BussinessObject;
+using Enum;
+using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using Repository;
+using Repository.Interface.IUnitOfWork;
 using Service.InterfaceService;
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -13,16 +18,12 @@ namespace Service.Service
     public class Authentication : IAuthentication
     {
         private readonly IConfiguration _configuration;
-        private readonly IAdminService _adminService;
-        private readonly ICustomerService _customerService;
-        private readonly IPartnerService _partnerService;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public Authentication(IConfiguration configuration, IAdminService adminService, ICustomerService customerService, IPartnerService partnerService)
+        public Authentication(IConfiguration configuration, IUnitOfWork unitOfWork)
         {
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
-            _adminService = adminService ?? throw new ArgumentNullException(nameof(adminService));
-            _customerService = customerService ?? throw new ArgumentNullException(nameof(customerService));
-            _partnerService = partnerService ?? throw new ArgumentNullException(nameof(partnerService));
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<(bool, string)> IsUserAuthenticatedAsync(string email, string password)
@@ -32,30 +33,32 @@ namespace Service.Service
                 string role = null;
                 bool authenticated = false;
 
-                var adminResponse = await _adminService.GetAdminByEmailAsync(email);
+                var adminResponse = await _unitOfWork.AdminRepo.GetAdminByEmailAsync(email);
                 if (adminResponse != null && adminResponse.Password == password)
                 {
                     authenticated = true;
-                    role = "Admin";
+                    role = nameof(RolesEnum.Admin);
                 }
 
                 if (!authenticated)
                 {
-                    var partnerResponse = await _partnerService.GetPartnerByEmailAsync(email);
+                    var partnerResponse = await _unitOfWork.PartnerRepo.GetPartnerByEmailAsync(email);
                     if (partnerResponse != null && partnerResponse.Password == password)
                     {
                         authenticated = true;
-                        role = "Partner";
+                        role = nameof(RolesEnum.Partner);
+
                     }
                 }
 
                 if (!authenticated)
                 {
-                    var customerResponse = await _customerService.GetCustomerByEmailAsync(email);
+                    var customerResponse = await _unitOfWork.CustomerRepo.GetCustomerByEmailAsync(email);
                     if (customerResponse != null && customerResponse.Password == password)
                     {
                         authenticated = true;
-                        role = "Customer";
+                        role = nameof(RolesEnum.Customer);
+
                     }
                 }
 
@@ -121,25 +124,25 @@ namespace Service.Service
         {
             try
             {
-                var adminResponse = await _adminService.GetAdminByEmailAsync(email);
-                var customerResponse = await _customerService.GetCustomerByEmailAsync(email);
-                var partnerResponse = await _partnerService.GetPartnerByEmailAsync(email);
+                var adminResponse = await _unitOfWork.AdminRepo.GetAdminByEmailAsync(email);
+                var customerResponse = await _unitOfWork.CustomerRepo.GetCustomerByEmailAsync(email);
+                var partnerResponse = await _unitOfWork.PartnerRepo.GetPartnerByEmailAsync(email);
 
                 switch (adminResponse, customerResponse, partnerResponse)
                 {
                     case (BussinessObject.Admin admin, _, _):
                         admin.RefreshToken = refreshToken;
-                        await _adminService.UpdateAdminAsync(admin);
+                        await _unitOfWork.AdminRepo.UpdateAdminAsync(admin);
                         break;
 
                     case (_, BussinessObject.Customer customer, _):
                         customer.RefreshToken = refreshToken;
-                        await _customerService.UpdateCustomerAsync(customer);
+                        await _unitOfWork.CustomerRepo.UpdateCustomerAsync(customer);
                         break;
 
                     case (_, _, BussinessObject.Partner partner):
                         partner.RefreshToken = refreshToken;
-                        await _partnerService.UpdatePartnerAsync(partner);
+                        await _unitOfWork.PartnerRepo.UpdatePartnerAsync(partner);
                         break;
 
                     default:
@@ -157,9 +160,9 @@ namespace Service.Service
         {
             try
             {
-                var adminResponse = await _adminService.GetAdminByRefreshTokenAsync(refreshToken);
-                var customerResponse = await _customerService.GetCustomerByRefreshTokenAsync(refreshToken);
-                var partnerResponse = await _partnerService.GetPartnerByRefreshTokenAsync(refreshToken);
+                var adminResponse = await _unitOfWork.AdminRepo.GetAdminByRefreshTokenAsync(refreshToken);
+                var customerResponse = await _unitOfWork.CustomerRepo.GetCustomerByRefreshTokenAsync(refreshToken);
+                var partnerResponse = await _unitOfWork.PartnerRepo.GetPartnerByRefreshTokenAsync(refreshToken);
 
                 if (adminResponse != null)
                 {
@@ -189,21 +192,21 @@ namespace Service.Service
         {
             try
             {
-                var adminResponse = await _adminService.GetAdminByEmailAsync(email);
-                var customerResponse = await _customerService.GetCustomerByEmailAsync(email);
-                var partnerResponse = await _partnerService.GetPartnerByEmailAsync(email);
+                var adminResponse = await _unitOfWork.AdminRepo.GetAdminByEmailAsync(email);
+                var customerResponse = await _unitOfWork.CustomerRepo.GetCustomerByEmailAsync(email);
+                var partnerResponse = await _unitOfWork.PartnerRepo.GetPartnerByEmailAsync(email);
 
                 if (adminResponse != null)
                 {
-                    return (true, "Admin");
+                    return (true, nameof(RolesEnum.Admin));
                 }
                 else if (customerResponse != null)
                 {
-                    return (true, "Customer");
+                    return (true, nameof(RolesEnum.Customer));
                 }
                 else if (partnerResponse != null)
                 {
-                    return (true, "Partner");
+                    return (true, nameof(RolesEnum.Partner));
                 }
                 else
                 {
@@ -221,8 +224,8 @@ namespace Service.Service
         {
             try
             {
-                var customerResponse = await _customerService.GetCustomerByEmailAsync(email);
-                var partnerResponse = await _partnerService.GetPartnerByEmailAsync(email);
+                var customerResponse = await _unitOfWork.CustomerRepo.GetCustomerByEmailAsync(email);
+                var partnerResponse = await _unitOfWork.PartnerRepo.GetPartnerByEmailAsync(email);
 
                 DateTime now = DateTime.UtcNow;
 
@@ -230,12 +233,12 @@ namespace Service.Service
                 {
                     case (BussinessObject.Customer customer, _):
                         customer.LastLogin = now;
-                        await _customerService.UpdateCustomerAsync(customer);
+                        await _unitOfWork.CustomerRepo.UpdateCustomerAsync(customer);
                         break;
 
                     case (_, BussinessObject.Partner partner):
                         partner.LastLogin = now;
-                        await _partnerService.UpdatePartnerAsync(partner);
+                        await _unitOfWork.PartnerRepo.UpdatePartnerAsync(partner);
                         break;
 
                     default:
@@ -247,5 +250,70 @@ namespace Service.Service
                 Console.WriteLine($"Exception in UpdateLastLoginTime: {ex.Message}");
             }
         }
+
+
+        public async Task<bool> SignOutAsync(string accessToken)
+        {
+            try
+            {
+                var (email, roles) = await GetEmailAndRolesFromToken(accessToken);
+                if(email.IsNullOrEmpty() || roles.IsNullOrEmpty())
+                {
+                    throw new Exception("cannot get email or roles");
+                }
+
+                string refreshToken = "";
+                switch (roles)
+                {
+                    case nameof(RolesEnum.Admin):
+                        Admin admin = await _unitOfWork.AdminRepo.GetAdminByEmailAsync(email);
+                        if (admin == null)
+                            throw new Exception("cannot find email");
+
+                        refreshToken = await GetRefreshToken(admin.RefreshToken);
+                        break;
+                    case nameof(RolesEnum.Partner):
+                        Partner partner = await _unitOfWork.PartnerRepo.GetPartnerByEmailAsync(email);
+                        if (partner == null) throw new Exception("cannot find partner");
+                        refreshToken = await GetRefreshToken(partner.RefreshToken);
+                        break;
+                    case nameof(RolesEnum.Customer):
+                        Customer customer = await _unitOfWork.CustomerRepo.GetCustomerByEmailAsync(email);
+                        if (customer == null) throw new Exception("cannot find customer");
+                        refreshToken = await GetRefreshToken(customer.RefreshToken);
+                        break;
+                }
+
+                return await Task.FromResult(false);
+            }catch(Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+        
+        private async Task<string> GetRefreshToken(string? refreshToken)
+        {
+            try
+            {
+                if (refreshToken == null || refreshToken.Length == 0)
+                    throw new Exception();
+                return await Task.FromResult(refreshToken);
+            }catch( Exception ex )
+            {
+                throw new Exception("Cannot find user refresh token");
+            }
+        }
+
+        private async Task<(string?, string?)> GetEmailAndRolesFromToken(string token)
+        {
+            string aToken = token.Split(" ")[1];
+            JwtSecurityTokenHandler handler = new JwtSecurityTokenHandler();
+            JwtSecurityToken decodedToken = handler.ReadJwtToken(aToken);
+
+            string? email = decodedToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+            string? role = decodedToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
+            return await Task.FromResult((email, role));
+        }
+
     }
 }

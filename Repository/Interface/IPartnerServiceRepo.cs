@@ -7,9 +7,8 @@ using System.Threading.Tasks;
 
 namespace Repository.Interface
 {
-    public interface IScheduleRepo
+    public interface IPartnerServiceRepo
     {
-        Task<List<Schedule>> GetScheduleByPartnerIdAsyn(int id);
-        Task<Schedule> AddPartnerScheduleAsync(Schedule schedule);
+        Task<PartnerService?> GetPartnerServiceByServiceNameAsync(string serviceName, int partnerId);
     }
 }

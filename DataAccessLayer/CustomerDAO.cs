@@ -149,7 +149,6 @@ namespace DataAccessLayer
                 var existing = await dbContext.Customers.SingleOrDefaultAsync(x => x.CustomerId == customer.CustomerId);
                 if (existing != null)
                 {
-                    existing.Code = customer.Code;
                     existing.Email = customer.Email;
                     existing.Password = customer.Password;
                     existing.Status = customer.Status;

@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\BussinessObject\BussinessObject.csproj" />
+    <ProjectReference Include="..\RequestEntity\RequestEntity.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,4 +1,5 @@
-﻿using Repository.Interface.IUnitOfWork;
+﻿using BussinessObject;
+using Repository.Interface.IUnitOfWork;
 using Service.InterfaceService;
 using System;
 using System.Collections.Generic;
@@ -14,6 +15,32 @@ namespace Service.Service
         public SystemConfigurationService(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
+        }
+
+        public async Task<SystemConfiguration?> GetSystemConfigurationDetailById(int id)
+        {
+            try
+            {
+                SystemConfiguration? systemConfig = await _unitOfWork.SystemConfigurationRepo.GetSystemConfigDetailByIdAsync(id);
+                if (systemConfig == null)
+                    return null;
+                return systemConfig;
+            }catch(Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<IEnumerable<SystemConfiguration>> SearchSystemConfigByNameAsync(string name)
+        {
+            try
+            {
+                List<SystemConfiguration> searchedConfig = (List<SystemConfiguration>) await _unitOfWork.SystemConfigurationRepo.SearchSystemConfigByNameAsync(name.Trim());
+                return searchedConfig;
+            }catch(Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
         }
     }
 }

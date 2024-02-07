@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Utils;
 
 namespace DataAccessLayer
 {
@@ -41,6 +42,28 @@ namespace DataAccessLayer
             catch (Exception ex)
             {
                 Console.WriteLine($"Error in GetScheduleByPartnerIdAsyn: {ex.Message}", ex);
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<Schedule> AddPartnerScheduleAsync(Schedule schedule)
+        {
+            try
+            {
+                schedule.Code = GenerateCode.GenerateTableCode("Schedule");
+                schedule.CreatedDate = DateTime.Now;
+                schedule.CreatedDate = DateTime.Now;
+                //schedule.CreatedBy = "admin";
+                //schedule.UpdatedBy = "admin";
+
+                _context.Schedules.Add(schedule);
+                await _context.SaveChangesAsync();
+                Console.WriteLine("Schedule added successfully");
+                return await _context.Schedules.SingleOrDefaultAsync(x => x.Code.Equals(schedule.Code));
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in AddPartnerScheduleAsync: {ex.Message}", ex);
                 throw new Exception(ex.Message);
             }
         }

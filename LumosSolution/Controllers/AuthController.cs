@@ -41,6 +41,31 @@ namespace LumosSolution.Controllers
             _authentication = authentication;
             _mapper = mapper;
         }
+
+        [HttpPost("sign-out")]
+        public async Task<ActionResult<ApiResponse<string>>> SignOut()
+        {
+            ApiResponse<string> response = new ApiResponse<string>
+            {
+                message = MessagesResponse.Error.OperationFailed,
+                StatusCode = 500
+            };
+
+            try
+            {
+                string accessToken = Request.Headers.FirstOrDefault(h => h.Key.Equals("Authorization")).ToString();
+                bool isUserSignedOut = await _authentication.SignOutAsync(accessToken);
+                if (!isUserSignedOut)
+                    return BadRequest(response);
+                response.message = MessagesResponse.Success.Completed;
+                response.StatusCode = 200;
+            }catch(Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return BadRequest(ex.Message);
+            }
+            return Ok(response);
+        }
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegistrationModel model)
         {
@@ -86,7 +111,7 @@ namespace LumosSolution.Controllers
 
         }
 
-        [HttpPost("register/google")]
+        [HttpPost("google/register")]
         public async Task<IActionResult> RegisterGoogle([FromBody] string credential)
         {
             ApiResponse<object> response = new ApiResponse<object>();
@@ -136,7 +161,7 @@ namespace LumosSolution.Controllers
             }
         }
 
-        [HttpPost("loginwithgoogle")]
+        [HttpPost("google/login")]
         public async Task<IActionResult> LoginWithGoogle([FromBody] string credential)
         {
             ApiResponse<object>? response = new ApiResponse<object>();
