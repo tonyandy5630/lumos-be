@@ -12,7 +12,7 @@ using AutoMapper;
 
 namespace LumosSolution.Controllers
 {
-    [Route("api/admin/")]
+    [Route("api")]
     [ApiController]
     public class BookingController : ControllerBase
     {
@@ -24,7 +24,7 @@ namespace LumosSolution.Controllers
             _mapper = mapper;
         }
 
-        [HttpGet("bookingdetail/{id}/booking")]
+        [HttpGet("admin/bookingdetail/{id}/booking")]
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult<ApiResponse<object>>> GetBookingDetailById(int id)
         {
@@ -54,7 +54,7 @@ namespace LumosSolution.Controllers
             }
         }
 
-        [HttpGet("medical-report/{reportId}/booking")]
+        [HttpGet("admin/medical-report/{reportId}/booking")]
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult<ApiResponse<object>>> GetBookingsByMedicalReportId(int reportId)
         {
@@ -84,17 +84,14 @@ namespace LumosSolution.Controllers
             }
         }
 
-        [HttpPost("booking")]
-        /*        [Authorize(Roles = "Admin")]*/
+        [HttpPost("customer/booking")]
+        [Authorize(Roles = "Customer")]
         public async Task<ActionResult<ApiResponse<object>>> CreateBookingAsync([FromBody] CreateBookingDTO createBookingDTO)
         {
             ApiResponse<object> response = new ApiResponse<object>();
             try
             {
-                // Chuyển đổi CreateBookingDTO thành Booking
                 var booking = _mapper.Map<Booking>(createBookingDTO);
-
-                // Gọi phương thức tạo mới booking từ BookingService
                 bool result = await _bookingService.CreateBookingAsync(booking,createBookingDTO);
 
                 if (result)
