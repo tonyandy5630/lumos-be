@@ -10,6 +10,7 @@ namespace DataTransferObject.DTO
     public class MedicalReportDTO
     {
         public int ReportId { get; set; }
+        public int? CustomerId { get; set; }
         public string? Code { get; set; }
         public string? Fullname { get; set; }
         public string? Phone { get; set; }

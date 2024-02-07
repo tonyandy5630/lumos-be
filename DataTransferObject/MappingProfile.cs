@@ -56,6 +56,7 @@ namespace DataTransferObject
 
             CreateMap<MedicalReport, MedicalReportDTO>()
                 .ForMember(dto => dto.ReportId, act => act.MapFrom(src => src.ReportId))
+                .ForMember(dto => dto.CustomerId, act => act.MapFrom(src => src.CustomerId))
                 .ForMember(dto => dto.Code, act => act.MapFrom(src => src.Code))
                 .ForMember(dto => dto.Fullname, act => act.MapFrom(src => src.Fullname))
                 .ForMember(dto => dto.Phone, act => act.MapFrom(src => src.Phone))
