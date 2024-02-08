@@ -9,8 +9,7 @@ namespace DataTransferObject.DTO
 {
     public class MedicalReportDTO
     {
-/*        public int ReportId { get; set; }
-        public string? Code { get; set; }*/
+
         public string? Fullname { get; set; }
         public string? Phone { get; set; }
         public DateTime? Dob { get; set; }
@@ -18,6 +17,5 @@ namespace DataTransferObject.DTO
         public int? Pronounce { get; set; }
         public int? BloodType { get; set; }
         public string? Note { get; set; }
-/*        public int? Status { get; set; }*/
     }
 }
