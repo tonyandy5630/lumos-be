@@ -23,7 +23,7 @@ namespace Service.InterfaceService
         Task<bool> BanPartnerAsync(int partnerId);
         Task<List<Schedule>> GetScheduleByPartnerIdAsyn(int id);
         Task<List<PartnerType>> GetPartnerTypesAsync(string? keyword);
-        Task<Schedule> AddPartnerScheduleAsync(Schedule schedule);
+        Task<List<Schedule>> AddPartnerScheduleAsync(List<AddPartnerScheduleRequest> scheduleList, string? partnerEmail);
         Task<IEnumerable<SearchPartnerDTO>> SearchPartnerByPartnerOrServiceNameAsync(string keyword);
         Task<PartnerService> AddPartnerServiceAsync(AddPartnerServiceResquest service, string? partnerEmail);
     }

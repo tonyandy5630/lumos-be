@@ -55,7 +55,7 @@ namespace LumosSolution.Controllers
 
         [HttpGet]
         [Authorize(Roles = "Admin,Customer")]
-        public async Task<ActionResult<IEnumerable<SearchPartnerDTO>>> GetPartnerByPartnerOrServiceName([FromQuery]string? keyword = "")
+        public async Task<ActionResult<IEnumerable<SearchPartnerDTO>>> GetPartnerByPartnerOrServiceName([FromQuery] string? keyword = "")
         {
             ApiResponse<IEnumerable<SearchPartnerDTO>> res = new ApiResponse<IEnumerable<SearchPartnerDTO>>
             {
@@ -106,10 +106,9 @@ namespace LumosSolution.Controllers
             }
         }
 
-
         [HttpPost("service")]
-        [Authorize(Roles ="Partner")]
-        public async Task<ActionResult<PartnerService>> AddPartnerService([FromBody]AddPartnerServiceResquest service)
+        [Authorize(Roles = "Partner")]
+        public async Task<ActionResult<PartnerService>> AddPartnerService([FromBody] AddPartnerServiceResquest service)
         {
             ApiResponse<PartnerService> response = new ApiResponse<PartnerService>
             {
@@ -117,7 +116,7 @@ namespace LumosSolution.Controllers
             };
             try
             {
-                if(!ModelState.IsValid)
+                if (!ModelState.IsValid)
                 {
                     response.message = MessagesResponse.Error.InvalidInput;
                     response.StatusCode = 422;
@@ -134,14 +133,14 @@ namespace LumosSolution.Controllers
                 response.StatusCode = 200;
                 response.data = newService;
                 return Ok(response);
-            }catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
                 response.message = ex.Message;
                 return BadRequest(response);
             }
         }
-
 
         [HttpGet("{id}/schedule")]
         [Authorize(Roles = "Partner,Customer")]
@@ -236,34 +235,37 @@ namespace LumosSolution.Controllers
                 return BadRequest(response);
             }
         }
-        
+
         [HttpPost("schedule")]
-        [Authorize(Roles = "Admin")]
-        public async Task<ActionResult<ApiResponse<Schedule>>> AddPartnerSchedule([FromBody] Schedule schedule)
+        [Authorize(Roles = "Partner")]
+        public async Task<ActionResult<ApiResponse<List<Schedule>>>> AddPartnerSchedule([FromBody] List<AddPartnerScheduleRequest> scheduleList)
         {
-            ApiResponse<Schedule> res = new ApiResponse<Schedule>();
+            ApiResponse<List<Schedule>> response = new ApiResponse<List<Schedule>>
+            {
+                message = MessagesResponse.Error.OperationFailed,
+                StatusCode = ApiStatusCode.BadRequest,
+            };
+
             try
             {
-                Schedule addedSchedule = await _partnerService.AddPartnerScheduleAsync(schedule);
-                if (addedSchedule == null)
-                {
-                    throw new Exception("Something wrong, Schedule not added");
-                }
-                else
-                {
-                    res.message = MessagesResponse.Success.Completed;
-                    res.StatusCode = ApiStatusCode.OK;
-                    res.data = addedSchedule;
-                    return Ok(res);
-                }
+                string? email = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+                List<Schedule> addedSchedules = await _partnerService.AddPartnerScheduleAsync(scheduleList, email);
+
+                response.data = addedSchedules;
+                response.message = MessagesResponse.Success.Completed;
+                response.StatusCode = ApiStatusCode.OK;
+
+                return Ok(response);
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error in AddPartnerSchedule: {ex.Message}", ex);
-                res.message = MessagesResponse.Error.OperationFailed;
-                res.StatusCode = ApiStatusCode.BadRequest;
-                return BadRequest(res);
+                response.message = MessagesResponse.Error.OperationFailed;
+                response.StatusCode = ApiStatusCode.BadRequest;
+
+                return StatusCode(response.StatusCode, response);
             }
         }
+
     }
 }
