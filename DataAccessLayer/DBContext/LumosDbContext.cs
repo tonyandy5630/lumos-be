@@ -428,7 +428,9 @@ namespace BussinessObject
 
                 entity.Property(e => e.CreatedDate).HasColumnType("datetime");
 
-                entity.Property(e => e.Description).HasColumnType("text");
+                entity.Property(e => e.Description)
+                    .HasMaxLength(300)
+                    .IsUnicode(true);
 
                 entity.Property(e => e.LastUpdate).HasColumnType("datetime");
 
@@ -511,6 +513,9 @@ namespace BussinessObject
                 entity.ToTable("Schedule");
 
                 entity.Property(e => e.ScheduleId).ValueGeneratedOnAdd();
+
+                entity.Property(e => e.From).HasColumnType("datetime");
+                entity.Property(e => e.To).HasColumnType("datetime");
 
                 entity.Property(e => e.Code)
                     .HasMaxLength(50)
@@ -636,7 +641,8 @@ namespace BussinessObject
 
                 entity.Property(e => e.Config).HasColumnType("text");
 
-                entity.Property(e => e.Field).HasColumnType("text");
+                entity.Property(e => e.Field).HasMaxLength(50)
+                    .IsUnicode(false);
 
                 entity.Property(e => e.LastUpdate).HasColumnType("datetime");
 

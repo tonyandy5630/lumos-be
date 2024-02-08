@@ -1,4 +1,5 @@
 ﻿using BussinessObject;
+using DataAccessLayer;
 using DataTransferObject;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -23,7 +24,8 @@ namespace Service.DI
         {
             services.AddHttpContextAccessor();
             services.AddDbContext<LumosDBContext>(option =>
-            option.UseSqlServer(connectionString));
+            option.UseSqlServer(connectionString), ServiceLifetime.Transient);
+
 
             #region entity
             //authentication
@@ -47,6 +49,7 @@ namespace Service.DI
             services.AddTransient<IBookingRepo, BookingRepo>();
             services.AddTransient<IBookingService, BookingService>();
 
+
             services.AddTransient<ICustomerRepo, CustomerRepo>();
             services.AddTransient<ICustomerService, CustomerService>();
 
@@ -56,9 +59,15 @@ namespace Service.DI
             services.AddTransient<IMedicalReportRepo, MedicalReportRepo>();
             services.AddTransient<IMedicalReportService, MedicalReportService>();
 
+            //ServiceDetail
+            services.AddTransient<IServiceDetailRepo, ServiceDetailRepo>();
+
             // Partner
             services.AddTransient<IPartnerRepo, PartnerRepo>();
             services.AddTransient<IPartnerService, PartnerServices>();
+
+            //ParterService
+            services.AddTransient<IPartnerServiceRepo, PartnerServiceRepo>();
 
             services.AddTransient<IPartnerTypeRepo, PartnerTypeRepo>();
             services.AddTransient<IPartnerService, PartnerServices>();
@@ -77,6 +86,7 @@ namespace Service.DI
 
             services.AddTransient<ISystemConfigurationRepo, SystemConfigurationRepo>();
             services.AddTransient<ISystemConfigurationService, SystemConfigurationService>();
+
 
             #endregion
 

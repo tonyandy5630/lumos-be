@@ -1,15 +1,18 @@
-using BussinessObject;
+﻿using BussinessObject;
 using DataTransferObject.DTO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Service.InterfaceService;
+using Service.Service;
+using System.Security.Claims;
 using Utils;
+using static Microsoft.Extensions.Logging.EventSource.LoggingEventSource;
 
 namespace LumosSolution.Controllers
 {
     [Route("api/customer")]
     [ApiController]
-    public class CustomerController : Controller
+    public class CustomerController : ControllerBase
     {
         private readonly ICustomerService _customerService;
         public CustomerController(ICustomerService customerService)
@@ -45,8 +48,8 @@ namespace LumosSolution.Controllers
                 res.message = MessagesResponse.Error.OperationFailed;
                 res.StatusCode = ApiStatusCode.BadRequest;
                 return BadRequest(res);
-             }
-         }
+            }
+        }
          
         [HttpGet("{id}/address")]
         [Authorize(Roles = "Admin,Customer")]
@@ -74,6 +77,135 @@ namespace LumosSolution.Controllers
                 response.message = MessagesResponse.Error.OperationFailed;
                 response.StatusCode = ApiStatusCode.BadRequest;
                 
+                return BadRequest(response);
+            }
+        }
+
+        [HttpGet]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<List<Customer>>> GetCustomerAsync([FromQuery] string? keyword)
+        {
+            ApiResponse<List<Customer>> response = new ApiResponse<List<Customer>>();
+            try
+            {
+                response.data = await _customerService.GetCustomersAsync(keyword);
+                if (response.data == null || response.data.Count == 0)
+                {
+                    response.message = MessagesResponse.Error.NotFound;
+                    response.StatusCode = ApiStatusCode.NotFound;
+                }
+                else
+                {
+                    response.StatusCode = ApiStatusCode.OK;
+                    response.message = MessagesResponse.Success.Completed;
+                }
+
+                return Ok(response);
+            }
+            catch
+            {
+                response.message = MessagesResponse.Error.OperationFailed;
+                response.StatusCode = ApiStatusCode.BadRequest;
+
+                return BadRequest(response);
+            }
+        }
+
+        [HttpPost, Route("medical-report")]
+        [Authorize(Roles = "Customer")]
+        public async Task<ActionResult<ApiResponse<MedicalReport>>> AddMedicalReport([FromBody] MedicalReportDTO medicalReport)
+        {
+            ApiResponse<MedicalReport> response = new ApiResponse<MedicalReport>
+            {
+                message = MessagesResponse.Error.NotFound,
+                StatusCode = 404
+            };
+
+            try
+            {
+                string? userEmail = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+
+                if (string.IsNullOrEmpty(userEmail))
+                {
+                    response.message = "Cannot find user email";
+                    return BadRequest(response);
+                }
+
+                MedicalReport med = await _customerService.AddMedicalReportAsync(medicalReport, userEmail);
+
+                if (med == null)
+                    return response;
+
+                response.message = MessagesResponse.Success.Created;
+                response.StatusCode = 200;
+                response.data = med;
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                response.message = ex.Message;
+                return BadRequest(response);
+            }
+        }
+
+        [HttpPost("address")]
+        [Authorize(Roles = "Customer")]
+        public async Task<ActionResult<ApiResponse<Address>>> AddCustomerAddressAsync([FromBody] Address address)
+        {
+            ApiResponse<Address> response = new ApiResponse<Address>();
+            try
+            {
+                response.data = await _customerService.AddCustomerAddressAsync(address);
+                if (response.data == null)
+                {
+                    response.message = MessagesResponse.Error.OperationFailed;
+                    response.StatusCode = ApiStatusCode.BadRequest;
+                }
+                else
+                {
+                    response.StatusCode = ApiStatusCode.OK;
+                    response.message = MessagesResponse.Success.Completed;
+                }
+
+                return Ok(response);
+            }
+            catch
+            {
+                response.message = MessagesResponse.Error.OperationFailed;
+                response.StatusCode = ApiStatusCode.BadRequest;
+
+                return BadRequest(response);
+            }
+        }
+
+        [HttpGet("medical-report/{id}")]
+        [Authorize(Roles = "Admin,Customer")]
+        public async Task<ActionResult<MedicalReport>> GetMedicalReportById(int id)
+        {
+            ApiResponse<MedicalReport> response = new ApiResponse<MedicalReport>();
+            try
+            {
+                response.data = await _customerService.GetMedicalReportByIdAsync(id);
+                if (response.data == null)
+                {
+                    response.message = MessagesResponse.Error.NotFound;
+                    response.StatusCode = ApiStatusCode.NotFound;
+                }
+                else
+                {
+                    response.StatusCode = ApiStatusCode.OK;
+                    response.message = MessagesResponse.Success.Completed;
+                }
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                response.message = MessagesResponse.Error.OperationFailed;
+                response.StatusCode = ApiStatusCode.BadRequest;
+
                 return BadRequest(response);
             }
         }

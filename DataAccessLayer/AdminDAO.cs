@@ -136,7 +136,6 @@ namespace DataAccessLayer
                 var existing = await dbContext.Admins.SingleOrDefaultAsync(x => x.AdminId == admin.AdminId);
                 if (existing != null)
                 {
-                    existing.Code = admin.Code;
                     existing.Email = admin.Email;
                     existing.Password = admin.Password;
                     existing.Status = admin.Status;

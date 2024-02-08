@@ -1,17 +1,20 @@
 ﻿using BussinessObject;
+using DataTransferObject.DTO;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Utils;
 
 namespace DataAccessLayer
 {
     public class PartnerDAO
     {
         private static PartnerDAO instance = null;
-        private LumosDBContext _context = null;
+        private readonly LumosDBContext _context = null;
 
         public PartnerDAO()
         {
@@ -31,11 +34,29 @@ namespace DataAccessLayer
             }
         }
 
-        public async Task<PartnerService?> GetPartnerServiceByIdAsync(int serviceId)
+        public async Task<PartnerServiceDTO?> GetPartnerServiceByIdAsync(int serviceId)
         {
             try
             {
-                return await _context.PartnerServices.FirstOrDefaultAsync(s => s.ServiceId == serviceId);
+                var result = from ps in _context.PartnerServices
+                             join sb in _context.ServiceBookings 
+                             on ps.ServiceId equals sb.ServiceId
+                             group new { ps, sb } by new { ps.ServiceId, ps.Name, ps.Description, ps.Code, ps.Status, ps.CreatedDate, ps.UpdatedBy, ps.Duration, ps.LastUpdate } into grouped
+                             select new PartnerServiceDTO
+                             {
+                                 ServiceId = grouped.Key.ServiceId,
+                                 Name = grouped.Key.Name,
+                                 Description = grouped.Key.Description,
+                                 Code = grouped.Key.Code,
+                                 Status = grouped.Key.Status,
+                                 CreatedDate = grouped.Key.CreatedDate,
+                                 UpdatedBy = grouped.Key.UpdatedBy,
+                                 LastUpdate = grouped.Key.LastUpdate,
+                                 Duration = grouped.Key.Duration,
+                                 BookedQuantity = grouped.Count()
+                             };
+
+                return await result.FirstOrDefaultAsync(s => s.ServiceId == serviceId);
             }
             catch (Exception ex)
             {
@@ -44,14 +65,29 @@ namespace DataAccessLayer
             }
         }
 
+        public async Task<PartnerService?> AddPartnerServiceAsync(PartnerService service)
+        {
+            await _context.PartnerServices.AddAsync(service);
+
+            if (await _context.SaveChangesAsync() == 1)
+                return service;
+            return null;
+        }
+
         public async Task<IEnumerable<Partner>> SearchPartnerByServiceOrPartnerNameAsync(string keyword)
         {
-            return await _context.Partners.Where(s => s.PartnerName.Contains(keyword) || s.PartnerServices.Any(ps => ps.Name.Contains(keyword))).Include(x => x.PartnerServices.Where(s => s.Name.Contains(keyword))).ToListAsync();
+            var result = _context.Partners
+                        .Where(p => p.PartnerName.Contains(keyword) || p.PartnerServices.Any(s => s.Name.Contains(keyword)))
+                        .Include(s => s.PartnerServices
+                        .Where(s => s.Name.Contains(keyword)))
+                        .AsNoTracking()
+                        .ToListAsync();
+            return await result;
         }
 
         public async Task<IEnumerable<PartnerService>> GetServiceOfPartnerByServiceName(string keyword, int partnerId)
         {
-            return await _context.PartnerServices.Where( s => s.PartnerId == partnerId && s.Name.Contains(keyword)).ToListAsync();
+            return await _context.PartnerServices.Where(s => s.PartnerId == partnerId && s.Name.Contains(keyword)).ToListAsync();
         }
         public async Task<List<Partner>> GetAllPartnersAsync()
         {
@@ -120,22 +156,28 @@ namespace DataAccessLayer
                 throw new Exception(ex.Message);
             }
         }
-        public async Task<bool> AddPartnereAsync(Partner partner)
+        public async Task<Partner> AddPartnereAsync(Partner partner)
         {
             try
             {
                 bool existing = (await GetAllPartnersAsync())
-                    .Any(s => s.Code.ToLower().Equals(partner.Code.ToLower()));
+                    .Any(p => p.PartnerName.ToLower().Equals(partner.PartnerName.ToLower())
+                        || p.DisplayName.ToLower().Equals(partner.DisplayName.ToLower())
+                        || p.Email.ToLower().Equals(partner.Email.ToLower())
+                        || p.BusinessLicenseNumber.ToLower().Equals(partner.BusinessLicenseNumber.ToLower()));                   
 
                 if (!existing)
                 {
+                    partner.Code = GenerateCode.GenerateRoleCode("partner");
+                    partner.CreatedDate = DateTime.Now;
+                    partner.LastUpdate = DateTime.Now;
                     _context.Partners.Add(partner);
                     await _context.SaveChangesAsync();
-                    Console.WriteLine("Add partner successfully!");
-                    return true;
+                    
+                    return await _context.Partners.SingleOrDefaultAsync(p => p.Code.Equals(partner.Code));
                 }
 
-                return false;
+                return null;
             }
             catch (Exception ex)
             {
@@ -151,7 +193,6 @@ namespace DataAccessLayer
                 var existing = await _context.Partners.SingleOrDefaultAsync(s => s.PartnerId == partner.PartnerId);
                 if (existing != null)
                 {
-                    existing.Code = partner.Code;
                     existing.PartnerName = partner.PartnerName;
                     existing.Description = partner.Description;
                     existing.Status = partner.Status;

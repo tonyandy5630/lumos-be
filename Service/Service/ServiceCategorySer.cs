@@ -1,4 +1,5 @@
-﻿using Repository.Interface.IUnitOfWork;
+﻿using BussinessObject;
+using Repository.Interface.IUnitOfWork;
 using Service.InterfaceService;
 using System;
 using System.Collections.Generic;
@@ -8,12 +9,14 @@ using System.Threading.Tasks;
 
 namespace Service.Service
 {
-    public class ServiceCategorySer:IServiceCategorySer
+    public class ServiceCategorySer : IServiceCategorySer
     {
         private readonly IUnitOfWork _unitOfWork;
         public ServiceCategorySer(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
         }
+
+        public Task<List<ServiceCategory>> GetCategorysAsync(string? keyword) => _unitOfWork.ServiceCategoryRepo.GetCategorysAsync(keyword);
     }
 }

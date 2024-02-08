@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
 namespace BussinessObject
@@ -15,7 +16,8 @@ namespace BussinessObject
 
         public int CustomerId { get; set; }
         public string? Code { get; set; }
-        public string? Email { get; set; }
+        [Required]
+        public string Email { get; set; }
         public string? Fullname { get; set; }
         [JsonIgnore]
         public string? Password { get; set; }

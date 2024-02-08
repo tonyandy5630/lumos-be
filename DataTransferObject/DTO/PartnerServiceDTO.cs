@@ -10,7 +10,7 @@ namespace DataTransferObject.DTO
     public class PartnerServiceDTO
     {
         public int ServiceId { get; set; }
-        public string? Name { get; set; }
+        public string Name { get; set; }
         public string? Code { get; set; }
         public int? Duration { get; set; }
         public int? Status { get; set; }
@@ -19,6 +19,7 @@ namespace DataTransferObject.DTO
         public DateTime? CreatedDate { get; set; }
         public DateTime? LastUpdate { get; set; }
         public string? UpdatedBy { get; set; }
+        public int BookedQuantity { get; set; }
         public IEnumerable<ServiceCategoryDTO>? Categories { get; set; }
 
     }

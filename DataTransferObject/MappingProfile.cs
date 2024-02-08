@@ -2,6 +2,7 @@
 using BussinessObject;
 using BussinessObject.AuthenModel;
 using DataTransferObject.DTO;
+using RequestEntity;
 
 namespace DataTransferObject
 {
@@ -9,6 +10,14 @@ namespace DataTransferObject
     {
         public MappingProfile()
         {
+            CreateMap<CreateBookingDTO, Booking>()
+                .ForMember(dest => dest.PaymentId, opt => opt.MapFrom(src => src.PaymentId))
+                .ForMember(dest => dest.TotalPrice, opt => opt.MapFrom(src => src.TotalPrice))
+                .ForMember(dest => dest.BookingDate, opt => opt.MapFrom(src => src.BookingDate))
+                .ForMember(dest => dest.From, opt => opt.MapFrom(src => TimeSpan.Parse(src.From)))
+                .ForMember(dest => dest.CreatedBy, opt => opt.MapFrom(src => src.CreatedBy))
+                .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Address));
+
             CreateMap<RegistrationModel, Customer>()
                 .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
                 .ForMember(dest => dest.Password, opt => opt.MapFrom(src => src.Password));
@@ -53,7 +62,31 @@ namespace DataTransferObject
                 .ForMember(dto => dto.ImgUrl, act => act.MapFrom(src => src.ImgUrl))
                 .ForMember(dto => dto.ImgUrl, act => act.MapFrom(src => src.ImgUrl))
                 .ForMember(dto => dto.Type, act => act.MapFrom(src => src.Type));
-                
+
+            CreateMap<MedicalReportDTO, MedicalReport>()
+                /*                .ForMember(dto => dto.ReportId, act => act.MapFrom(src => src.ReportId))
+                                .ForMember(dto => dto.Code, act => act.MapFrom(src => src.Code))*/
+                .ForMember(dto => dto.Fullname, act => act.MapFrom(src => src.Fullname))
+                .ForMember(dto => dto.Phone, act => act.MapFrom(src => src.Phone))
+                .ForMember(dto => dto.Dob, act => act.MapFrom(src => src.Dob))
+                .ForMember(dto => dto.Gender, act => act.MapFrom(src => src.Gender))
+                .ForMember(dto => dto.Pronounce, act => act.MapFrom(src => src.Pronounce))
+                .ForMember(dto => dto.BloodType, act => act.MapFrom(src => src.BloodType))
+                .ForMember(dto => dto.Note, act => act.MapFrom(src => src.Note));
+            /*                .ForMember(dto => dto.Status, act => act.MapFrom(src => src.Status));*/
+
+            CreateMap<AddPartnerServiceResquest, PartnerService>()
+                .ForMember(dto => dto.Name, act => act.MapFrom(src => src.Name))
+                .ForMember(dto => dto.Code, act => act.MapFrom(src => src.Code))
+                .ForMember(dto => dto.Duration, act => act.MapFrom(src => src.Duration))
+                .ForMember(dto => dto.Description, act => act.MapFrom(src => src.Description))
+                .ForMember(dto => dto.Price, act => act.MapFrom(src => src.Price));
+
+            CreateMap<AddPartnerScheduleRequest, Schedule>()
+                .ForMember(dto => dto.DayOfWeek, act => act.MapFrom(src => src.DayOfWeek))
+                .ForMember(dto => dto.From, act => act.MapFrom(src => src.From))
+                .ForMember(dto => dto.To, act => act.MapFrom(src => src.To))
+                .ForMember(dto => dto.Note, act => act.MapFrom(src => src.Note));
         }
     }
 }

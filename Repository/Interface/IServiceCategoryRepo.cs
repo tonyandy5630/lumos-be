@@ -10,5 +10,8 @@ namespace Repository.Interface
     public interface IServiceCategoryRepo
     {
         Task<IEnumerable<ServiceCategory>> GetCategoriesByServiceIdAsync (int serviceId);
+        Task<ServiceCategory?> GetCategoryByIdAsync(int cateId);
+        Task<List<ServiceCategory>> GetCategorysAsync(string? keyword);
+
     }
 }

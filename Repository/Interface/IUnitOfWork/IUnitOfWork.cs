@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore.Storage;
+﻿using BussinessObject;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +11,6 @@ namespace Repository.Interface.IUnitOfWork
 {
      public interface IUnitOfWork
     {
-
         IAddressRepo AddressRepo { get; }
         IAdminRepo AdminRepo { get; }
         IBookingRepo BookingRepo { get; }
@@ -22,12 +23,19 @@ namespace Repository.Interface.IUnitOfWork
         IServiceBookingRepo ServiceBookingRepo { get; }
         IServiceCategoryRepo ServiceCategoryRepo { get; }
         ISystemConfigurationRepo SystemConfigurationRepo { get; }
+        IServiceDetailRepo ServiceDetailRepo { get; }
+        IPartnerServiceRepo PartnerServiceRepo { get; }
+        IMedicalReportRepo MedicalReportRepo { get; }
+        IPartnerTypeRepo PartnerTypeRepo { get; }
 
         Task<int> SaveChangesAsync();
-        Task StartTransactionAsync(string name);
+        Task<IDbContextTransaction> StartTransactionAsync(string name);
         Task CommitTransactionAsync(IDbContextTransaction commit);
         Task RollBackAsync(IDbContextTransaction commit, string name);
 
+        public Task AttachDbContext(LumosDBContext dbContext);
+
+        public Task DetachDbContext();
 
     }
 }

@@ -1,4 +1,5 @@
-﻿using BussinessObject;
+using BussinessObject;
+using DataTransferObject.DTO;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +11,8 @@ namespace Service.InterfaceService
 {
     public interface ICustomerService
     {
-        Task<List<Customer>> GetCustomersAsync();
+
+        Task<List<Customer>> GetCustomersAsync(string keyword);
         Task<Customer> GetCustomerByEmailAsync(string email);
         Task<Customer> GetCustomerByRefreshTokenAsync(string token);
         Task<Customer> GetCustomerByIDAsync(int id);
@@ -20,5 +22,8 @@ namespace Service.InterfaceService
         Task<bool> BanCustomerAsync(int id);
         Task<List<MedicalReport>> GetMedicalReportByCustomerIdAsync(int id);
         Task<List<Address>> GetCustomerAddressByCustomerIdAsync(int id);
+        Task<MedicalReport> AddMedicalReportAsync(MedicalReportDTO medicalReport, string cusEmail);
+        Task<Address> AddCustomerAddressAsync(Address address);
+        Task<MedicalReport> GetMedicalReportByIdAsync(int id);
     }
 }

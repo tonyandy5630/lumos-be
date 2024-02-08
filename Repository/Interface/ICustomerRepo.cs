@@ -9,7 +9,7 @@ namespace Repository.Interface
 {
     public interface ICustomerRepo
     {
-        Task<List<Customer>> GetCustomersAsync();
+        Task<List<Customer>> GetCustomersAsync(string keyword);
         Task<Customer> GetCustomerByEmailAsync(string email);
         Task<Customer> GetCustomerByRefreshTokenAsync(string token);
         Task<Customer> GetCustomerByIDAsync(int id);
@@ -17,8 +17,7 @@ namespace Repository.Interface
         Task<bool> AddCustomerAsync(Customer customer);
         Task<bool> UpdateCustomerAsync(Customer customer);
         Task<bool> BanCustomerAsync(int id);
-
-        Task<List<MedicalReport>> GetMedicalReportByCustomerIdAsync(int id);
-        Task<List<Address>> GetCustomerAddressByCustomerIdAsync(int id);
+        Task<List<Address>> GetCustomersAddressByCustomerIdAsync(int id);
+        Task<Address> AddCustomerAddressAsync(Address address);
     }
 }
