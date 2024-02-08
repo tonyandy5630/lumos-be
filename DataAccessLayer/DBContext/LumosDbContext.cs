@@ -514,6 +514,9 @@ namespace BussinessObject
 
                 entity.Property(e => e.ScheduleId).ValueGeneratedOnAdd();
 
+                entity.Property(e => e.From).HasColumnType("datetime");
+                entity.Property(e => e.To).HasColumnType("datetime");
+
                 entity.Property(e => e.Code)
                     .HasMaxLength(50)
                     .IsUnicode(false);
