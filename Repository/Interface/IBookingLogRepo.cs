@@ -8,5 +8,7 @@ namespace Repository.Interface
 {
     public interface IBookingLogRepo
     {
+        Task<bool> UpdateBookingLogStatusForPartnerAsync(int bookingLogId, int newStatus);
+        Task<bool> UpdateBookingLogStatusForCustomerAsync(int bookingLogId, int newStatus);
     }
 }

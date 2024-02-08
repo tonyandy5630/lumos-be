@@ -17,11 +17,13 @@ namespace LumosSolution.Controllers
     public class BookingController : ControllerBase
     {
         private readonly IBookingService _bookingService;
+        private readonly IBookingLogService _bookingLogService;
         private readonly IMapper _mapper;
-        public BookingController(IBookingService bookingService, IMapper mapper)
+        public BookingController(IBookingService bookingService, IMapper mapper, IBookingLogService bookingLogService)
         {
             _bookingService = bookingService;
             _mapper = mapper;
+            _bookingLogService = bookingLogService;
         }
 
         [HttpGet("admin/bookingdetail/{id}/booking")]
@@ -97,6 +99,65 @@ namespace LumosSolution.Controllers
                 if (result)
                 {
                     response.message = MessagesResponse.Success.Created;
+                    response.StatusCode = ApiStatusCode.OK;
+                    return Ok(response);
+                }
+                else
+                {
+                    response.message = MessagesResponse.Error.OperationFailed;
+                    response.StatusCode = ApiStatusCode.BadRequest;
+                    return BadRequest(response);
+                }
+            }
+            catch (Exception ex)
+            {
+                response.message = MessagesResponse.Error.OperationFailed;
+                response.StatusCode = ApiStatusCode.BadRequest;
+                return BadRequest(response);
+            }
+        }
+        [HttpPut("partner/bookinglog/{bookinglogId}/status")]
+        [Authorize(Roles = "Partner")]
+        public async Task<ActionResult<ApiResponse<object>>> UpdateBookingLogStatusForPartner(int bookinglogId, [FromBody] int newStatus)
+        {
+            ApiResponse<object> response = new ApiResponse<object>();
+            try
+            {
+                bool result = await _bookingLogService.UpdateBookingLogStatusForPartnerAsync(bookinglogId, newStatus);
+
+                if (result)
+                {
+                    response.message = MessagesResponse.Success.Updated;
+                    response.StatusCode = ApiStatusCode.OK;
+                    return Ok(response);
+                }
+                else
+                {
+                    response.message = MessagesResponse.Error.OperationFailed;
+                    response.StatusCode = ApiStatusCode.BadRequest;
+                    return BadRequest(response);
+                }
+            }
+            catch (Exception ex)
+            {
+                response.message = MessagesResponse.Error.OperationFailed;
+                response.StatusCode = ApiStatusCode.BadRequest;
+                return BadRequest(response);
+            }
+        }
+
+        [HttpPut("customer/bookinglog/{bookinglogId}/status")]
+        [Authorize(Roles = "Customer")]
+        public async Task<ActionResult<ApiResponse<object>>> UpdateBookingLogStatusForCustomer(int bookinglogId, [FromBody] int newStatus)
+        {
+            ApiResponse<object> response = new ApiResponse<object>();
+            try
+            {
+                bool result = await _bookingLogService.UpdateBookingLogStatusForCustomerAsync(bookinglogId, newStatus);
+
+                if (result)
+                {
+                    response.message = MessagesResponse.Success.Updated;
                     response.StatusCode = ApiStatusCode.OK;
                     return Ok(response);
                 }

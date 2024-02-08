@@ -8,5 +8,7 @@ namespace Service.InterfaceService
 {
     public interface IBookingLogService
     {
+        Task<bool> UpdateBookingLogStatusForPartnerAsync(int bookingLogId, int newStatus);
+        Task<bool> UpdateBookingLogStatusForCustomerAsync(int bookingLogId, int newStatus);
     }
 }
