@@ -35,21 +35,15 @@ namespace DataAccessLayer
         {
             try
             {
-                bool existMed = dbContext.MedicalReports
-                    .Any(m => m.Phone.Equals(medicalReport.Phone));
 
-                if (!existMed)
-                {
-                    medicalReport.Status = 1;
-                    medicalReport.Code = GenerateCode.GenerateTableCode("medicalreport");
-                    medicalReport.CreatedDate = DateTime.Now;
-                    medicalReport.LastUpdate = DateTime.Now;
-                    dbContext.MedicalReports.Add(medicalReport);
-                    await dbContext.SaveChangesAsync();
-                    Console.WriteLine("Add medical report successfully!");
-                    return await dbContext.MedicalReports.SingleOrDefaultAsync(x => x.Code.Equals(medicalReport.Code));
-                }
-                return null;
+                medicalReport.Status = 1;
+                medicalReport.Code = GenerateCode.GenerateTableCode("medicalreport");
+                medicalReport.CreatedDate = DateTime.Now;
+                medicalReport.LastUpdate = DateTime.Now;
+                dbContext.MedicalReports.Add(medicalReport);
+                await dbContext.SaveChangesAsync();
+                Console.WriteLine("Add medical report successfully!");
+                return await dbContext.MedicalReports.FirstOrDefaultAsync(x => x.Code.Equals(medicalReport.Code));
             } catch (Exception ex)
             {
                 Console.WriteLine($"Error in AddMedicalReportAsyn: {ex.Message}", ex);

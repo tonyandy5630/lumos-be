@@ -1,6 +1,7 @@
-using AutoMapper;
+﻿using AutoMapper;
 using BussinessObject;
 using DataTransferObject.DTO;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
 using Repository.Interface.IUnitOfWork;
 using Service.InterfaceService;
@@ -167,21 +168,35 @@ namespace Service.Service
             }
         }
 
-        public async Task<MedicalReportDTO> AddMedicalReportAsyn(MedicalReport medicalReport)
+        public async Task<MedicalReport> AddMedicalReportAsync(MedicalReportDTO medicalReport, string? userEmail)
         {
             try
             {
-                MedicalReport med = await _unitOfWork.MedicalReportRepo.AddMedicalReportAsyn(medicalReport);
-                MedicalReportDTO medDTO = _mapper.Map<MedicalReportDTO>(med);
+                if (string.IsNullOrEmpty(userEmail))
+                { throw new Exception("Cannot find customer email"); }
 
-                return medDTO;
+                Customer customer = await _unitOfWork.CustomerRepo.GetCustomerByEmailAsync(userEmail);
+
+                if (customer == null)
+                    throw new Exception("Cannot find customer");
+
+                MedicalReport medReport = _mapper.Map<MedicalReport>(medicalReport);
+
+                medReport.CustomerId = customer.CustomerId;
+                medReport.Customer = customer;
+
+                MedicalReport med = await _unitOfWork.MedicalReportRepo.AddMedicalReportAsyn(medReport);
+
+                if (med == null) { throw new Exception("Add failed"); }
+
+                return med;
             }
             catch (Exception ex)
             {
-                throw new Exception(ex.Message);
+                throw new Exception($"Error in add medical report: {ex.Message}");
             }
         }
-        
+
         public async Task<Address> AddCustomerAddressAsync(Address address) 
         {
             try

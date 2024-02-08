@@ -63,9 +63,8 @@ namespace DataTransferObject
                 .ForMember(dto => dto.ImgUrl, act => act.MapFrom(src => src.ImgUrl))
                 .ForMember(dto => dto.Type, act => act.MapFrom(src => src.Type));
 
-            CreateMap<MedicalReport, MedicalReportDTO>()
+            CreateMap<MedicalReportDTO, MedicalReport>()
                 .ForMember(dto => dto.ReportId, act => act.MapFrom(src => src.ReportId))
-                .ForMember(dto => dto.CustomerId, act => act.MapFrom(src => src.CustomerId))
                 .ForMember(dto => dto.Code, act => act.MapFrom(src => src.Code))
                 .ForMember(dto => dto.Fullname, act => act.MapFrom(src => src.Fullname))
                 .ForMember(dto => dto.Phone, act => act.MapFrom(src => src.Phone))
