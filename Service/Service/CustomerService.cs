@@ -1,4 +1,7 @@
+﻿using AutoMapper;
 using BussinessObject;
+using DataTransferObject.DTO;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
 using Repository.Interface.IUnitOfWork;
 using Service.InterfaceService;
@@ -12,10 +15,12 @@ namespace Service.Service
     public class CustomerService : ICustomerService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
 
-        public CustomerService(IUnitOfWork unitOfWork)
+        public CustomerService(IUnitOfWork unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
+            _mapper = mapper;
         }
 
         public async Task<bool> AddCustomerAsync(Customer customer)
@@ -163,18 +168,35 @@ namespace Service.Service
             }
         }
 
-        public Task<MedicalReport> AddMedicalReportAsyn(MedicalReport medicalReport)
+        public async Task<MedicalReport> AddMedicalReportAsync(MedicalReportDTO medicalReport, string? userEmail)
         {
             try
             {
-                return _unitOfWork.MedicalReportRepo.AddMedicalReportAsyn(medicalReport);
+                if (string.IsNullOrEmpty(userEmail))
+                { throw new Exception("Cannot find customer email"); }
+
+                Customer customer = await _unitOfWork.CustomerRepo.GetCustomerByEmailAsync(userEmail);
+
+                if (customer == null)
+                    throw new Exception("Cannot find customer");
+
+                MedicalReport medReport = _mapper.Map<MedicalReport>(medicalReport);
+
+                medReport.CustomerId = customer.CustomerId;
+                medReport.Customer = customer;
+
+                MedicalReport med = await _unitOfWork.MedicalReportRepo.AddMedicalReportAsyn(medReport);
+
+                if (med == null) { throw new Exception("Add failed"); }
+
+                return med;
             }
             catch (Exception ex)
             {
-                throw new Exception(ex.Message);
+                throw new Exception($"Error in add medical report: {ex.Message}");
             }
         }
-        
+
         public async Task<Address> AddCustomerAddressAsync(Address address) 
         {
             try

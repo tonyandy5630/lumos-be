@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Service.InterfaceService;
 using Service.Service;
+using System.Security.Claims;
 using Utils;
 using static Microsoft.Extensions.Logging.EventSource.LoggingEventSource;
 
@@ -112,34 +113,43 @@ namespace LumosSolution.Controllers
 
         [HttpPost, Route("medical-report")]
         [Authorize(Roles = "Customer")]
-        public async Task<ActionResult<MedicalReport>> AddMedicalReport([FromBody] MedicalReport medicalReport)
+        public async Task<ActionResult<ApiResponse<MedicalReport>>> AddMedicalReport([FromBody] MedicalReportDTO medicalReport)
         {
-            ApiResponse<MedicalReport> response = new ApiResponse<MedicalReport>();
+            ApiResponse<MedicalReport> response = new ApiResponse<MedicalReport>
+            {
+                message = MessagesResponse.Error.NotFound,
+                StatusCode = 404
+            };
+
             try
             {
-                response.data = await _customerService.AddMedicalReportAsyn(medicalReport);
+                string? userEmail = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
 
-                if (response.data != null)
+                if (string.IsNullOrEmpty(userEmail))
                 {
-                    response.message = MessagesResponse.Success.Completed;
-                    response.StatusCode = ApiStatusCode.OK;
-                    return Ok(response);
-                }
-                else
-                {
-                    response.message = MessagesResponse.Error.OperationFailed;
-                    response.StatusCode = ApiStatusCode.BadRequest;
+                    response.message = "Cannot find user email";
                     return BadRequest(response);
                 }
+
+                MedicalReport med = await _customerService.AddMedicalReportAsync(medicalReport, userEmail);
+
+                if (med == null)
+                    return response;
+
+                response.message = MessagesResponse.Success.Created;
+                response.StatusCode = 200;
+                response.data = med;
+
+                return Ok(response);
             }
             catch (Exception ex)
             {
-                response.message = MessagesResponse.Error.OperationFailed;
-                response.StatusCode = ApiStatusCode.BadRequest;
+                Console.WriteLine(ex.Message);
+                response.message = ex.Message;
                 return BadRequest(response);
             }
         }
-        
+
         [HttpPost("address")]
         [Authorize(Roles = "Customer")]
         public async Task<ActionResult<ApiResponse<Address>>> AddCustomerAddressAsync([FromBody] Address address)
