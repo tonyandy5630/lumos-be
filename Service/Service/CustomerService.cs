@@ -183,7 +183,7 @@ namespace Service.Service
                 MedicalReport medReport = _mapper.Map<MedicalReport>(medicalReport);
 
                 medReport.CustomerId = customer.CustomerId;
-                medReport.Customer = customer;
+/*                medReport.Customer = customer;*/
 
                 MedicalReport med = await _unitOfWork.MedicalReportRepo.AddMedicalReportAsyn(medReport);
 

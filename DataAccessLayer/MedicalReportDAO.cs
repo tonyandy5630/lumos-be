@@ -40,6 +40,7 @@ namespace DataAccessLayer
                 medicalReport.Code = GenerateCode.GenerateTableCode("medicalreport");
                 medicalReport.CreatedDate = DateTime.Now;
                 medicalReport.LastUpdate = DateTime.Now;
+                medicalReport.UpdatedBy = medicalReport.Fullname;
                 dbContext.MedicalReports.Add(medicalReport);
                 await dbContext.SaveChangesAsync();
                 Console.WriteLine("Add medical report successfully!");
