@@ -14,7 +14,7 @@ namespace DataTransferObject
             .ForMember(dest => dest.PaymentId, opt => opt.MapFrom(src => src.PaymentId))
             .ForMember(dest => dest.TotalPrice, opt => opt.MapFrom(src => src.TotalPrice))
             .ForMember(dest => dest.BookingDate, opt => opt.MapFrom(src => src.BookingDate))
-            .ForMember(dest => dest.From, opt => opt.MapFrom(src => TimeSpan.Parse(src.From)))
+            .ForMember(dest => dest.From, opt => opt.MapFrom(src => src.From))
             .ForMember(dest => dest.CreatedBy, opt => opt.MapFrom(src => src.CreatedBy))
             .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Address));
 

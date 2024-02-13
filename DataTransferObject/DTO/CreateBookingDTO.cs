@@ -11,7 +11,7 @@ namespace DataTransferObject.DTO
         public int PaymentId { get; set; }
         public int TotalPrice { get; set; }
         public DateTime BookingDate { get; set; }
-        public string From { get; set; }
+        public DateTime From { get; set; }
         public string CreatedBy { get; set; }
         public string Address { get; set; }
         public string Note { get; set; }
