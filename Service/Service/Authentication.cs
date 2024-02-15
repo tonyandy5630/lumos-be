@@ -26,18 +26,20 @@ namespace Service.Service
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<(bool, string)> IsUserAuthenticatedAsync(string email, string password)
+        public async Task<(bool, string, string)> IsUserAuthenticatedAsync(string email, string password)
         {
             try
             {
                 string role = null;
                 bool authenticated = false;
+                string username = null;
 
                 var adminResponse = await _unitOfWork.AdminRepo.GetAdminByEmailAsync(email);
                 if (adminResponse != null && adminResponse.Password == password)
                 {
                     authenticated = true;
                     role = nameof(RolesEnum.Admin);
+                    username = "Admin";
                 }
 
                 if (!authenticated)
@@ -47,7 +49,7 @@ namespace Service.Service
                     {
                         authenticated = true;
                         role = nameof(RolesEnum.Partner);
-
+                        username = partnerResponse.PartnerName;
                     }
                 }
 
@@ -58,7 +60,7 @@ namespace Service.Service
                     {
                         authenticated = true;
                         role = nameof(RolesEnum.Customer);
-
+                        username = customerResponse.Fullname;
                     }
                 }
 
@@ -67,12 +69,12 @@ namespace Service.Service
                     await UpdateLastLoginTime(email);
                 }
 
-                return (authenticated, role);
+                return (authenticated, role, username);
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Exception in IsUserAuthenticatedAsync: {ex.Message}");
-                return (false, null);
+                return (false, null, null);
             }
         }
 

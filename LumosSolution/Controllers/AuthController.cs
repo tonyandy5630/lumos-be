@@ -174,6 +174,7 @@ namespace LumosSolution.Controllers
                 var payload = await GoogleJsonWebSignature.ValidateAsync(credential, setting);
 
                 var userEmail = payload.Email;
+                var username = payload.Name;
 
                 var (roleValid, userRole) = await _authentication.CheckRole(userEmail);
 
@@ -195,6 +196,7 @@ namespace LumosSolution.Controllers
                     response.StatusCode = ApiStatusCode.OK;
                     response.data = new
                     {
+                        Username = username,
                         Token = token,
                         AccessTokenExpiration = accessTokenRemainingTime,
                         RefreshToken = refreshToken,
@@ -217,7 +219,7 @@ namespace LumosSolution.Controllers
             ApiResponse<object>? response = new ApiResponse<object>();
             try
             {
-                var (authenticated, role) = await _authentication.IsUserAuthenticatedAsync(model.Email, model.Password);
+                var (authenticated, role, username) = await _authentication.IsUserAuthenticatedAsync(model.Email, model.Password);
 
                 if (authenticated)
                 {
@@ -231,6 +233,7 @@ namespace LumosSolution.Controllers
                     response.StatusCode = ApiStatusCode.OK;
                     response.data = new
                     {
+                        Username = username,
                         Token = token,
                         AccessTokenExpiration = accessTokenRemainingTime,
                         RefreshToken = refreshToken,
