@@ -20,7 +20,7 @@ using static Google.Apis.Requests.BatchRequest;
 
 namespace LumosSolution.Controllers
 {
-    [Route("api/")]
+    [Route("api/auth/")]
     [ApiController]
     public class AuthController : ControllerBase
     {

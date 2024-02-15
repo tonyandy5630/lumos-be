@@ -12,7 +12,7 @@ using AutoMapper;
 
 namespace LumosSolution.Controllers
 {
-    [Route("api")]
+    [Route("api/booking")]
     [ApiController]
     public class BookingController : ControllerBase
     {
