@@ -31,6 +31,8 @@ namespace BussinessObject
         public string? ImgUrl { get; set; }
         public string? RefreshToken { get; set; }
 
+        public int? Role { get; set; }
+
         public virtual ICollection<Address> Addresses { get; set; }
         public virtual ICollection<FavoritePartner> FavoritePartners { get; set; }
         public virtual ICollection<MedicalReport> MedicalReports { get; set; }

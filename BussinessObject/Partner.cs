@@ -37,6 +37,7 @@ namespace BussinessObject
         [JsonIgnore]
         public string? RefreshToken { get; set; }
         public string? BusinessLicenseNumber { get; set; }
+        public int? Role { get; set; }
 
         public virtual PartnerType? Type { get; set; }
         [JsonIgnore]

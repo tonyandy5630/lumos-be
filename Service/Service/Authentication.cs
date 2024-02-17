@@ -69,6 +69,7 @@ namespace Service.Service
                         {
                             Email = partnerResponse.Email,
                             Code = partnerResponse.Code,
+                            Role = partnerResponse.Role,
                             TypeId = partnerResponse.TypeId,
                             DisplayName = partnerResponse.DisplayName,
                             Phone = partnerResponse.Phone,
@@ -96,6 +97,7 @@ namespace Service.Service
                         {
                             Email = customerResponse.Email,
                             Code = customerResponse.Code,
+                            Role = customerResponse.Role,
                             Phone = customerResponse.Phone,
                             Pronounce = customerResponse.Pronounce,
                             Status = customerResponse.Status,
@@ -264,6 +266,7 @@ namespace Service.Service
                     {
                         Email = customerResponse.Email,
                         Code = customerResponse.Code,
+                        Role = customerResponse.Role,
                         Phone = customerResponse.Phone,
                         Pronounce = customerResponse.Pronounce,
                         Status = customerResponse.Status,
@@ -280,6 +283,7 @@ namespace Service.Service
                     {
                         Email = partnerResponse.Email,
                         Code = partnerResponse.Code,
+                        Role = partnerResponse.Role,
                         TypeId = partnerResponse.TypeId,
                         DisplayName = partnerResponse.DisplayName,
                         Phone = partnerResponse.Phone,
