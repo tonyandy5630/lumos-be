@@ -176,7 +176,7 @@ namespace LumosSolution.Controllers
                 var userEmail = payload.Email;
                 var username = payload.Name;
 
-                var (roleValid, userRole) = await _authentication.CheckRole(userEmail);
+                var (roleValid, userRole, userDetails) = await _authentication.GetUserdetailsInLoginGooogle(userEmail);
 
                 if (!roleValid)
                 {
@@ -200,7 +200,8 @@ namespace LumosSolution.Controllers
                         Token = token,
                         AccessTokenExpiration = accessTokenRemainingTime,
                         RefreshToken = refreshToken,
-                        RefreshTokenExpiration = refreshTokenRemainingTime
+                        RefreshTokenExpiration = refreshTokenRemainingTime,
+                        Userdetails = userDetails
                     };
                 }
                 return Ok(response);
@@ -219,7 +220,7 @@ namespace LumosSolution.Controllers
             ApiResponse<object>? response = new ApiResponse<object>();
             try
             {
-                var (authenticated, role, username) = await _authentication.IsUserAuthenticatedAsync(model.Email, model.Password);
+                var (authenticated, role, username, userdetails) = await _authentication.IsUserAuthenticatedAsync(model.Email, model.Password);
 
                 if (authenticated)
                 {
@@ -237,7 +238,8 @@ namespace LumosSolution.Controllers
                         Token = token,
                         AccessTokenExpiration = accessTokenRemainingTime,
                         RefreshToken = refreshToken,
-                        RefreshTokenExpiration = refreshTokenRemainingTime
+                        RefreshTokenExpiration = refreshTokenRemainingTime,
+                        Userdetails = userdetails
                     };
                     return Ok(response);
                 }

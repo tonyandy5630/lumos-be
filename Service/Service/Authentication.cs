@@ -1,4 +1,5 @@
 using BussinessObject;
+using BussinessObject.AuthenModel;
 using Enum;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -8,6 +9,7 @@ using Service.InterfaceService;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.IdentityModel.Tokens.Jwt;
+using System.Numerics;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -26,13 +28,14 @@ namespace Service.Service
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<(bool, string, string)> IsUserAuthenticatedAsync(string email, string password)
+        public async Task<(bool, string, string, object)> IsUserAuthenticatedAsync(string email, string password)
         {
             try
             {
                 string role = null;
                 bool authenticated = false;
                 string username = null;
+                object userDetails = null;
 
                 var adminResponse = await _unitOfWork.AdminRepo.GetAdminByEmailAsync(email);
                 if (adminResponse != null && adminResponse.Password == password)
@@ -40,6 +43,18 @@ namespace Service.Service
                     authenticated = true;
                     role = nameof(RolesEnum.Admin);
                     username = "Admin";
+                    userDetails = new
+                    {
+                        Email = adminResponse.Email,
+                        Code = adminResponse.Code,
+                        Role = adminResponse.Role,
+                        Status = adminResponse.Status,
+                        CreatedDate = adminResponse.CreatedDate,
+                        CreatedBy = adminResponse.CreatedBy,
+                        LastUpdate = adminResponse.LastUpdate,
+                        UpdatedBy = adminResponse.UpdatedBy,
+                        ImgUrl = adminResponse.ImgUrl,
+                    };
                 }
 
                 if (!authenticated)
@@ -50,6 +65,22 @@ namespace Service.Service
                         authenticated = true;
                         role = nameof(RolesEnum.Partner);
                         username = partnerResponse.PartnerName;
+                        userDetails = new
+                        {
+                            Email = partnerResponse.Email,
+                            Code = partnerResponse.Code,
+                            TypeId = partnerResponse.TypeId,
+                            DisplayName = partnerResponse.DisplayName,
+                            Phone = partnerResponse.Phone,
+                            Address = partnerResponse.Address,
+                            Status = partnerResponse.Status,
+                            CreatedDate = partnerResponse.CreatedDate,
+                            CreatedBy = partnerResponse.CreatedBy,
+                            LastUpdate = partnerResponse.LastUpdate,
+                            UpdatedBy = partnerResponse.UpdatedBy,
+                            ImgUrl = partnerResponse.ImgUrl,
+                            BusinessLicenseNumber = partnerResponse.BusinessLicenseNumber
+                        };
                     }
                 }
 
@@ -61,6 +92,18 @@ namespace Service.Service
                         authenticated = true;
                         role = nameof(RolesEnum.Customer);
                         username = customerResponse.Fullname;
+                        userDetails = new
+                        {
+                            Email = customerResponse.Email,
+                            Code = customerResponse.Code,
+                            Phone = customerResponse.Phone,
+                            Pronounce = customerResponse.Pronounce,
+                            Status = customerResponse.Status,
+                            CreatedDate = customerResponse.CreatedDate,
+                            LastUpdate = customerResponse.LastUpdate,
+                            UpdatedBy = customerResponse.UpdateBy,
+                            ImgUrl = customerResponse.ImgUrl,
+                        };
                     }
                 }
 
@@ -69,12 +112,12 @@ namespace Service.Service
                     await UpdateLastLoginTime(email);
                 }
 
-                return (authenticated, role, username);
+                return (authenticated, role, username, userDetails);
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Exception in IsUserAuthenticatedAsync: {ex.Message}");
-                return (false, null, null);
+                return (false, null, null, null);
             }
         }
 
@@ -190,6 +233,78 @@ namespace Service.Service
             }
         }
 
+        public async Task<(bool, string, object)> GetUserdetailsInLoginGooogle(string email)
+        {
+            try
+            {
+                object userDetails = null;
+                var adminResponse = await _unitOfWork.AdminRepo.GetAdminByEmailAsync(email);
+                var customerResponse = await _unitOfWork.CustomerRepo.GetCustomerByEmailAsync(email);
+                var partnerResponse = await _unitOfWork.PartnerRepo.GetPartnerByEmailAsync(email);
+
+                if (adminResponse != null)
+                {
+                    userDetails = new
+                    {
+                        Email = adminResponse.Email,
+                        Code = adminResponse.Code,
+                        Role = adminResponse.Role,
+                        Status = adminResponse.Status,
+                        CreatedDate = adminResponse.CreatedDate,
+                        CreatedBy = adminResponse.CreatedBy,
+                        LastUpdate = adminResponse.LastUpdate,
+                        UpdatedBy = adminResponse.UpdatedBy,
+                        ImgUrl = adminResponse.ImgUrl,
+                    };
+                    return (true, nameof(RolesEnum.Admin), userDetails);
+                }
+                else if (customerResponse != null)
+                {
+                    userDetails = new
+                    {
+                        Email = customerResponse.Email,
+                        Code = customerResponse.Code,
+                        Phone = customerResponse.Phone,
+                        Pronounce = customerResponse.Pronounce,
+                        Status = customerResponse.Status,
+                        CreatedDate = customerResponse.CreatedDate,
+                        LastUpdate = customerResponse.LastUpdate,
+                        UpdatedBy = customerResponse.UpdateBy,
+                        ImgUrl = customerResponse.ImgUrl,
+                    };
+                    return (true, nameof(RolesEnum.Customer), userDetails);
+                }
+                else if (partnerResponse != null)
+                {
+                    userDetails = new
+                    {
+                        Email = partnerResponse.Email,
+                        Code = partnerResponse.Code,
+                        TypeId = partnerResponse.TypeId,
+                        DisplayName = partnerResponse.DisplayName,
+                        Phone = partnerResponse.Phone,
+                        Address = partnerResponse.Address,
+                        Status = partnerResponse.Status,
+                        CreatedDate = partnerResponse.CreatedDate,
+                        CreatedBy = partnerResponse.CreatedBy,
+                        LastUpdate = partnerResponse.LastUpdate,
+                        UpdatedBy = partnerResponse.UpdatedBy,
+                        ImgUrl = partnerResponse.ImgUrl,
+                        BusinessLicenseNumber = partnerResponse.BusinessLicenseNumber
+                    };
+                    return (true, nameof(RolesEnum.Partner), userDetails);
+                }
+                else
+                {
+                    return (false, null, null);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Exception in GetUserdetailsInLoginGooogle: {ex.Message}");
+                return (false, null, null);
+            }
+        }
         public async Task<(bool, string)> CheckRole(string email)
         {
             try
@@ -316,6 +431,5 @@ namespace Service.Service
             string? role = decodedToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
             return await Task.FromResult((email, role));
         }
-
     }
 }
