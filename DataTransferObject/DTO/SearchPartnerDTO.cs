@@ -11,6 +11,7 @@ namespace DataTransferObject.DTO
     public class SearchPartnerDTO
     {
         public int PartnerId { get; set; }
+        public int? Role { get; set; }
         public string? Code { get; set; }
         public string? Email { get; set; }
         public string? PartnerName { get; set; }

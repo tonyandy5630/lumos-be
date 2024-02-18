@@ -55,7 +55,10 @@ namespace Service.Service
                 PartnerService partnerService = _mapper.Map<PartnerService>(service);
                 partnerService.PartnerId = partner.PartnerId;
                 partnerService.Partner = partner;
+                partnerService.Status = 1;
                 partnerService.CreatedDate = DateTime.Now;
+                partnerService.LastUpdate = DateTime.Now;
+                partner.UpdatedBy = partner.PartnerName;
                 // Validate categories
                 // better if can do concurrently
                 foreach (int cateId in service.Categories)
@@ -83,6 +86,8 @@ namespace Service.Service
                         CreatedDate = DateTime.Now,
                         ServiceId = newService.ServiceId,
                         CategoryId = cate.CategoryId,
+                        LastUpdate = DateTime.Now,
+                        CreatedBy = partner.PartnerName,
                     };
 
                     ServiceDetail? detail = await _unitOfWork.ServiceDetailRepo.AddServiceDetailAsync(serviceDetail);

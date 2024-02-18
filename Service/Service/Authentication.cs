@@ -45,6 +45,7 @@ namespace Service.Service
                     username = "Admin";
                     userDetails = new
                     {
+                        ID = adminResponse.AdminId,
                         Email = adminResponse.Email,
                         Code = adminResponse.Code,
                         Role = adminResponse.Role,
@@ -67,6 +68,7 @@ namespace Service.Service
                         username = partnerResponse.PartnerName;
                         userDetails = new
                         {
+                            ID = partnerResponse.PartnerId,
                             Email = partnerResponse.Email,
                             Code = partnerResponse.Code,
                             Role = partnerResponse.Role,
@@ -95,6 +97,7 @@ namespace Service.Service
                         username = customerResponse.Fullname;
                         userDetails = new
                         {
+                            ID = customerResponse.CustomerId,
                             Email = customerResponse.Email,
                             Code = customerResponse.Code,
                             Role = customerResponse.Role,
@@ -248,6 +251,7 @@ namespace Service.Service
                 {
                     userDetails = new
                     {
+                        ID = adminResponse.AdminId,
                         Email = adminResponse.Email,
                         Code = adminResponse.Code,
                         Role = adminResponse.Role,
@@ -264,6 +268,7 @@ namespace Service.Service
                 {
                     userDetails = new
                     {
+                        ID = customerResponse.CustomerId,
                         Email = customerResponse.Email,
                         Code = customerResponse.Code,
                         Role = customerResponse.Role,
@@ -281,6 +286,7 @@ namespace Service.Service
                 {
                     userDetails = new
                     {
+                        ID = partnerResponse.PartnerId,
                         Email = partnerResponse.Email,
                         Code = partnerResponse.Code,
                         Role = partnerResponse.Role,

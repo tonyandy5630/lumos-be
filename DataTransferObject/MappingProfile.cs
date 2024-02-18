@@ -53,6 +53,7 @@ namespace DataTransferObject
 
             CreateMap<Partner, SearchPartnerDTO>()
                 .ForMember(dto => dto.PartnerId, act => act.MapFrom(src => src.PartnerId))
+                .ForMember(dto => dto.Role, act => act.MapFrom(src => src.Role))
                 .ForMember(dto => dto.Code, act => act.MapFrom(src => src.Code))
                 .ForMember(dto => dto.Email, act => act.MapFrom(src => src.Email))
                 .ForMember(dto => dto.PartnerName, act => act.MapFrom(src => src.PartnerName))

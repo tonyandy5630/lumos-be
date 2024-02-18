@@ -108,7 +108,7 @@ namespace LumosSolution.Controllers
 
 
         [HttpPost("service")]
-        [Authorize(Roles ="Partner")]
+        [Authorize(Roles = "Partner")]
         public async Task<ActionResult<PartnerService>> AddPartnerService([FromBody]AddPartnerServiceResquest service)
         {
             ApiResponse<PartnerService> response = new ApiResponse<PartnerService>
