@@ -263,7 +263,35 @@ namespace Service.Service
                 throw new Exception(ex.Message);
             }
         }
+        public async Task<IEnumerable<SearchPartnerDTO>> GetPartnerByCategoryAsync(int categoryId)
+        {
+            try
+            {
 
+                IEnumerable<Partner> searchedPartner = await _unitOfWork.PartnerRepo.SearchPartnerByCategoryIdAsync(categoryId);
+                IEnumerable<SearchPartnerDTO> results = _mapper.Map<IEnumerable<SearchPartnerDTO>>(searchedPartner);
+
+                foreach (var partner in results)
+                {
+                    List<PartnerServiceDTO?> serviceDetails = new List<PartnerServiceDTO?>();
+                    foreach (var service in partner.PartnerServices)
+                    {
+                        if (service != null)
+                        {
+                            var sd = await GetPartnerServiceDetailAsync(service.ServiceId);
+                            serviceDetails.Add(sd);
+                        }
+                    }
+                    partner.PartnerServices = serviceDetails.Where(result => result != null).ToList();
+                }
+                return results;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetPartnerByCategoryAsync: {ex.Message}", ex);
+                throw new Exception(ex.Message);
+            }
+        }
         public async Task<IEnumerable<SearchPartnerDTO>> SearchPartnerByPartnerOrServiceNameAsync(string keyword)
         {
             try

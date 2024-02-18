@@ -76,7 +76,29 @@ namespace LumosSolution.Controllers
                 return BadRequest(res);
             }
         }
-
+        [HttpGet("api/partner/{categoryId}")]
+        [Authorize(Roles = "Admin,Customer")]
+        public async Task<ActionResult<IEnumerable<SearchPartnerDTO>>> GetPartnerByCategory(int categoryId)
+        {
+            ApiResponse<IEnumerable<SearchPartnerDTO>> res = new ApiResponse<IEnumerable<SearchPartnerDTO>>
+            {
+                message = MessagesResponse.Error.OperationFailed,
+                StatusCode = 500
+            };
+            try
+            {
+                IEnumerable<SearchPartnerDTO> searchPartnerDTOs = await _partnerService.GetPartnerByCategoryAsync(categoryId);
+                res.message = MessagesResponse.Success.Completed;
+                res.StatusCode = 200;
+                res.data = searchPartnerDTOs;
+                return Ok(res);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return BadRequest(res);
+            }
+        }
         [HttpGet("{id}")]
         [Authorize(Roles = "Admin,Customer,Partner")]
         public async Task<ActionResult<ApiResponse<Partner?>>> GetPartnerById(int id)

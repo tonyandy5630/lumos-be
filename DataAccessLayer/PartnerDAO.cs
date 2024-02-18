@@ -41,12 +41,13 @@ namespace DataAccessLayer
                 var result = from ps in _context.PartnerServices
                              join sb in _context.ServiceBookings 
                              on ps.ServiceId equals sb.ServiceId
-                             group new { ps, sb } by new { ps.ServiceId, ps.Name, ps.Description, ps.Code, ps.Status, ps.CreatedDate, ps.UpdatedBy, ps.Duration, ps.LastUpdate } into grouped
+                             group new { ps, sb } by new { ps.ServiceId, ps.Name, ps.Description, ps.Price, ps.Code, ps.Status, ps.CreatedDate, ps.UpdatedBy, ps.Duration, ps.LastUpdate } into grouped
                              select new PartnerServiceDTO
                              {
                                  ServiceId = grouped.Key.ServiceId,
                                  Name = grouped.Key.Name,
                                  Description = grouped.Key.Description,
+                                 Price = grouped.Key.Price,
                                  Code = grouped.Key.Code,
                                  Status = grouped.Key.Status,
                                  CreatedDate = grouped.Key.CreatedDate,
@@ -231,6 +232,22 @@ namespace DataAccessLayer
             {
                 Console.WriteLine($"Error in Ban Partner: {ex.Message}");
                 return false;
+            }
+        }
+        public async Task<IEnumerable<Partner>> GetPartnersByCategoryAsync(int categoryId)
+        {
+            try
+            {
+                var result = _context.Partners
+                .Where(p => p.TypeId == categoryId)
+                .AsNoTracking()
+                .ToListAsync();
+                return await result;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetPartnersByCategoryAsync: {ex.Message}", ex);
+                throw new Exception(ex.Message);
             }
         }
     }
