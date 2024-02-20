@@ -10,7 +10,6 @@ namespace DataTransferObject.DTO
 {
     public class SearchPartnerDTO
     {
-        [JsonIgnore]
         public int PartnerId { get; set; }
         [JsonIgnore]
         public int? Role { get; set; }
