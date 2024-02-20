@@ -1,5 +1,6 @@
 ﻿using BussinessObject;
 using DataAccessLayer;
+using DataTransferObject.DTO;
 using Repository.Interface;
 using System;
 using System.Collections.Generic;
@@ -13,7 +14,10 @@ namespace Repository.Repo
     {
         public PartnerServiceRepo(LumosDBContext context) { }
 
+        public Task<PartnerServiceDTO?> GetPartnerServiceByIdAsync(int serviceId) => PartnerServiceDAO.Instance.GetPartnerServiceByIdAsync(serviceId);
+
         public Task<PartnerService?> GetPartnerServiceByServiceNameAsync(string serviceName, int partnerId) => PartnerServiceDAO.Instance.GetServiceOfPartnerByServiceNameAsync(serviceName, partnerId);
 
+        public Task<IEnumerable<PartnerServiceDTO>> GetTopFiveBookedServicesAsync() => PartnerServiceDAO.Instance.GetTopFiveBookedServicesAsync();
     }
 }

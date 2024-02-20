@@ -378,6 +378,32 @@ namespace Service.Service
                 throw new Exception(ex.Message);
             }
         }
+        public async Task<IEnumerable<PartnerServiceDTO>> GetTopFiveBookedServicesAsync()
+        {
+            try
+            {
+                var result = await _unitOfWork.PartnerServiceRepo.GetTopFiveBookedServicesAsync();
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetTopFiveBookedServicesAsync: {ex.Message}", ex);
+                throw new Exception(ex.Message);
+            }
+        }
 
+        public async Task<PartnerServiceDTO?> GetPartnerServiceByIdAsync(int serviceId)
+        {
+            try
+            {
+                var result = await _unitOfWork.PartnerServiceRepo.GetPartnerServiceByIdAsync(serviceId);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetPartnerServiceByIdAsync: {ex.Message}", ex);
+                throw new Exception(ex.Message);
+            }
+        }
     }
 }

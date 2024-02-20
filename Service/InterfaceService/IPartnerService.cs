@@ -27,5 +27,7 @@ namespace Service.InterfaceService
         Task<IEnumerable<SearchPartnerDTO>> SearchPartnerByPartnerOrServiceNameAsync(string keyword);
         Task<PartnerService> AddPartnerServiceAsync(AddPartnerServiceResquest service, string? partnerEmail);
         Task<IEnumerable<SearchPartnerDTO>> GetPartnerByCategoryAsync(int categoryId);
+        Task<IEnumerable<PartnerServiceDTO>> GetTopFiveBookedServicesAsync();
+        Task<PartnerServiceDTO?> GetPartnerServiceByIdAsync(int serviceId);
     }
 }

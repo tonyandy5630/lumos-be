@@ -287,5 +287,34 @@ namespace LumosSolution.Controllers
                 return BadRequest(res);
             }
         }
+        [HttpGet("top-five-booked-services")]
+        [Authorize(Roles = "Admin,Customer,Partner")]
+        public async Task<ActionResult<ApiResponse<IEnumerable<PartnerServiceDTO>>>> GetTopFiveBookedServices()
+        {
+            ApiResponse<IEnumerable<PartnerServiceDTO>> response = new ApiResponse<IEnumerable<PartnerServiceDTO>>
+            {
+                message = MessagesResponse.Error.NotFound,
+                StatusCode = 404
+            };
+            try
+            {
+                IEnumerable<PartnerServiceDTO> topFiveServices = await _partnerService.GetTopFiveBookedServicesAsync();
+
+                if (topFiveServices == null || !topFiveServices.Any())
+                    return response;
+
+                response.message = MessagesResponse.Success.Completed;
+                response.StatusCode = 200;
+                response.data = topFiveServices;
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return BadRequest(response);
+            }
+        }
+
     }
 }
