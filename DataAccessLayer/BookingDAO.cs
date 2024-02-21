@@ -80,45 +80,76 @@ namespace DataAccessLayer
                     booking.Payment = paymentMethod;
                 }
 
-                if (createBookingDTO.ReportId > 0)
-                {
-                    var report = await dbContext.MedicalReports.FindAsync(createBookingDTO.ReportId);
-                    if (report == null)
-                    {
-                        throw new ArgumentException($"Medical report with ID {createBookingDTO.ReportId} not found");
-                    }
-                }
-                booking.Code =GenerateCode.GenerateTableCode("booking");
+                booking.Code = GenerateCode.GenerateTableCode("booking");
                 booking.CreatedDate = DateTime.Now;
+
                 dbContext.Bookings.Add(booking);
                 await dbContext.SaveChangesAsync();
 
-                if (booking.BookingId != null && booking.BookingId > 0)
+                foreach (var cartItem in createBookingDTO.CartModel)
                 {
+                    // Tạo booking detail cho mỗi reportId
                     var bookingDetail = new BookingDetail
                     {
                         BookingId = booking.BookingId,
                         Note = createBookingDTO.Note,
-                        ReportId = createBookingDTO.ReportId,
+                        ReportId = cartItem.ReportId,
                         CreatedDate = booking.CreatedDate,
                         CreatedBy = createBookingDTO.CreatedBy
                     };
                     dbContext.BookingDetails.Add(bookingDetail);
-
+                    await dbContext.SaveChangesAsync();
+                    // Tạo booking log cho mỗi booking detail
                     var bookingLog = new BookingLog
                     {
                         BookingId = booking.BookingId,
-                        Status = 1,
+                        Status = 1, // Status mặc định khi tạo booking detail
                         CreatedDate = booking.CreatedDate,
                         Note = createBookingDTO.Note,
                         CreatedBy = createBookingDTO.CreatedBy
                     };
                     dbContext.BookingLogs.Add(bookingLog);
-
                     await dbContext.SaveChangesAsync();
-                    return true;
+                    foreach (var service in cartItem.Services)
+                    {
+                        var serviceBooking = new ServiceBooking
+                        {
+                            ServiceId = service.ServiceId,
+                            DetailId = bookingDetail.DetailId, // Sử dụng DetailId từ BookingDetail mới tạo
+                            Price = (int?)service.Price,
+                            Description = service.Description,
+                            CreatedDate = booking.CreatedDate,
+                            LastUpdate = (DateTime)booking.CreatedDate,
+                            UpdatedBy = createBookingDTO.CreatedBy
+                        };
+
+                        dbContext.ServiceBookings.Add(serviceBooking);
+
+                        var categoryId = await dbContext.ServiceDetails
+                        .Where(s => s.ServiceId == service.ServiceId)
+                        .Select(s => s.CategoryId)
+                        .FirstOrDefaultAsync();
+
+                        if (categoryId != null)
+                        {
+                            var serviceDetail = new ServiceDetail
+                            {
+                                ServiceId = service.ServiceId,
+                                CategoryId = categoryId, // Gán CategoryId từ cơ sở dữ liệu
+                                CreatedDate = (DateTime)booking.CreatedDate,
+                                LastUpdate = (DateTime)booking.CreatedDate,
+                                CreatedBy = createBookingDTO.CreatedBy,
+                                UpdatedBy = createBookingDTO.CreatedBy
+                            };
+                            dbContext.ServiceDetails.Add(serviceDetail);
+                        }
+                    }
                 }
-                return false;
+
+                // Lưu thay đổi vào database
+                await dbContext.SaveChangesAsync();
+
+                return true;
             }
             catch (Exception ex)
             {
@@ -126,6 +157,76 @@ namespace DataAccessLayer
                 return false;
             }
         }
+
+        public async Task<List<Booking>> GetAllIncompleteBookingsAsync()
+        {
+            try
+            {
+                var incompleteBookingIds = await dbContext.BookingLogs
+                   .Where(bl => bl.Status == 0)
+                   .Select(bl => bl.BookingId)
+                   .ToListAsync();
+
+                var incompleteBookings = await dbContext.Bookings
+                    .Where(b => incompleteBookingIds.Contains(b.BookingId))
+                    .ToListAsync();
+
+                return incompleteBookings;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetAllIncompleteBookingsAsync: {ex.Message}", ex);
+                throw;
+            }
+        }
+
+        public async Task<List<Booking>> GetIncompleteBookingsByCustomerIdAsync(int customerId)
+        {
+            try
+            {
+                var incompleteBookingIds = await dbContext.BookingLogs
+                   .Where(bl => bl.Status == 0)
+                   .Select(bl => bl.BookingId)
+                   .ToListAsync();
+
+                var incompleteBookings = await dbContext.BookingDetails
+                    .Where(bd => incompleteBookingIds.Contains(bd.BookingId))
+                    .Where(bd => bd.Report != null && bd.Report.CustomerId == customerId)
+                    .Select(bd => bd.Booking)
+                    .ToListAsync();
+
+                return incompleteBookings;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetIncompleteBookingsByCustomerIdAsync: {ex.Message}", ex);
+                throw;
+            }
+        }
+
+        public async Task<List<Booking>> GetIncompleteBookingsByReportIdAsync(int reportId)
+        {
+            try
+            {
+                var incompleteBookingIds = await dbContext.BookingLogs
+                   .Where(bl => bl.Status == 0)
+                   .Select(bl => bl.BookingId)
+                   .ToListAsync();
+
+                var incompleteBookings = await dbContext.BookingDetails
+                    .Where(b => incompleteBookingIds.Contains(b.BookingId) && b.ReportId == reportId)
+                    .Select(b => b.Booking)
+                    .ToListAsync();
+
+                return incompleteBookings;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetIncompleteBookingsByReportIdAsync: {ex.Message}", ex);
+                throw;
+            }
+        }
+
 
     }
 }

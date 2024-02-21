@@ -60,5 +60,43 @@ namespace Service.Service
                 throw new Exception(ex.Message);
             }
         }
+        public async Task<List<Booking>> GetIncompleteBookingsByCustomerIdAsync(int customerId)
+        {
+            try
+            {
+                return await _unitOfWork.BookingRepo.GetIncompleteBookingsByCustomerIdAsync(customerId);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetIncompleteBookingsByCustomerIdAsync: {ex.Message}", ex);
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<List<Booking>> GetIncompleteBookingsByReportIdAsync(int reportId)
+        {
+            try
+            {
+                return await _unitOfWork.BookingRepo.GetIncompleteBookingsByReportIdAsync(reportId);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetIncompleteBookingsByReportIdAsync: {ex.Message}", ex);
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<List<Booking>> GetAllIncompleteBookingsAsync()
+        {
+            try
+            {
+                return await _unitOfWork.BookingRepo.GetAllIncompleteBookingsAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetAllIncompleteBookingsAsync: {ex.Message}", ex);
+                throw new Exception(ex.Message);
+            }
+        }
     }
 }

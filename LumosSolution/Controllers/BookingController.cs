@@ -86,7 +86,7 @@ namespace LumosSolution.Controllers
             }
         }
 
-        [HttpPost("customer/booking")]
+        [HttpPost("customer")]
         [Authorize(Roles = "Customer")]
         public async Task<ActionResult<ApiResponse<object>>> CreateBookingAsync([FromBody] CreateBookingDTO createBookingDTO)
         {
@@ -94,7 +94,7 @@ namespace LumosSolution.Controllers
             try
             {
                 var booking = _mapper.Map<Booking>(createBookingDTO);
-                bool result = await _bookingService.CreateBookingAsync(booking,createBookingDTO);
+                bool result = await _bookingService.CreateBookingAsync(booking, createBookingDTO);
 
                 if (result)
                 {
@@ -116,6 +116,7 @@ namespace LumosSolution.Controllers
                 return BadRequest(response);
             }
         }
+
         [HttpPut("partner/bookinglog/{bookinglogId}/status")]
         [Authorize(Roles = "Partner")]
         public async Task<ActionResult<ApiResponse<object>>> UpdateBookingLogStatusForPartner(int bookinglogId, [FromBody] int newStatus)
@@ -167,6 +168,41 @@ namespace LumosSolution.Controllers
                     response.StatusCode = ApiStatusCode.BadRequest;
                     return BadRequest(response);
                 }
+            }
+            catch (Exception ex)
+            {
+                response.message = MessagesResponse.Error.OperationFailed;
+                response.StatusCode = ApiStatusCode.BadRequest;
+                return BadRequest(response);
+            }
+        }
+        [HttpGet("incomplete")]
+        [Authorize(Roles = "Admin, Customer")]
+        public async Task<ActionResult<ApiResponse<object>>> GetIncompleteBookings(int? customerId = null, int? reportId = null)
+        {
+            ApiResponse<object> response = new ApiResponse<object>();
+            try
+            {
+                List<Booking> incompleteBookings;
+
+                if (customerId.HasValue)
+                {
+                    incompleteBookings = await _bookingService.GetIncompleteBookingsByCustomerIdAsync(customerId.Value);
+                }
+                else if (reportId.HasValue)
+                {
+                    incompleteBookings = await _bookingService.GetIncompleteBookingsByReportIdAsync(reportId.Value);
+                }
+                else
+                {
+                    incompleteBookings = await _bookingService.GetAllIncompleteBookingsAsync();
+                }
+
+                response.data = incompleteBookings;
+                response.message = MessagesResponse.Success.Completed;
+                response.StatusCode = ApiStatusCode.OK;
+
+                return Ok(response);
             }
             catch (Exception ex)
             {

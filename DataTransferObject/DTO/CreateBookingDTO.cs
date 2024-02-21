@@ -8,6 +8,7 @@ namespace DataTransferObject.DTO
 {
     public class CreateBookingDTO
     {
+        public int PartnerId { get; set; }
         public int PaymentId { get; set; }
         public int TotalPrice { get; set; }
         public DateTime BookingDate { get; set; }
@@ -15,7 +16,7 @@ namespace DataTransferObject.DTO
         public string CreatedBy { get; set; }
         public string Address { get; set; }
         public string Note { get; set; }
-        public int ReportId { get; set; }
+        public List<CartModelDTO> CartModel { get; set; }
     }
 
 }
