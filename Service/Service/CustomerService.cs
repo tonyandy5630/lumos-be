@@ -242,5 +242,31 @@ namespace Service.Service
                 throw;
             }
         }
+        public async Task<bool> CheckExistingAddressAsync(string displayName, string address)
+        {
+            try
+            {
+                return await _unitOfWork.CustomerRepo.CheckExistingAddressAsync(displayName, address);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in CheckExistingAddressAsync: {ex.Message}", ex);
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<bool> CheckExistingMedicalReportAsync(string fullName)
+        {
+            try
+            {
+                return await _unitOfWork.CustomerRepo.CheckExistingMedicalReportAsync(fullName);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in CheckExistingMedicalReportAsync: {ex.Message}", ex);
+                throw new Exception(ex.Message);
+            }
+        }
+
     }
 }

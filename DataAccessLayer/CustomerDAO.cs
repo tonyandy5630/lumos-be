@@ -1,4 +1,4 @@
-using BussinessObject;
+﻿using BussinessObject;
 using Microsoft.EntityFrameworkCore;
 using Utils;
 
@@ -245,5 +245,37 @@ namespace DataAccessLayer
                 throw new Exception(ex.Message);
             }
         }
+        public async Task<bool> CheckExistingAddressAsync(string displayName, string address)
+        {
+            try
+            {
+                bool existingAddress = await dbContext.Addresses
+                    .AnyAsync(a => a.DisplayName.ToLower().Equals(displayName.ToLower()) &&
+                                   a.Address1.ToLower().Equals(address.ToLower()));
+
+                return existingAddress;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in CheckExistingAddressAsync: {ex.Message}", ex);
+                throw new Exception(ex.Message);
+            }
+        }
+        public async Task<bool> CheckExistingMedicalReportAsync(string fullName)
+        {
+            try
+            {
+                bool existingReport = await dbContext.MedicalReports
+                    .AnyAsync(r => r.Fullname.ToLower().Equals(fullName.ToLower()));
+
+                return existingReport;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in CheckExistingMedicalReportAsync: {ex.Message}", ex);
+                throw new Exception(ex.Message);
+            }
+        }
+
     }
 }

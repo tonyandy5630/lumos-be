@@ -25,5 +25,8 @@ namespace Service.InterfaceService
         Task<MedicalReport> AddMedicalReportAsync(MedicalReportDTO medicalReport, string cusEmail);
         Task<Address> AddCustomerAddressAsync(Address address);
         Task<MedicalReport> GetMedicalReportByIdAsync(int id);
+        Task<bool> CheckExistingAddressAsync(string displayName, string address);
+        Task<bool> CheckExistingMedicalReportAsync(string fullName);
+
     }
 }

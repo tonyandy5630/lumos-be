@@ -123,6 +123,12 @@ namespace LumosSolution.Controllers
 
             try
             {
+                bool existingReport = await _customerService.CheckExistingMedicalReportAsync(medicalReport.Fullname);
+                if (existingReport)
+                {
+                    response.message = "Medical report with the same name already exists";
+                    return BadRequest(response);
+                }
                 string? userEmail = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
 
                 if (string.IsNullOrEmpty(userEmail))
@@ -157,6 +163,13 @@ namespace LumosSolution.Controllers
             ApiResponse<Address> response = new ApiResponse<Address>();
             try
             {
+                bool existingAddress = await _customerService.CheckExistingAddressAsync(address.DisplayName, address.Address1);
+                if (existingAddress)
+                {
+                    response.message = "Address with the same name already exists";
+                    response.StatusCode = ApiStatusCode.BadRequest;
+                    return BadRequest(response);
+                }
                 response.data = await _customerService.AddCustomerAddressAsync(address);
                 if (response.data == null)
                 {

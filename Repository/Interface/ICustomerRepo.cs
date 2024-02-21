@@ -19,5 +19,8 @@ namespace Repository.Interface
         Task<bool> BanCustomerAsync(int id);
         Task<List<Address>> GetCustomersAddressByCustomerIdAsync(int id);
         Task<Address> AddCustomerAddressAsync(Address address);
+        Task<bool> CheckExistingAddressAsync(string displayName, string address);
+        Task<bool> CheckExistingMedicalReportAsync(string fullName);
+
     }
 }
