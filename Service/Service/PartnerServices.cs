@@ -301,6 +301,9 @@ namespace Service.Service
                 List<PartnerServiceDTO?> serviceDetails = new List<PartnerServiceDTO?>();
                 foreach (var partner in results)
                 {
+                    // empty old  partner servicelist for new partner
+                    if(serviceDetails.Count > 0)
+                        serviceDetails.Clear();
                     foreach (var service in partner.PartnerServices)
                     {
                         if (service != null)
