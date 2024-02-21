@@ -113,7 +113,12 @@ namespace DataAccessLayer
         {
             try
             {
-                return await _context.Partners.SingleOrDefaultAsync(u => u.PartnerId == id);
+                Partner partner = await _context.Partners.SingleOrDefaultAsync(u => u.PartnerId == id);
+                if (partner != null)
+                {
+                    partner.PartnerServices = await _context.PartnerServices.Where(ps => ps.PartnerId == id).ToListAsync();
+                }
+                return partner;
             }
             catch (Exception ex)
             {

@@ -12,7 +12,10 @@ namespace BussinessObject.AuthenModel
         [Required]
         [EmailAddress]
         public string Email { get; set; }
-
+        public string? Fullname { get; set; }
+        [Phone(ErrorMessage = "Invalid phone number format.")]
+        public string? Phone { get; set; }
+        public int Pronounce { get; set; }
         [Required]
         [DataType(DataType.Password)]
         public string Password { get; set; }

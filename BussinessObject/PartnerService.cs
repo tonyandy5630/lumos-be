@@ -34,7 +34,7 @@ namespace BussinessObject
         public DateTime? CreatedDate { get; set; }
         public DateTime? LastUpdate { get; set; }
         public string? UpdatedBy { get; set; }
-
+        [JsonIgnore]
         public virtual Partner? Partner { get; set; }
 
         [JsonIgnore]

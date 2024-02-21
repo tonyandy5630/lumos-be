@@ -20,6 +20,9 @@ namespace DataTransferObject
 
             CreateMap<RegistrationModel, Customer>()
                 .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
+                .ForMember(dto => dto.Fullname, opt => opt.MapFrom(src => src.Fullname))
+                .ForMember(dto => dto.Phone, opt => opt.MapFrom(src => src.Phone))
+                .ForMember(dto => dto.Pronounce, opt => opt.MapFrom(src => src.Pronounce))
                 .ForMember(dest => dest.Password, opt => opt.MapFrom(src => src.Password));
 
             CreateMap<CustomerServiceDTO, Customer>()

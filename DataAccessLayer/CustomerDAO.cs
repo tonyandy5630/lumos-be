@@ -122,7 +122,7 @@ namespace DataAccessLayer
                     customer.Code = GenerateCode.GenerateRoleCode("customer");
                     customer.Status = 1;
                     customer.Role = 2;
-                    customer.Fullname = ExtractNameFromEmail(customer.Email);
+/*                    customer.Fullname = ExtractNameFromEmail(customer.Email);*/
                     DateTime currentDate = DateTime.UtcNow;
                     customer.LastUpdate = currentDate;
                     customer.UpdateBy = customer.Email;
