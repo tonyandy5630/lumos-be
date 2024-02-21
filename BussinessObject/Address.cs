@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace BussinessObject
 {
@@ -15,6 +16,7 @@ namespace BussinessObject
         public DateTime? LastUpdate { get; set; }
         public string? UpdatedBy { get; set; }
         public int? CustomerId { get; set; }
+        [JsonIgnore]
 
         public virtual Customer? Customer { get; set; }
     }
