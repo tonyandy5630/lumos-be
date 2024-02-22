@@ -77,20 +77,20 @@ namespace LumosSolution.Controllers
                     var errors = ModelState.Values.SelectMany(v => v.Errors.Select(e => e.ErrorMessage));
                     response.message = string.Join(" ", errors);
                     response.StatusCode = ApiStatusCode.BadRequest;
-                    return BadRequest(response);
+                    return UnprocessableEntity(response);
                 }
 
                 if (string.IsNullOrWhiteSpace(model.Email) || string.IsNullOrWhiteSpace(model.Password))
                 {
                     response.message = MessagesResponse.Error.InvalidInput;
                     response.StatusCode = ApiStatusCode.BadRequest;
-                    return BadRequest(response);
+                    return UnprocessableEntity(response);
                 }
                 if (model.Password != model.ConfirmPassword)
                 {
                     response.message = "ConfirmPassword và Password không giống nhau";
-                    response.StatusCode = ApiStatusCode.BadRequest;
-                    return BadRequest(response);
+                    response.StatusCode = 422;
+                    return UnprocessableEntity(response);
                 }
 
                 var user = _mapper.Map<Customer>(model);
@@ -113,7 +113,8 @@ namespace LumosSolution.Controllers
             {
                 response.message = MessagesResponse.Error.RegisterFailed;
                 response.StatusCode = ApiStatusCode.BadRequest;
-                return BadRequest(response);
+                Console.WriteLine(ex.Message);
+                return UnprocessableEntity(response);
             }
         }
 
@@ -269,7 +270,7 @@ namespace LumosSolution.Controllers
                         response.message = MessagesResponse.Error.NotFound;
                         response.StatusCode = ApiStatusCode.NotFound;
                         response.data = new{
-                            ErrorMessage = "Email không tồn tại",
+                            email = "Email không tồn tại",
                         };
                     }
                     else if (!passwordCorrect)
@@ -279,7 +280,7 @@ namespace LumosSolution.Controllers
                         response.StatusCode = ApiStatusCode.Unauthorized;
                         response.data = new
                         {
-                            ErrorMessage = "Password không đúng",
+                            password = "Password không đúng",
                         };
                     }
 
