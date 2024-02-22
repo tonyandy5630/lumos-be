@@ -72,6 +72,14 @@ namespace LumosSolution.Controllers
             ApiResponse<object> response = new ApiResponse<object>();
             try
             {
+                if (!ModelState.IsValid)
+                {
+                    var errors = ModelState.Values.SelectMany(v => v.Errors.Select(e => e.ErrorMessage));
+                    response.message = string.Join(" ", errors);
+                    response.StatusCode = ApiStatusCode.BadRequest;
+                    return BadRequest(response);
+                }
+
                 if (string.IsNullOrWhiteSpace(model.Email) || string.IsNullOrWhiteSpace(model.Password))
                 {
                     response.message = MessagesResponse.Error.InvalidInput;
@@ -80,8 +88,7 @@ namespace LumosSolution.Controllers
                 }
                 if (model.Password != model.ConfirmPassword)
                 {
-
-                    response.message = MessagesResponse.Error.OperationFailed;
+                    response.message = "ConfirmPassword và Password không giống nhau";
                     response.StatusCode = ApiStatusCode.BadRequest;
                     return BadRequest(response);
                 }
@@ -108,7 +115,6 @@ namespace LumosSolution.Controllers
                 response.StatusCode = ApiStatusCode.BadRequest;
                 return BadRequest(response);
             }
-
         }
 
         [HttpPost("google/register")]
@@ -220,9 +226,21 @@ namespace LumosSolution.Controllers
             ApiResponse<object>? response = new ApiResponse<object>();
             try
             {
-                var (authenticated, role, username, userdetails) = await _authentication.IsUserAuthenticatedAsync(model.Email, model.Password);
+                if (string.IsNullOrEmpty(model.Password))
+                {
+                    // Nếu không nhập mật khẩu
+                    response.message = "Password is required";
+                    response.StatusCode = ApiStatusCode.BadRequest;
+                    return BadRequest(response);
+                }else if (string.IsNullOrEmpty(model.Email))
+                {
+                    response.message = "Email is required";
+                    response.StatusCode = ApiStatusCode.BadRequest;
+                    return BadRequest(response);
+                }
+                var (authenticated, role, username, userdetails, emailExists, passwordCorrect) = await _authentication.IsUserAuthenticatedAsync(model.Email, model.Password);
 
-                if (authenticated)
+                if (authenticated && passwordCorrect)
                 {
                     await _authentication.UpdateLastLoginTime(model.Email);
                     var (token, accessTokenTime, refreshTokentime, refreshToken) = await _authentication.GenerateToken(model.Email, role);
@@ -245,9 +263,27 @@ namespace LumosSolution.Controllers
                 }
                 else
                 {
-                    response.message = MessagesResponse.Error.Unauthorized;
-                    response.StatusCode = ApiStatusCode.Unauthorized;
-                    return Unauthorized(response);
+                    if (!emailExists)
+                    {
+                        // Email không tồn tại
+                        response.message = MessagesResponse.Error.NotFound;
+                        response.StatusCode = ApiStatusCode.NotFound;
+                        response.data = new{
+                            ErrorMessage = "Email không tồn tại",
+                        };
+                    }
+                    else if (!passwordCorrect)
+                    {
+                        // Password không đúng
+                        response.message = MessagesResponse.Error.Unauthorized;
+                        response.StatusCode = ApiStatusCode.Unauthorized;
+                        response.data = new
+                        {
+                            ErrorMessage = "Password không đúng",
+                        };
+                    }
+
+                    return StatusCode((int)response.StatusCode, response);
                 }
 
             }

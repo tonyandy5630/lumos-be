@@ -28,7 +28,7 @@ namespace Service.Service
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<(bool, string, string, object)> IsUserAuthenticatedAsync(string email, string password)
+        public async Task<(bool, string, string, object,bool, bool)> IsUserAuthenticatedAsync(string email, string password)
         {
             try
             {
@@ -36,10 +36,13 @@ namespace Service.Service
                 bool authenticated = false;
                 string username = null;
                 object userDetails = null;
+                bool emailExists = false;
+                bool passwordCorrect = false;
 
                 var adminResponse = await _unitOfWork.AdminRepo.GetAdminByEmailAsync(email);
                 if (adminResponse != null && adminResponse.Password == password)
                 {
+                    passwordCorrect = true;
                     authenticated = true;
                     role = nameof(RolesEnum.Admin);
                     username = "Admin";
@@ -57,12 +60,14 @@ namespace Service.Service
                         ImgUrl = adminResponse.ImgUrl,
                     };
                 }
+                if (adminResponse != null) { emailExists = true; }
 
                 if (!authenticated)
                 {
                     var partnerResponse = await _unitOfWork.PartnerRepo.GetPartnerByEmailAsync(email);
                     if (partnerResponse != null && partnerResponse.Password == password)
                     {
+                        passwordCorrect = true;
                         authenticated = true;
                         role = nameof(RolesEnum.Partner);
                         username = partnerResponse.PartnerName;
@@ -84,7 +89,9 @@ namespace Service.Service
                             ImgUrl = partnerResponse.ImgUrl,
                             BusinessLicenseNumber = partnerResponse.BusinessLicenseNumber
                         };
+                        
                     }
+                    if (partnerResponse != null) { emailExists = true; }   
                 }
 
                 if (!authenticated)
@@ -92,6 +99,7 @@ namespace Service.Service
                     var customerResponse = await _unitOfWork.CustomerRepo.GetCustomerByEmailAsync(email);
                     if (customerResponse != null && customerResponse.Password == password)
                     {
+                        passwordCorrect = true;
                         authenticated = true;
                         role = nameof(RolesEnum.Customer);
                         username = customerResponse.Fullname;
@@ -110,6 +118,7 @@ namespace Service.Service
                             ImgUrl = customerResponse.ImgUrl,
                         };
                     }
+                    if (customerResponse != null) { emailExists = true; }
                 }
 
                 if (authenticated && role != "Admin")
@@ -117,12 +126,12 @@ namespace Service.Service
                     await UpdateLastLoginTime(email);
                 }
 
-                return (authenticated, role, username, userDetails);
+                return (true, role, username, userDetails, emailExists,passwordCorrect);
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Exception in IsUserAuthenticatedAsync: {ex.Message}");
-                return (false, null, null, null);
+                return (false, null, null, null,false,false);
             }
         }
 

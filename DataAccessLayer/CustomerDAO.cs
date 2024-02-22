@@ -127,6 +127,7 @@ namespace DataAccessLayer
                     customer.LastUpdate = currentDate;
                     customer.UpdateBy = customer.Email;
                     customer.CreatedDate = currentDate;
+                    customer.Pronounce = 0;
 
                     dbContext.Customers.Add(customer);
                     await dbContext.SaveChangesAsync();
