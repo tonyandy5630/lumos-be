@@ -38,24 +38,29 @@ namespace DataAccessLayer
         {
             try
             {
+
                 var result = from ps in _context.PartnerServices
-                             join sb in _context.ServiceBookings 
-                             on ps.ServiceId equals sb.ServiceId
-                             group new { ps, sb } by new { ps.ServiceId, ps.Name, ps.Description, ps.Price, ps.Code, ps.Status, ps.CreatedDate, ps.UpdatedBy, ps.Duration, ps.LastUpdate } into grouped
-                             select new PartnerServiceDTO
-                             {
-                                 ServiceId = grouped.Key.ServiceId,
-                                 Name = grouped.Key.Name,
-                                 Description = grouped.Key.Description,
-                                 Price = grouped.Key.Price,
-                                 Code = grouped.Key.Code,
-                                 Status = grouped.Key.Status,
-                                 CreatedDate = grouped.Key.CreatedDate,
-                                 UpdatedBy = grouped.Key.UpdatedBy,
-                                 LastUpdate = grouped.Key.LastUpdate,
-                                 Duration = grouped.Key.Duration,
-                                 BookedQuantity = grouped.Count()
-                             };
+                join sb in _context.ServiceBookings
+                on ps.ServiceId equals sb.ServiceId into serviceBookings
+                from sb in serviceBookings.DefaultIfEmpty()
+                where ps.ServiceId == serviceId
+                group new { ps, sb } by
+                new { ps.ServiceId, ps.Name, ps.Description, ps.Price, ps.Code, ps.Status, ps.CreatedDate, ps.UpdatedBy, ps.Duration, ps.LastUpdate }
+                into grouped
+                select new PartnerServiceDTO
+                {
+                    ServiceId = grouped.Key.ServiceId,
+                    Name = grouped.Key.Name,
+                    Description = grouped.Key.Description,
+                    Price = grouped.Key.Price,
+                    Code = grouped.Key.Code,
+                    Status = grouped.Key.Status,
+                    CreatedDate = grouped.Key.CreatedDate,
+                    UpdatedBy = grouped.Key.UpdatedBy,
+                    LastUpdate = grouped.Key.LastUpdate,
+                    Duration = grouped.Key.Duration,
+                    BookedQuantity = grouped.Count(entry => entry.sb != null),
+                };
 
                 return await result.FirstOrDefaultAsync(s => s.ServiceId == serviceId);
             }
