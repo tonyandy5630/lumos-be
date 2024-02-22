@@ -101,16 +101,16 @@ namespace LumosSolution.Controllers
         }
         [HttpGet("{id}")]
         [Authorize(Roles = "Admin,Customer,Partner")]
-        public async Task<ActionResult<ApiResponse<Partner?>>> GetPartnerById(int id)
+        public async Task<ActionResult<ApiResponse<SearchPartnerDTO?>>> GetPartnerById(int id)
         {
-            ApiResponse<Partner?> res = new ApiResponse<Partner?>
+            ApiResponse<SearchPartnerDTO?> res = new ApiResponse<SearchPartnerDTO?>
             {
                 message = MessagesResponse.Error.NotFound,
                 StatusCode = 404
             };
             try
             {
-                Partner? partner = await _partnerService.GetPartnerByIDAsync(id);
+                SearchPartnerDTO? partner = await _partnerService.GetPartnerByIDAsync(id);
 
                 if (partner == null)
                     return res;

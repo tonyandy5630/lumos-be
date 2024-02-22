@@ -197,7 +197,7 @@ namespace Service.Service
             }
         }
 
-        public async Task<Partner> GetPartnerByIDAsync(int id)
+        public async Task<SearchPartnerDTO> GetPartnerByIDAsync(int id)
         {
             try
             {
@@ -206,7 +206,18 @@ namespace Service.Service
                 {
                     Console.WriteLine(MessagesResponse.Error.NotFound);
                 }
-                return partner;
+                SearchPartnerDTO partnerDTO = _mapper.Map<SearchPartnerDTO>(partner);
+
+                List<PartnerServiceDTO> partnerServices = new List<PartnerServiceDTO>();
+                foreach (var service in partner.PartnerServices)
+                {
+                    PartnerServiceDTO serviceDTO = await GetPartnerServiceByIdAsync(service.ServiceId);
+                    partnerServices.Add(serviceDTO);
+                }
+
+                partnerDTO.PartnerServices = partnerServices;
+
+                return partnerDTO;
             }
             catch (Exception ex)
             {

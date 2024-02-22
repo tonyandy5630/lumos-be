@@ -14,7 +14,7 @@ namespace Service.InterfaceService
     {
         Task<PartnerServiceDTO?> GetPartnerServiceDetailAsync(int serviceId);
         Task<List<Partner>> GetAllPartnersAsync();
-        Task<Partner> GetPartnerByIDAsync(int id);
+        Task<SearchPartnerDTO> GetPartnerByIDAsync(int id);
         Task<Partner> GetPartnerByRefreshTokenAsync(string token);
         Task<Partner> GetPartnerByEmailAsync(string email);
         Task<Partner> GetPartnerByCodeAsync(string code);
