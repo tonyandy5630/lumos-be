@@ -31,5 +31,6 @@ namespace Repository.Repo
         public Task<List<Booking>> GetIncompleteBookingsByReportIdAsync(int reportId) => BookingDAO.Instance.GetIncompleteBookingsByReportIdAsync((int)reportId);   
 
         public Task<List<Booking>> GetAllIncompleteBookingsAsync() => BookingDAO.Instance.GetAllIncompleteBookingsAsync();
+        public Task<List<TopBookedServiceDTO>> GetTopBookedServicesAsync(int top) => BookingDAO.Instance.GetTopBookedServicesAsync(top);
     }
 }

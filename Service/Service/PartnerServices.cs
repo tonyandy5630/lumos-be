@@ -58,6 +58,7 @@ namespace Service.Service
                 partnerService.Status = 1;
                 partnerService.CreatedDate = DateTime.Now;
                 partnerService.LastUpdate = DateTime.Now;
+                partnerService.Rating = 0;
                 partner.UpdatedBy = partner.PartnerName;
                 // Validate categories
                 // better if can do concurrently

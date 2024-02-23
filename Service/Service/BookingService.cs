@@ -98,5 +98,19 @@ namespace Service.Service
                 throw new Exception(ex.Message);
             }
         }
+        public async Task<List<TopBookedServiceDTO>> GetTopBookedServicesAsync(int top)
+        {
+            try
+            {
+                var topServices = await _unitOfWork.BookingRepo.GetTopBookedServicesAsync(top);
+
+                return topServices;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetTopBookedServicesAsync: {ex.Message}", ex);
+                throw new Exception(ex.Message);
+            }
+        }
     }
 }

@@ -16,5 +16,6 @@ namespace Repository.Interface
         Task<List<Booking>> GetIncompleteBookingsByCustomerIdAsync(int customerId);
         Task<List<Booking>> GetIncompleteBookingsByReportIdAsync(int reportId);
         Task<List<Booking>> GetAllIncompleteBookingsAsync();
+        Task<List<TopBookedServiceDTO>> GetTopBookedServicesAsync(int top);
     }
 }

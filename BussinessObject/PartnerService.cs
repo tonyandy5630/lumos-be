@@ -42,7 +42,7 @@ namespace BussinessObject
 
         [JsonIgnore]
         public virtual ICollection<ServiceDetail> ServiceDetails { get; set; }
-        
+        public decimal Rating { get; set; }
 
     }
 }

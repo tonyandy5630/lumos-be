@@ -226,7 +226,34 @@ namespace DataAccessLayer
                 throw;
             }
         }
+        public async Task<List<TopBookedServiceDTO>> GetTopBookedServicesAsync(int top)
+        {
+            try
+            {
+                var topServices = await dbContext.ServiceBookings
+                    .Include(sb => sb.Service)
+                    .GroupBy(sb => new { sb.ServiceId, sb.Service.Name, sb.Service.PartnerId })
+                    .Select(g => new TopBookedServiceDTO
+                    {
+                        ServiceId = (int)g.Key.ServiceId,
+                        PartnerId = (int)g.Key.PartnerId,
+                        ServiceName = g.Key.Name,
+                        PartnerName = g.Select(sb => sb.Service.Partner.PartnerName).FirstOrDefault(),
+                        Rating = g.Select(sb => sb.Service.Rating).FirstOrDefault(),
+                        NumberOfBooking = g.Count()
+                    })
+                    .OrderByDescending(g => g.NumberOfBooking)
+                    .Take(top)
+                    .ToListAsync();
 
+                return topServices;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetTopBookedServicesAsync: {ex.Message}", ex);
+                throw;
+            }
+        }
 
     }
 }

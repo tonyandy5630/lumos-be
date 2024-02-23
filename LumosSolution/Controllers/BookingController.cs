@@ -26,6 +26,48 @@ namespace LumosSolution.Controllers
             _bookingLogService = bookingLogService;
         }
 
+        [HttpGet("{top}")]
+        public async Task<ActionResult<ApiResponse<object>>> GetTopBookedServices(int top)
+        {
+            ApiResponse<object> response = new ApiResponse<object>();
+            try
+            {
+                if (top <= 0)
+                {
+                    response.message = "Invalid top parameter.";
+                    response.StatusCode = ApiStatusCode.BadRequest;
+                    return BadRequest(response);
+                }
+
+                var topServices = await _bookingService.GetTopBookedServicesAsync(top);
+
+                if (topServices == null || !topServices.Any())
+                {
+                    response.message = "No data found.";
+                    response.StatusCode = ApiStatusCode.NotFound;
+                    return NotFound(response);
+                }
+
+                response.data = topServices;
+                response.message = "Success";
+                response.StatusCode = ApiStatusCode.OK;
+
+                return Ok(response);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                response.message = "Unauthorized";
+                response.StatusCode = ApiStatusCode.Unauthorized;
+                return Unauthorized(response);
+            }
+            catch (Exception ex)
+            {
+                response.message = "Internal Server Error";
+                response.StatusCode = 500;
+                return BadRequest(response);
+            }
+        }
+
         [HttpGet("admin/bookingdetail/{id}/booking")]
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult<ApiResponse<object>>> GetBookingDetailById(int id)
