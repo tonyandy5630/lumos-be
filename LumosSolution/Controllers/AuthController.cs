@@ -80,6 +80,14 @@ namespace LumosSolution.Controllers
                     return UnprocessableEntity(response);
                 }
 
+                var existingCustomer = await _customerService.GetCustomerByEmailAsync(model.Email);
+                if (existingCustomer != null)
+                {
+                    response.message = "Email đã tồn tại trong hệ thống.";
+                    response.StatusCode = ApiStatusCode.BadRequest;
+                    return UnprocessableEntity(response);
+                }
+
                 if (string.IsNullOrWhiteSpace(model.Email) || string.IsNullOrWhiteSpace(model.Password))
                 {
                     response.message = MessagesResponse.Error.InvalidInput;
