@@ -321,7 +321,7 @@ namespace Service.Service
                     {
                         if (service != null)
                         {
-                            var sd = await GetPartnerServiceByIdAsync(service.ServiceId);
+                            var sd = await GetPartnerServiceDetailAsync(service.ServiceId);
                             serviceDetails.Add(sd);
                         }
                     }
