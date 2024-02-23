@@ -85,7 +85,7 @@ namespace LumosSolution.Controllers
                 {
                     response.message = "Email đã tồn tại trong hệ thống.";
                     response.StatusCode = ApiStatusCode.BadRequest;
-                    return UnprocessableEntity(response);
+                    return Conflict(response);
                 }
 
                 if (string.IsNullOrWhiteSpace(model.Email) || string.IsNullOrWhiteSpace(model.Password))
