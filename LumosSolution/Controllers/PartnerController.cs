@@ -1,4 +1,4 @@
-using BussinessObject;
+﻿using BussinessObject;
 using DataTransferObject.DTO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -22,6 +22,49 @@ namespace LumosSolution.Controllers
         public PartnerController(IPartnerService partnerService)
         {
             _partnerService = partnerService;
+        }
+        [HttpGet("/api/stat/partner/{partnerId}/services")]
+        [Authorize(Roles = "Admin,Customer,Partner")]
+        public async Task<ActionResult<ApiResponse<object>>> GetPartnerServiceStatistics(int partnerId)
+        {
+            ApiResponse<object> response = new ApiResponse<object>
+            {
+                message = MessagesResponse.Error.NotFound,
+                StatusCode = 404,
+                data = "Không tìm thấy kết quả"
+            };
+
+            try
+            {
+                var partner = await _partnerService.GetPartnerByIDAsync(partnerId);
+                if (partner == null)
+                {
+                    return NotFound(response);
+                }
+
+                int totalServices = await _partnerService.CalculateTotalServicesAsync(partner.PartnerId);
+                int revenue = await _partnerService.CalculateRevenueAsync(partner.PartnerId);
+
+                var data = new { totalServices, revenue };
+
+                response.message = MessagesResponse.Success.Completed;
+                response.StatusCode = 200;
+                response.data = data;
+
+                return Ok(response);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                response.message = "Không có quyền";
+                response.StatusCode = 401;
+                return StatusCode(401, response);
+            }
+            catch (Exception)
+            {
+                response.message = "Lỗi máy chủ nội bộ";
+                response.StatusCode = 500;
+                return StatusCode(500, response);
+            }
         }
 
         [HttpGet("service/detail/{id:int}")]

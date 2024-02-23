@@ -420,5 +420,29 @@ namespace Service.Service
                 throw new Exception(ex.Message);
             }
         }
+        public async Task<int> CalculateTotalServicesAsync(int partnerId)
+        {
+            var partner = await _unitOfWork.PartnerRepo.GetPartnerByIDAsync(partnerId);
+            if (partner == null)
+            {
+                throw new Exception("Partner not found");
+            }
+            return partner.PartnerServices.Count;
+        }
+
+        public async Task<int> CalculateRevenueAsync(int partnerId)
+        {
+            var partner = await _unitOfWork.PartnerRepo.GetPartnerByIDAsync(partnerId);
+            if (partner == null)
+            {
+                throw new Exception("Partner not found");
+            }
+            int revenue = 0;
+            foreach (var service in partner.PartnerServices)
+            {
+                revenue += service.Price;
+            }
+            return revenue;
+        }
     }
 }

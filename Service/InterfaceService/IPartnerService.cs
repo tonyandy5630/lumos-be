@@ -29,5 +29,7 @@ namespace Service.InterfaceService
         Task<IEnumerable<SearchPartnerDTO>> GetPartnerByCategoryAsync(int categoryId);
         Task<IEnumerable<PartnerServiceDTO>> GetTopFiveBookedServicesAsync();
         Task<PartnerServiceDTO?> GetPartnerServiceByIdAsync(int serviceId);
+        Task<int> CalculateTotalServicesAsync(int partnerId);
+        Task<int> CalculateRevenueAsync(int partnerId);
     }
 }
