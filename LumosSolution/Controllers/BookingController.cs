@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using Utils;
 using DataTransferObject.DTO;
 using AutoMapper;
+using System.Globalization;
 
 namespace LumosSolution.Controllers
 {
@@ -25,8 +26,54 @@ namespace LumosSolution.Controllers
             _mapper = mapper;
             _bookingLogService = bookingLogService;
         }
+        [HttpGet("stats/bookings/monthly/{year}")]
+        public async Task<ActionResult<ApiResponse<object>>> GetMonthlyBookingStats(int year)
+        {
+            ApiResponse<object> response = new ApiResponse<object>();
+            try
+            {
+                if (year < 0)
+                {
+                    response.message = "Invalid year parameter.";
+                    response.StatusCode = ApiStatusCode.BadRequest;
+                    return BadRequest(response);
+                }
+
+                // Retrieve booking data for the specified year
+                List<Booking> bookings = await _bookingService.GetAllBookingsForYearAsync(year);
+
+                // Group bookings by month and count the number of bookings in each month
+                Dictionary<string, int> monthlyStats = new Dictionary<string, int>();
+                for (int month = 1; month <= 12; month++)
+                {
+                    string monthName = CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(month);
+                    int bookingsCount = bookings.Count(b => b.BookingDate.Value.Year == year && b.BookingDate.Value.Month == month);
+                    monthlyStats.Add(monthName, bookingsCount);
+                }
+
+                // Prepare output data
+                response.data = monthlyStats;
+                response.message = "Success";
+                response.StatusCode = ApiStatusCode.OK;
+
+                return Ok(response);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                response.message = "Unauthorized";
+                response.StatusCode = ApiStatusCode.Unauthorized;
+                return Unauthorized(response);
+            }
+            catch (Exception ex)
+            {
+                response.message = "Internal Server Error";
+                response.StatusCode = ApiStatusCode.BadRequest;
+                return BadRequest(response);
+            }
+        }
 
         [HttpGet("{top}")]
+        [Authorize(Roles = "Admin,Customer,Partner")]
         public async Task<ActionResult<ApiResponse<object>>> GetTopBookedServices(int top)
         {
             ApiResponse<object> response = new ApiResponse<object>();

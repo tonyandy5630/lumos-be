@@ -254,6 +254,21 @@ namespace DataAccessLayer
                 throw;
             }
         }
+        public async Task<List<Booking>> GetAllBookingsForYearAsync(int year)
+        {
+            try
+            {
+                var bookings = await dbContext.Bookings
+                    .Where(b => b.BookingDate.HasValue && b.BookingDate.Value.Year == year)
+                    .ToListAsync();
 
+                return bookings;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetAllBookingsForYearAsync: {ex.Message}", ex);
+                throw new Exception(ex.Message);
+            }
+        }
     }
 }

@@ -112,5 +112,20 @@ namespace Service.Service
                 throw new Exception(ex.Message);
             }
         }
+
+        public async Task<List<Booking>> GetAllBookingsForYearAsync(int year)
+        {
+            try
+            {
+                var topServices = await _unitOfWork.BookingRepo.GetAllBookingsForYearAsync(year);
+
+                return topServices;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetAllBookingsForYearAsync: {ex.Message}", ex);
+                throw new Exception(ex.Message);
+            }
+        }
     }
 }
