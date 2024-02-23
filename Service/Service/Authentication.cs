@@ -215,34 +215,33 @@ namespace Service.Service
             }
         }
 
-        public async Task<(bool, string)> ValidateRefreshToken(string refreshToken)
+        public async Task<(bool, string)> ValidateRefreshTokenByEmail(string email)
         {
             try
             {
-                var adminResponse = await _unitOfWork.AdminRepo.GetAdminByRefreshTokenAsync(refreshToken);
-                var customerResponse = await _unitOfWork.CustomerRepo.GetCustomerByRefreshTokenAsync(refreshToken);
-                var partnerResponse = await _unitOfWork.PartnerRepo.GetPartnerByRefreshTokenAsync(refreshToken);
+                var adminResponse = await _unitOfWork.AdminRepo.GetAdminByEmailAsync(email);
+                if (adminResponse != null && adminResponse.RefreshToken != null)
+                {
+                    return (true, adminResponse.RefreshToken);
+                }
 
-                if (adminResponse != null)
+                var customerResponse = await _unitOfWork.CustomerRepo.GetCustomerByEmailAsync(email);
+                if (customerResponse != null && customerResponse.RefreshToken != null)
                 {
-                    return (true, adminResponse.Email);
+                    return (true, customerResponse.RefreshToken);
                 }
-                else if (customerResponse != null)
+
+                var partnerResponse = await _unitOfWork.PartnerRepo.GetPartnerByEmailAsync(email);
+                if (partnerResponse != null && partnerResponse.RefreshToken != null)
                 {
-                    return (true, customerResponse.Email);
+                    return (true, partnerResponse.RefreshToken);
                 }
-                else if (partnerResponse != null)
-                {
-                    return (true, partnerResponse.Email);
-                }
-                else
-                {
-                    return (false, null);
-                }
+
+                return (false, null);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Exception in ValidateRefreshToken: {ex.Message}");
+                Console.WriteLine($"Exception in ValidateRefreshTokenByEmail: {ex.Message}");
                 return (false, null);
             }
         }

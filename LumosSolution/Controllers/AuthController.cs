@@ -203,7 +203,18 @@ namespace LumosSolution.Controllers
                 {
                     await _authentication.UpdateLastLoginTime(userEmail);
                     var (token, accessTokenTime, refreshTokentime, refreshToken) = await _authentication.GenerateToken(userEmail, userRole);
-
+                    if (string.IsNullOrEmpty(token))
+                    {
+                        response.message = "không có token";
+                        response.StatusCode = ApiStatusCode.BadRequest;
+                        return BadRequest(response);
+                    }
+                    if (string.IsNullOrEmpty(refreshToken))
+                    {
+                        response.message = "không có refresh token";
+                        response.StatusCode = ApiStatusCode.BadRequest;
+                        return BadRequest(response);
+                    }
                     var accessTokenRemainingTime = accessTokenTime - DateTime.UtcNow;
                     var refreshTokenRemainingTime = refreshTokentime - DateTime.UtcNow;
                     
@@ -214,8 +225,6 @@ namespace LumosSolution.Controllers
                         Username = username,
                         Token = token,
                         AccessTokenExpiration = accessTokenRemainingTime,
-                        RefreshToken = refreshToken,
-                        RefreshTokenExpiration = refreshTokenRemainingTime,
                         Userdetails = userDetails
                     };
                 }
@@ -253,7 +262,18 @@ namespace LumosSolution.Controllers
                 {
                     await _authentication.UpdateLastLoginTime(model.Email);
                     var (token, accessTokenTime, refreshTokentime, refreshToken) = await _authentication.GenerateToken(model.Email, role);
-
+                    if (string.IsNullOrEmpty(token))
+                    {
+                        response.message = "không có token";
+                        response.StatusCode = ApiStatusCode.BadRequest;
+                        return BadRequest(response);
+                    }
+                    if (string.IsNullOrEmpty(refreshToken))
+                    {
+                        response.message = "không có refresh token";
+                        response.StatusCode = ApiStatusCode.BadRequest;
+                        return BadRequest(response);
+                    }
                     var accessTokenRemainingTime = accessTokenTime - DateTime.UtcNow;
                     var refreshTokenRemainingTime = refreshTokentime - DateTime.UtcNow;
 
@@ -264,8 +284,6 @@ namespace LumosSolution.Controllers
                         Username = username,
                         Token = token,
                         AccessTokenExpiration = accessTokenRemainingTime,
-                        RefreshToken = refreshToken,
-                        RefreshTokenExpiration = refreshTokenRemainingTime,
                         Userdetails = userdetails
                     };
                     return Ok(response);
@@ -274,7 +292,6 @@ namespace LumosSolution.Controllers
                 {
                     if (!emailExists)
                     {
-                        // Email không tồn tại
                         response.message = MessagesResponse.Error.NotFound;
                         response.StatusCode = ApiStatusCode.NotFound;
                         response.data = new{
@@ -283,7 +300,6 @@ namespace LumosSolution.Controllers
                     }
                     else if (!passwordCorrect)
                     {
-                        // Password không đúng
                         response.message = MessagesResponse.Error.Unauthorized;
                         response.StatusCode = ApiStatusCode.Unauthorized;
                         response.data = new
@@ -309,14 +325,16 @@ namespace LumosSolution.Controllers
             ApiResponse<object>? response = new ApiResponse<object>();
             try
             {
-                if (string.IsNullOrEmpty(model.RefreshToken))
+                var userEmail = HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+
+                if (string.IsNullOrEmpty(userEmail))
                 {
                     response.message = MessagesResponse.Error.InvalidInput;
                     response.StatusCode = ApiStatusCode.BadRequest;
                     return BadRequest(response);
                 }
 
-                var (isValid, userEmail) = await _authentication.ValidateRefreshToken(model.RefreshToken);
+                var (isValid, _) = await _authentication.ValidateRefreshTokenByEmail(userEmail);
 
                 if (!isValid)
                 {
@@ -335,7 +353,18 @@ namespace LumosSolution.Controllers
                 }
 
                 var (token, accessTokenTime, refreshTokentime, newRefreshToken) = await _authentication.GenerateToken(userEmail, userRole);
-
+                if (string.IsNullOrEmpty(token))
+                {
+                    response.message = "không có token";
+                    response.StatusCode = ApiStatusCode.BadRequest;
+                    return BadRequest(response);
+                }
+                if (string.IsNullOrEmpty(newRefreshToken))
+                {
+                    response.message = "không có refresh token";
+                    response.StatusCode = ApiStatusCode.BadRequest;
+                    return BadRequest(response);
+                }
                 var accessTokenRemainingTime = accessTokenTime - DateTime.UtcNow;
                 var refreshTokenRemainingTime = refreshTokentime - DateTime.UtcNow;
 
@@ -354,8 +383,6 @@ namespace LumosSolution.Controllers
                 {
                     Token = token,
                     AccessTokenExpiration = accessTokenRemainingTime,
-                    RefreshToken = newRefreshToken,
-                    RefreshTokenExpiration = refreshTokenRemainingTime
                 };
 
                 return Ok(response);
