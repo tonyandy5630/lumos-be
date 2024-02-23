@@ -25,6 +25,7 @@ namespace LumosSolution.Controllers
         }
 
         [HttpGet("revenue/{month}")]
+        [Authorize(Roles = "Admin,Customer,Partner")]
         public async Task<ActionResult<IEnumerable<(int, (DateTime, DateTime))>>> GetPartnerRevenueInMonth(int month)
         {
             try
