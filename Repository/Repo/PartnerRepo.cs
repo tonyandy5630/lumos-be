@@ -40,6 +40,7 @@ namespace Repository.Repo
         public Task<bool> UpdatePartnerAsync(Partner partner) => PartnerDAO.Instance.UpdatePartnerAsync(partner);
         public Task<IEnumerable<Partner>> SearchPartnerByCategoryIdAsync(int categoryId) => PartnerDAO.Instance.GetPartnersByCategoryAsync(categoryId);
 
-        public Task<List<RevenuePerWeekDTO>> CalculatePartnerRevenueInMonthAsync(int month) => PartnerDAO.Instance.CalculatePartnerRevenueInMonthAsync((int)month);   
+        public Task<List<RevenuePerWeekDTO>> CalculatePartnerRevenueInMonthAsync(int month,int year) => PartnerDAO.Instance.CalculatePartnerRevenueInMonthAsync(month, year);
+        public Task<List<MonthlyRevenueDTO>> CalculateMonthlyRevenueAsync(int year) => PartnerDAO.Instance.CalculateMonthlyRevenueAsync(year);
     }
 }

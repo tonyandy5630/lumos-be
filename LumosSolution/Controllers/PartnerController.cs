@@ -23,19 +23,75 @@ namespace LumosSolution.Controllers
         {
             _partnerService = partnerService;
         }
+        [HttpGet("/api/stats/revenue/monthly/{year}")]
+        [Authorize(Roles = "Admin,Customer,Partner")]
+        public async Task<ActionResult<ApiResponse<List<MonthlyRevenueDTO>>>> GetMonthlyRevenue(int year)
+        {
+            ApiResponse<List<MonthlyRevenueDTO>> response = new ApiResponse<List<MonthlyRevenueDTO>>
+            {
+                message = MessagesResponse.Error.NotFound,
+                StatusCode = 404
+            };
+
+            try
+            {
+                List<MonthlyRevenueDTO> monthlyRevenue = await _partnerService.CalculateMonthlyRevenueAsync(year);
+
+                if (monthlyRevenue == null || monthlyRevenue.Count == 0)
+                    return NotFound(response);
+
+                response.message = MessagesResponse.Success.Completed;
+                response.StatusCode = 200;
+                response.data = monthlyRevenue;
+
+                return Ok(response);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                response.message = "Không có quyền";
+                response.StatusCode = 401;
+                return StatusCode(401, response);
+            }
+            catch (Exception)
+            {
+                response.message = "Lỗi máy chủ nội bộ";
+                response.StatusCode = 500;
+                return StatusCode(500, response);
+            }
+        }
 
         [HttpGet("revenue/{month}")]
         [Authorize(Roles = "Admin,Customer,Partner")]
-        public async Task<ActionResult<IEnumerable<(int, (DateTime, DateTime))>>> GetPartnerRevenueInMonth(int month)
+        public async Task<ActionResult<ApiResponse<List<RevenuePerWeekDTO>>>> GetPartnerRevenueInMonth(int month, int? year = null)
         {
+            ApiResponse<List<RevenuePerWeekDTO>> response = new ApiResponse<List<RevenuePerWeekDTO>>
+            {
+                message = MessagesResponse.Error.NotFound,
+                StatusCode = 404
+            };
+
             try
             {
-                var revenuePerWeek = await _partnerService.CalculatePartnerRevenueInMonthAsync(month);
-                return Ok(revenuePerWeek);
+                if (year == null)
+                {
+                    year = DateTime.Now.Year;
+                }
+
+                var revenuePerWeek = await _partnerService.CalculatePartnerRevenueInMonthAsync(month, (int)year);
+
+                if (revenuePerWeek == null || revenuePerWeek.Count() == 0)
+                    return NotFound(response);
+
+                response.message = MessagesResponse.Success.Completed;
+                response.StatusCode = 200;
+                response.data = revenuePerWeek;
+
+                return Ok(response);
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
+                response.message = $"Internal server error";
+                return StatusCode(500, response);
             }
         }
 

@@ -260,11 +260,11 @@ namespace DataAccessLayer
                 throw new Exception(ex.Message);
             }
         }
-        public async Task<List<RevenuePerWeekDTO>> CalculatePartnerRevenueInMonthAsync(int month)
+        public async Task<List<RevenuePerWeekDTO>> CalculatePartnerRevenueInMonthAsync(int month, int year)
         {
             try
             {
-                DateTime startDate = new DateTime(DateTime.Now.Year, month, 1);
+                DateTime startDate = new DateTime(year, month, 1);
                 DateTime endDate = startDate.AddMonths(1).AddDays(-1);
 
                 var revenuePerWeek = await _context.ServiceBookings
@@ -285,6 +285,47 @@ namespace DataAccessLayer
             catch (Exception ex)
             {
                 Console.WriteLine($"Error in CalculatePartnerRevenueInMonthAsync: {ex.Message}", ex);
+                throw;
+            }
+        }
+
+
+        public async Task<List<MonthlyRevenueDTO>> CalculateMonthlyRevenueAsync(int year)
+        {
+            try
+            {
+                List<MonthlyRevenueDTO> monthlyRevenueList = new List<MonthlyRevenueDTO>();
+
+                for (int month = 1; month <= 12; month++)
+                {
+                    var monthlyRevenue = await CalculatePartnerRevenueInMonthAsync(month, year);
+                    int totalRevenue = (int)monthlyRevenue.Sum(r => r.Revenue);
+
+                    if (monthlyRevenue.Count == 0)
+                    {
+                        monthlyRevenueList.Add(new MonthlyRevenueDTO
+                        {
+                            Month = month,
+                            Revenue = 0,
+                            Details = new List<RevenuePerWeekDTO>()
+                        });
+                    }
+                    else
+                    {
+                        monthlyRevenueList.Add(new MonthlyRevenueDTO
+                        {
+                            Month = month,
+                            Revenue = totalRevenue,
+                            Details = monthlyRevenue
+                        });
+                    }
+                }
+
+                return monthlyRevenueList;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in CalculateMonthlyRevenueAsync: {ex.Message}", ex);
                 throw;
             }
         }

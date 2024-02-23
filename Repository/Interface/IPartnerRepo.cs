@@ -26,6 +26,7 @@ namespace Repository.Interface
         Task<IEnumerable<PartnerService>> GetPartnerServiceByServiceNameAsync(string serviceName, int partnerId);
         Task<PartnerService?> AddPartnerServiceAsync(PartnerService service);
         Task<IEnumerable<Partner>> SearchPartnerByCategoryIdAsync(int categoryId);
-        Task<List<RevenuePerWeekDTO>> CalculatePartnerRevenueInMonthAsync(int month);
+        Task<List<RevenuePerWeekDTO>> CalculatePartnerRevenueInMonthAsync(int month,int year);
+        Task<List<MonthlyRevenueDTO>> CalculateMonthlyRevenueAsync(int year);
     }
 }

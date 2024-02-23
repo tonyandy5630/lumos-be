@@ -444,15 +444,28 @@ namespace Service.Service
             }
             return revenue;
         }
-        public async Task<List<RevenuePerWeekDTO>> CalculatePartnerRevenueInMonthAsync(int month)
+        public async Task<List<RevenuePerWeekDTO>> CalculatePartnerRevenueInMonthAsync(int month, int year)
         {
             try
             {
-                return await _unitOfWork.PartnerRepo.CalculatePartnerRevenueInMonthAsync(month);
+                return await _unitOfWork.PartnerRepo.CalculatePartnerRevenueInMonthAsync(month,year);
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error in CalculatePartnerRevenueInMonthAsync: {ex.Message}", ex);
+                throw;
+            }
+        }
+
+        public async Task<List<MonthlyRevenueDTO>> CalculateMonthlyRevenueAsync(int year)
+        {
+            try
+            {
+                return await _unitOfWork.PartnerRepo.CalculateMonthlyRevenueAsync(year);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in CalculateMonthlyRevenueAsync: {ex.Message}", ex);
                 throw;
             }
         }
