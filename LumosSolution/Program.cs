@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authentication.Google;
+﻿using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
@@ -129,14 +129,31 @@ Task LogAttempt(IHeaderDictionary headers, string eventType)
     var authorizationHeader = headers["Authorization"].FirstOrDefault();
 
     if (authorizationHeader is null)
+    {
         logger.LogInformation($"{eventType}. JWT not present");
-    else
+        return Task.CompletedTask;
+    }
+
+    try
     {
         string jwtString = authorizationHeader.Substring("Bearer ".Length);
 
-        var jwt = new JwtSecurityToken(jwtString);
+        var handler = new JwtSecurityTokenHandler();
+
+        if (!handler.CanReadToken(jwtString))
+        {
+            logger.LogError($"Error processing JWT");
+            return Task.FromResult(new BadRequestObjectResult("Invalid JWT format."));
+        }
+
+        var jwt = handler.ReadJwtToken(jwtString);
 
         logger.LogInformation($"{eventType}. Expiration: {jwt.ValidTo.ToLongTimeString()}. System time: {DateTime.UtcNow.ToLongTimeString()}");
+    }
+    catch (Exception ex)
+    {
+        logger.LogError($"Error processing JWT: {ex.Message}");
+        return Task.FromResult(new BadRequestObjectResult("Invalid JWT format."));
     }
 
     return Task.CompletedTask;
