@@ -211,8 +211,9 @@ namespace Service.Service
                 List<PartnerServiceDTO> partnerServices = new List<PartnerServiceDTO>();
                 foreach (var service in partner.PartnerServices)
                 {
-                    PartnerServiceDTO serviceDTO = await GetPartnerServiceByIdAsync(service.ServiceId);
+                    PartnerServiceDTO serviceDTO = await GetPartnerServiceDetailAsync(service.ServiceId);
                     partnerServices.Add(serviceDTO);
+
                 }
 
                 partnerDTO.PartnerServices = partnerServices;
@@ -319,7 +320,7 @@ namespace Service.Service
                     {
                         if (service != null)
                         {
-                            var sd = await GetPartnerServiceDetailAsync(service.ServiceId);
+                            var sd = await GetPartnerServiceByIdAsync(service.ServiceId);
                             serviceDetails.Add(sd);
                         }
                     }
