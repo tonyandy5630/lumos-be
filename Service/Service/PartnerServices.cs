@@ -444,5 +444,17 @@ namespace Service.Service
             }
             return revenue;
         }
+        public async Task<List<RevenuePerWeekDTO>> CalculatePartnerRevenueInMonthAsync(int month)
+        {
+            try
+            {
+                return await _unitOfWork.PartnerRepo.CalculatePartnerRevenueInMonthAsync(month);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in CalculatePartnerRevenueInMonthAsync: {ex.Message}", ex);
+                throw;
+            }
+        }
     }
 }

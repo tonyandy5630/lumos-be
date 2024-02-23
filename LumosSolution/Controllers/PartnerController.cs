@@ -23,6 +23,21 @@ namespace LumosSolution.Controllers
         {
             _partnerService = partnerService;
         }
+
+        [HttpGet("revenue/{month}")]
+        public async Task<ActionResult<IEnumerable<(int, (DateTime, DateTime))>>> GetPartnerRevenueInMonth(int month)
+        {
+            try
+            {
+                var revenuePerWeek = await _partnerService.CalculatePartnerRevenueInMonthAsync(month);
+                return Ok(revenuePerWeek);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
         [HttpGet("/api/stat/partner/{partnerId}/services")]
         [Authorize(Roles = "Admin,Customer,Partner")]
         public async Task<ActionResult<ApiResponse<object>>> GetPartnerServiceStatistics(int partnerId)

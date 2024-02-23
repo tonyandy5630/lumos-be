@@ -260,5 +260,33 @@ namespace DataAccessLayer
                 throw new Exception(ex.Message);
             }
         }
+        public async Task<List<RevenuePerWeekDTO>> CalculatePartnerRevenueInMonthAsync(int month)
+        {
+            try
+            {
+                DateTime startDate = new DateTime(DateTime.Now.Year, month, 1);
+                DateTime endDate = startDate.AddMonths(1).AddDays(-1);
+
+                var revenuePerWeek = await _context.ServiceBookings
+                    .Where(sb => sb.CreatedDate >= startDate && sb.CreatedDate <= endDate)
+                    .GroupBy(sb => ((sb.CreatedDate.Value.Day - 1) / 7) + 1)
+                    .OrderBy(g => g.Key)
+                    .Select(g => new RevenuePerWeekDTO
+                    {
+                        WeekNumber = g.Key,
+                        Revenue = g.Sum(sb => sb.Price ?? 0),
+                        StartDate = startDate.AddDays((g.Key - 1) * 7), // Ngày bắt đầu của tuần
+                        EndDate = startDate.AddDays(g.Key * 7).AddDays(-1) // Ngày kết thúc của tuần
+                    })
+                    .ToListAsync();
+
+                return revenuePerWeek;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in CalculatePartnerRevenueInMonthAsync: {ex.Message}", ex);
+                throw;
+            }
+        }
     }
 }
