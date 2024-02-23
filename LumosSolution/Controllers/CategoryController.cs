@@ -17,7 +17,7 @@ namespace LumosSolution.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "Admin,Customer")]
+        [Authorize(Roles = "Admin,Customer,Partner")]
         public async Task<ActionResult<List<ServiceCategory>>> GetCategorysAsync(string? keyword)
         {
             ApiResponse<List<ServiceCategory>> response = new ApiResponse<List<ServiceCategory>>();
