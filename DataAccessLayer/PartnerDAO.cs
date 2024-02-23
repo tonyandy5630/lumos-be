@@ -329,5 +329,56 @@ namespace DataAccessLayer
                 throw;
             }
         }
+        public async Task<List<PartnerServiceDTO>> GetPartnerServicesWithBookingCountAsync(int partnerId)
+        {
+            try
+            {
+                var result = await (from ps in _context.PartnerServices
+                                    join sd in _context.ServiceDetails on ps.ServiceId equals sd.ServiceId
+                                    join sc in _context.ServiceCategories on sd.CategoryId equals sc.CategoryId
+                                    where ps.PartnerId == partnerId
+                                    select new
+                                    {
+                                        PartnerService = ps,
+                                        ServiceBookings = _context.ServiceBookings.Where(sb => sb.ServiceId == ps.ServiceId).ToList(), // Convert to List
+                                        Category = sc // Select category
+                                    })
+                                    .GroupBy(x => x.PartnerService.ServiceId) // Group by ServiceId
+                                    .Select(g => g.First()) // Select the first item from each group
+                                    .ToListAsync(); // Execute the query and return the result as a list
+
+                var partnerServiceDTOs = result.Select(x => new PartnerServiceDTO
+                {
+                    ServiceId = x.PartnerService.ServiceId,
+                    Name = x.PartnerService.Name,
+                    Description = x.PartnerService.Description,
+                    Price = x.PartnerService.Price,
+                    Code = x.PartnerService.Code,
+                    Status = x.PartnerService.Status,
+                    CreatedDate = x.PartnerService.CreatedDate,
+                    UpdatedBy = x.PartnerService.UpdatedBy,
+                    LastUpdate = x.PartnerService.LastUpdate,
+                    Duration = x.PartnerService.Duration,
+                    BookedQuantity = x.ServiceBookings.Count(),
+                    Categories = new List<ServiceCategoryDTO>
+                    {
+                        new ServiceCategoryDTO
+                        {
+                             CategoryId = x.Category.CategoryId,
+                             Category = x.Category.Category,
+                             Code = x.Category.Code
+                        }
+                    }
+                }).ToList();
+
+                return partnerServiceDTOs;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetPartnerServicesWithBookingCountAsync: {ex.Message}", ex);
+                throw;
+            }
+        }
+
     }
 }

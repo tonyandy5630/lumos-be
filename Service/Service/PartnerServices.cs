@@ -470,5 +470,18 @@ namespace Service.Service
                 throw;
             }
         }
+
+        public async Task<List<PartnerServiceDTO>> GetPartnerServicesWithBookingCountAsync(int partnerId)
+        {
+            try
+            {
+                return await _unitOfWork.PartnerRepo.GetPartnerServicesWithBookingCountAsync(partnerId);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetPartnerServicesWithBookingCountAsync: {ex.Message}", ex);
+                throw;
+            }
+        }
     }
 }

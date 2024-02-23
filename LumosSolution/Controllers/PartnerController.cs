@@ -23,6 +23,43 @@ namespace LumosSolution.Controllers
         {
             _partnerService = partnerService;
         }
+        [HttpGet("{id}/services")]
+        [Authorize(Roles = "Admin,Customer,Partner")]
+        public async Task<ActionResult<ApiResponse<List<PartnerServiceDTO>>>> GetPartnerServices(int id)
+        {
+            ApiResponse<List<PartnerServiceDTO>> response = new ApiResponse<List<PartnerServiceDTO>>
+            {
+                message = MessagesResponse.Error.NotFound,
+                StatusCode = 404
+            };
+
+            try
+            {
+                List<PartnerServiceDTO> partnerServices = await _partnerService.GetPartnerServicesWithBookingCountAsync(id);
+
+                if (partnerServices == null || partnerServices.Count == 0)
+                    return NotFound(response);
+
+                response.message = MessagesResponse.Success.Completed;
+                response.StatusCode = 200;
+                response.data = partnerServices;
+
+                return Ok(response);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                response.message = MessagesResponse.Error.Unauthorized;
+                response.StatusCode = 401;
+                return StatusCode(401, response);
+            }
+            catch (Exception)
+            {
+                response.message = MessagesResponse.Error.OperationFailed;
+                response.StatusCode = 406;
+                return StatusCode(406, response);
+            }
+        }
+
         [HttpGet("/api/stats/revenue/monthly/{year}")]
         [Authorize(Roles = "Admin,Customer,Partner")]
         public async Task<ActionResult<ApiResponse<List<MonthlyRevenueDTO>>>> GetMonthlyRevenue(int year)
