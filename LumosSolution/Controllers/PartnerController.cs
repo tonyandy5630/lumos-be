@@ -23,8 +23,8 @@ namespace LumosSolution.Controllers
         {
             _partnerService = partnerService;
         }
-        [HttpGet("{id}/services")]
-        [Authorize(Roles = "Admin,Customer,Partner")]
+        [HttpGet("services")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<ApiResponse<List<PartnerServiceDTO>>>> GetPartnerServices(int id)
         {
             ApiResponse<List<PartnerServiceDTO>> response = new ApiResponse<List<PartnerServiceDTO>>
@@ -61,7 +61,7 @@ namespace LumosSolution.Controllers
         }
 
         [HttpGet("/api/stats/revenue/monthly/{year}")]
-        [Authorize(Roles = "Admin,Customer,Partner")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<ApiResponse<List<MonthlyRevenueDTO>>>> GetMonthlyRevenue(int year)
         {
             ApiResponse<List<MonthlyRevenueDTO>> response = new ApiResponse<List<MonthlyRevenueDTO>>
@@ -98,7 +98,7 @@ namespace LumosSolution.Controllers
         }
 
         [HttpGet("revenue/{month}")]
-        [Authorize(Roles = "Admin,Customer,Partner")]
+        [Authorize(Roles = "Partner")]
         public async Task<ActionResult<ApiResponse<List<RevenuePerWeekDTO>>>> GetPartnerRevenueInMonth(int month, int? year = null)
         {
             ApiResponse<List<RevenuePerWeekDTO>> response = new ApiResponse<List<RevenuePerWeekDTO>>
@@ -132,8 +132,8 @@ namespace LumosSolution.Controllers
             }
         }
 
-        [HttpGet("/api/stat/partner/{partnerId}/services")]
-        [Authorize(Roles = "Admin,Customer,Partner")]
+        [HttpGet("/api/stat/partner/services")]
+        [Authorize(Roles = "Partner")]
         public async Task<ActionResult<ApiResponse<object>>> GetPartnerServiceStatistics(int partnerId)
         {
             ApiResponse<object> response = new ApiResponse<object>
@@ -228,7 +228,7 @@ namespace LumosSolution.Controllers
                 return BadRequest(res);
             }
         }
-        [HttpGet("api/partner/{categoryId}")]
+        [HttpGet("/api/partner/{categoryId}")]
         [Authorize(Roles = "Admin,Customer")]
         public async Task<ActionResult<IEnumerable<SearchPartnerDTO>>> GetPartnerByCategory(int categoryId)
         {

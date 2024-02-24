@@ -27,7 +27,7 @@ namespace LumosSolution.Controllers
             _bookingLogService = bookingLogService;
         }
         [HttpGet("/api/stat/sub")]
-/*        [Authorize(Roles = "Admin,Customer,Partner")]*/
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<ApiResponse<object>>> GetTopBookedServicesInAllTime([FromQuery] int top =5)
         {
             ApiResponse<object> response = new ApiResponse<object>();
@@ -85,7 +85,7 @@ namespace LumosSolution.Controllers
             }
         }
         [HttpGet("stats/bookings/monthly/{year}")]
-        [Authorize(Roles = "Admin,Customer,Partner")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<ApiResponse<object>>> GetMonthlyBookingStats(int year)
         {
             ApiResponse<object> response = new ApiResponse<object>();
@@ -132,7 +132,7 @@ namespace LumosSolution.Controllers
         }
 
         [HttpGet("{top}")]
-        [Authorize(Roles = "Admin,Customer,Partner")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<ApiResponse<object>>> GetTopBookedServices(int top)
         {
             ApiResponse<object> response = new ApiResponse<object>();
