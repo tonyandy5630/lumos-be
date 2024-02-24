@@ -19,11 +19,11 @@ namespace Service.Service
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<bool> CreateBookingAsync(Booking booking, CreateBookingDTO createBookingDTO)
+        public async Task<bool> CreateBookingAsync(Booking booking, CreateBookingDTO createBookingDTO, string email)
         {
             try
             {
-                bool result = await _unitOfWork.BookingRepo.CreateBookingAsync(booking, createBookingDTO);
+                bool result = await _unitOfWork.BookingRepo.CreateBookingAsync(booking, createBookingDTO, email);
 
                 return result;
             }

@@ -21,7 +21,7 @@ namespace Repository.Repo
 
         public BookingRepo(LumosDBContext context) { }
 
-        public Task<bool> CreateBookingAsync(Booking booking, CreateBookingDTO createBookingDTO) => BookingDAO.Instance.CreateBookingAsync(booking, createBookingDTO);  
+        public Task<bool> CreateBookingAsync(Booking booking, CreateBookingDTO createBookingDTO, string email) => BookingDAO.Instance.CreateBookingAsync(booking, createBookingDTO,email);  
 
         public Task<BookingDetail> GetBookingDetailByBookingIdAsync(int id) =>BookingDAO.Instance.GetBookingDetailByBookingIdAsync(id);
 

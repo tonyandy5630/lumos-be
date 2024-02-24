@@ -10,6 +10,7 @@ using Utils;
 using DataTransferObject.DTO;
 using AutoMapper;
 using System.Globalization;
+using System.Security.Claims;
 
 namespace LumosSolution.Controllers
 {
@@ -241,8 +242,11 @@ namespace LumosSolution.Controllers
             ApiResponse<object> response = new ApiResponse<object>();
             try
             {
+                var userEmail = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+
                 var booking = _mapper.Map<Booking>(createBookingDTO);
-                bool result = await _bookingService.CreateBookingAsync(booking, createBookingDTO);
+
+                bool result = await _bookingService.CreateBookingAsync(booking, createBookingDTO, userEmail);
 
                 if (result)
                 {

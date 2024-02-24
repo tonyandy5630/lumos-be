@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace DataTransferObject.DTO
@@ -13,7 +14,7 @@ namespace DataTransferObject.DTO
         public int TotalPrice { get; set; }
         public DateTime BookingDate { get; set; }
         public DateTime From { get; set; }
-        public string CreatedBy { get; set; }
+
         public string Address { get; set; }
         public string Note { get; set; }
         public List<CartModelDTO> CartModel { get; set; }

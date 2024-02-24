@@ -15,7 +15,6 @@ namespace DataTransferObject
             .ForMember(dest => dest.TotalPrice, opt => opt.MapFrom(src => src.TotalPrice))
             .ForMember(dest => dest.BookingDate, opt => opt.MapFrom(src => src.BookingDate))
             .ForMember(dest => dest.From, opt => opt.MapFrom(src => src.From))
-            .ForMember(dest => dest.CreatedBy, opt => opt.MapFrom(src => src.CreatedBy))
             .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Address));
 
             CreateMap<RegistrationModel, Customer>()

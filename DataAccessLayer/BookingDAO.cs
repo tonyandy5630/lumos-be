@@ -61,7 +61,7 @@ namespace DataAccessLayer
                 throw new Exception(ex.Message);
             }
         }
-        public async Task<bool> CreateBookingAsync(Booking booking, CreateBookingDTO createBookingDTO)
+        public async Task<bool> CreateBookingAsync(Booking booking, CreateBookingDTO createBookingDTO, string email)
         {
             try
             {
@@ -95,7 +95,7 @@ namespace DataAccessLayer
                         Note = createBookingDTO.Note,
                         ReportId = cartItem.ReportId,
                         CreatedDate = booking.CreatedDate,
-                        CreatedBy = createBookingDTO.CreatedBy
+                        CreatedBy = email
                     };
                     dbContext.BookingDetails.Add(bookingDetail);
                     await dbContext.SaveChangesAsync();
@@ -106,7 +106,7 @@ namespace DataAccessLayer
                         Status = 1, // Status mặc định khi tạo booking detail
                         CreatedDate = booking.CreatedDate,
                         Note = createBookingDTO.Note,
-                        CreatedBy = createBookingDTO.CreatedBy
+                        CreatedBy = email
                     };
                     dbContext.BookingLogs.Add(bookingLog);
                     await dbContext.SaveChangesAsync();
@@ -120,7 +120,7 @@ namespace DataAccessLayer
                             Description = service.Description,
                             CreatedDate = booking.CreatedDate,
                             LastUpdate = (DateTime)booking.CreatedDate,
-                            UpdatedBy = createBookingDTO.CreatedBy
+                            UpdatedBy = email
                         };
 
                         dbContext.ServiceBookings.Add(serviceBooking);
@@ -138,8 +138,8 @@ namespace DataAccessLayer
                                 CategoryId = categoryId, // Gán CategoryId từ cơ sở dữ liệu
                                 CreatedDate = (DateTime)booking.CreatedDate,
                                 LastUpdate = (DateTime)booking.CreatedDate,
-                                CreatedBy = createBookingDTO.CreatedBy,
-                                UpdatedBy = createBookingDTO.CreatedBy
+                                CreatedBy = email,
+                                UpdatedBy = email
                             };
                             dbContext.ServiceDetails.Add(serviceDetail);
                         }
