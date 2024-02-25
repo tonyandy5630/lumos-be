@@ -29,7 +29,7 @@ namespace LumosSolution.Controllers
             _bookingLogService = bookingLogService;
         }
         [HttpPost("/api/booking-logs")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Partner")]
         public async Task<ActionResult<ApiResponse<object>>> UpdateBookingStatusAndCreateLog([FromBody] BookingLogRequest updateBookingStatusDTO)
         {
             ApiResponse<object> response = new ApiResponse<object>();
