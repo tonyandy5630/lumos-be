@@ -123,6 +123,10 @@ namespace DataAccessLayer
                             BookingId = b.Booking.BookingId,
                             Status = b.Booking.BookingLogs.OrderByDescending(bl => bl.CreatedDate)
                                         .FirstOrDefault().Status ?? 0,
+                            BookingDate = (DateTime)b.Booking.CreatedDate,
+                            PartnerName = null, // Set PartnerName to null
+                            From = null, // Set From to null
+                            To = null, // Set To to null
                             Services = b.Booking.BookingDetails
                                         .SelectMany(detail => detail.ServiceBookings)
                                         .Select(serviceBooking => new PartnerServiceDTO
@@ -149,6 +153,33 @@ namespace DataAccessLayer
                         })
                     .ToListAsync();
 
+                foreach (var pendingBooking in pendingBookings)
+                {
+                    var bookingDetail = await dbContext.BookingDetails.FirstOrDefaultAsync(bd => bd.BookingId == pendingBooking.BookingId);
+                    if (bookingDetail != null)
+                    {
+                        var serviceBooking = await dbContext.ServiceBookings.FirstOrDefaultAsync(sb => sb.DetailId == bookingDetail.DetailId);
+                        if (serviceBooking != null)
+                        {
+                            var partnerService = await dbContext.PartnerServices.FirstOrDefaultAsync(ps => ps.ServiceId == serviceBooking.ServiceId);
+                            if (partnerService != null)
+                            {
+                                var partner = await dbContext.Partners.FirstOrDefaultAsync(p => p.PartnerId == partnerService.PartnerId);
+                                if (partner != null)
+                                {
+                                    pendingBooking.PartnerName = partner.PartnerName;
+                                    /*var schedule = await dbContext.Schedules.FirstOrDefaultAsync(s => s.PartnerId == partner.PartnerId);
+                                    if (schedule != null)
+                                    {
+                                        pendingBooking.From = schedule.From.ToString();
+                                        pendingBooking.To = schedule.To.ToString();
+                                    }*/
+                                }
+                            }
+                        }
+                    }
+                }
+
                 return pendingBookings;
             }
             catch (Exception ex)
@@ -157,6 +188,85 @@ namespace DataAccessLayer
                 throw;
             }
         }
+
+        public async Task<List<PendingBookingDTO>> GetPendingBookingsByCustomerIdAsync(int customerId)
+        {
+            try
+            {
+                var pendingBookings = await dbContext.Bookings
+                    .Where(booking => booking.BookingDetails.Any(detail => detail.Report.CustomerId == customerId))
+                    .Select(b =>
+                        new PendingBookingDTO
+                        {
+                            BookingId = b.BookingId,
+                            Status = (int)b.BookingLogs.OrderByDescending(bl => bl.CreatedDate)
+                                        .FirstOrDefault().Status, // Remove the null-coalescing operator ??
+                            BookingDate = (DateTime)b.CreatedDate,
+                            PartnerName = null, // Set PartnerName to null
+                            From = null, // Set From to null
+                            To = null, // Set To to null
+                            Services = b.BookingDetails
+                                        .SelectMany(detail => detail.ServiceBookings)
+                                        .Select(serviceBooking => new PartnerServiceDTO
+                                        {
+                                            ServiceId = serviceBooking.Service.ServiceId,
+                                            Name = serviceBooking.Service.Name,
+                                            Code = serviceBooking.Service.Code,
+                                            Duration = serviceBooking.Service.Duration,
+                                            Status = serviceBooking.Service.Status,
+                                            Description = serviceBooking.Service.Description,
+                                            Price = serviceBooking.Service.Price,
+                                            BookedQuantity = serviceBooking.Service.ServiceBookings.Count,
+                                            Rating = serviceBooking.Service.Rating,
+                                            Categories = serviceBooking.Service.ServiceDetails
+                                                            .Select(detail => new ServiceCategoryDTO
+                                                            {
+                                                                CategoryId = detail.Category.CategoryId,
+                                                                Category = detail.Category.Category,
+                                                                Code = detail.Category.Code
+                                                            })
+                                                            .Distinct() // Ensure distinct categories
+                                                            .ToList()
+                                        }).ToList()
+                        })
+                    .ToListAsync();
+
+                foreach (var pendingBooking in pendingBookings)
+                {
+                    var bookingDetail = await dbContext.BookingDetails.FirstOrDefaultAsync(bd => bd.BookingId == pendingBooking.BookingId);
+                    if (bookingDetail != null)
+                    {
+                        var serviceBooking = await dbContext.ServiceBookings.FirstOrDefaultAsync(sb => sb.DetailId == bookingDetail.DetailId);
+                        if (serviceBooking != null)
+                        {
+                            var partnerService = await dbContext.PartnerServices.FirstOrDefaultAsync(ps => ps.ServiceId == serviceBooking.ServiceId);
+                            if (partnerService != null)
+                            {
+                                var partner = await dbContext.Partners.FirstOrDefaultAsync(p => p.PartnerId == partnerService.PartnerId);
+                                if (partner != null)
+                                {
+                                    pendingBooking.PartnerName = partner.PartnerName;
+                                    /*var schedule = await dbContext.Schedules.FirstOrDefaultAsync(s => s.PartnerId == partner.PartnerId);
+                                    if (schedule != null)
+                                    {
+                                        pendingBooking.From = schedule.From.ToString();
+                                        pendingBooking.To = schedule.To.ToString();
+                                    }*/
+                                }
+                            }
+                        }
+                    }
+                }
+
+                return pendingBookings;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetPendingBookingsByCustomerIdAsync: {ex.Message}", ex);
+                throw;
+            }
+        }
+
 
     }
 }

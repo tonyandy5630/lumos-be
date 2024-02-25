@@ -88,5 +88,19 @@ namespace Service.Service
                 throw;
             }
         }
+
+        public async Task<List<PendingBookingDTO>> GetPendingBookingsByCustomerIdAsync(int customerId)
+        {
+            try
+            {
+                var pendingBookings = await _unitOfWork.BookingLogRepo.GetPendingBookingsByCustomerIdAsync(customerId);
+                return pendingBookings;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetPendingBookingsByCustomerIdAsync: {ex.Message}", ex);
+                throw;
+            }
+        }
     }
 }

@@ -13,6 +13,7 @@ using System.Globalization;
 using System.Security.Claims;
 using RequestEntity;
 using DataAccessLayer;
+using System.Net;
 
 namespace LumosSolution.Controllers
 {
@@ -29,6 +30,42 @@ namespace LumosSolution.Controllers
             _mapper = mapper;
             _bookingLogService = bookingLogService;
         }
+        [HttpGet("getallboookings/{customerId}")]
+        [Authorize(Roles = "Admin,Customer,Partner")]
+        public async Task<ActionResult<ApiResponse<object>>> GetAllBookingsByCustomerID(int customerId)
+        {
+            ApiResponse<object> response = new ApiResponse<object>();
+            try
+            {
+                var pendingBookingDTOs = await _bookingLogService.GetPendingBookingsByCustomerIdAsync(customerId);
+
+                if (pendingBookingDTOs == null || !pendingBookingDTOs.Any())
+                {
+                    response.message = "No bookings found.";
+                    response.StatusCode = ApiStatusCode.NotFound;
+                    return NotFound(response);
+                }
+
+                response.data = pendingBookingDTOs;
+                response.message = "Success";
+                response.StatusCode = ApiStatusCode.OK;
+
+                return Ok(response);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                response.message = "Unauthorized";
+                response.StatusCode = ApiStatusCode.Unauthorized;
+                return Unauthorized(response);
+            }
+            catch (Exception ex)
+            {
+                response.message = "Internal Server Error";
+                response.StatusCode = ApiStatusCode.BadRequest;
+                return BadRequest(response);
+            }
+        }
+
         [HttpGet("pending")]
         [Authorize(Roles = "Customer")]
         public async Task<ActionResult<ApiResponse<object>>> GetPendingBookings()
