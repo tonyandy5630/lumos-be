@@ -191,20 +191,11 @@ namespace LumosSolution.Controllers
                     return BadRequest(response);
                 }
 
-                // Retrieve booking data for the specified year
-                List<Booking> bookings = await _bookingService.GetAllBookingsForYearAsync(year);
+                List<int?> stats = await _bookingService.GetAllBookingsForYearAsync(year);
 
-                // Group bookings by month and count the number of bookings in each month
-                Dictionary<string, int> monthlyStats = new Dictionary<string, int>();
-                for (int month = 1; month <= 12; month++)
-                {
-                    string monthName = CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(month);
-                    int bookingsCount = bookings.Count(b => b.BookingDate.Value.Year == year && b.BookingDate.Value.Month == month);
-                    monthlyStats.Add(monthName, bookingsCount);
-                }
 
                 // Prepare output data
-                response.data = monthlyStats;
+                response.data = stats;
                 response.message = "Success";
                 response.StatusCode = ApiStatusCode.OK;
 

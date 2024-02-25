@@ -15,7 +15,7 @@ namespace BussinessObject
         public int? PaymentId { get; set; }
         public string? Code { get; set; }
         public int? TotalPrice { get; set; }
-        public DateTime? BookingDate { get; set; }
+        public DateTime BookingDate { get; set; }
         public DateTime? From { get; set; }
         public string? FeedbackPartner { get; set; }
         public string? FeedbackLumos { get; set; }

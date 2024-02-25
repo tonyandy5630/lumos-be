@@ -5,6 +5,7 @@ using Repository.Interface.IUnitOfWork;
 using Service.InterfaceService;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -113,13 +114,34 @@ namespace Service.Service
             }
         }
 
-        public async Task<List<Booking>> GetAllBookingsForYearAsync(int year)
+        public async Task<List<int?>> GetAllBookingsForYearAsync(int year)
         {
             try
             {
-                var topServices = await _unitOfWork.BookingRepo.GetAllBookingsForYearAsync(year);
+                List<TotalBookingMonthlyStat> topServices = await _unitOfWork.BookingRepo.GetAllBookingsForYearAsync(year);
+                List<int?> bookingsStat = new List<int?>();
 
-                return topServices;
+                // topServices does not have any stats return 12 0s
+                if(topServices == null)
+                {
+                    bookingsStat = (List<int?>) Enumerable.Repeat(0, 12);
+                    return bookingsStat;
+                }
+
+                for (int month = 1; month <= 12; month++)
+                {
+                   
+                    int? bookingMonthInDB = topServices?.FirstOrDefault(t => t.Month == month)?.totalBooking;
+                    int? totalBooking = 0;
+                    if(bookingMonthInDB != null)
+                    {
+                        totalBooking = bookingMonthInDB;
+                    }
+                    bookingsStat.Add(totalBooking);
+                }
+
+
+                return bookingsStat;
             }
             catch (Exception ex)
             {

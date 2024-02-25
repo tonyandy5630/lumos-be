@@ -3,6 +3,7 @@ using DataTransferObject.DTO;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -254,6 +255,7 @@ namespace DataAccessLayer
                 throw;
             }
         }
+      
         /*public async Task<List<TopBookedServiceDTO>> GetAllTopBookedServicesAsync()
         {
             try
@@ -282,15 +284,22 @@ namespace DataAccessLayer
             }
         }*/
 
-        public async Task<List<Booking>> GetAllBookingsForYearAsync(int year)
+       public async Task<List<TotalBookingMonthlyStat>> GetAllBookingsForYearAsync(int year)
         {
             try
             {
-                var bookings = await dbContext.Bookings
-                    .Where(b => b.BookingDate.HasValue && b.BookingDate.Value.Year == year)
+                var result = await dbContext.Bookings
+                    .Where(r => r.BookingDate.Year == year)
+                    .GroupBy(b => new { Month = b.BookingDate.Month, Year = b.BookingDate.Year })
+                    .Select(g => new
+                    TotalBookingMonthlyStat {
+                        Month = g.Key.Month,
+                        totalBooking = g.Count()
+                    })
+                    .OrderBy(r => r.Month)
                     .ToListAsync();
 
-                return bookings;
+                return  result;
             }
             catch (Exception ex)
             {
