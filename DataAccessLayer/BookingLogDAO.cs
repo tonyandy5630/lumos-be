@@ -107,18 +107,31 @@ namespace DataAccessLayer
             try
             {
                 var pendingBookings = await dbContext.Bookings
-                    .Join(dbContext.Customers,
+                    .GroupJoin(dbContext.Customers,
                         booking => booking.CreatedBy,
                         customer => customer.Fullname,
-                        (booking, customer) => new { Booking = booking, Customer = customer })
-                    .Where(bc => bc.Booking.BookingLogs.OrderByDescending(bl => bl.CreatedDate).FirstOrDefault().Status == 0
-                                 && bc.Customer.Email == email)
-                    .Select(bc => new PendingBookingDTO
-                    {
-                        BookingId = bc.Booking.BookingId,
-                        Status = (int)bc.Booking.BookingLogs.OrderByDescending(bl => bl.CreatedDate).FirstOrDefault().Status,
-                        // Map any other properties as needed
-                    })
+                        (booking, customers) => new { Booking = booking, Customers = customers })
+                    .SelectMany(
+                        bc => bc.Customers.DefaultIfEmpty(),
+                        (bc, customer) => new { Booking = bc.Booking, Customer = customer })
+                    .GroupJoin(dbContext.Partners,
+                        bc => bc.Booking.CreatedBy,
+                        partner => partner.Email,
+                        (bc, partners) => new { BookingCustomer = bc, Partners = partners })
+                    .SelectMany(
+                        bcp => bcp.Partners.DefaultIfEmpty(),
+                        (bcp, partner) => new { BookingCustomer = bcp.BookingCustomer, Partner = partner })
+                    .Where(bcp => (bcp.BookingCustomer.Customer != null && bcp.BookingCustomer.Customer.Email == email)
+                                  || (bcp.BookingCustomer.Booking.BookingLogs.OrderByDescending(bl => bl.CreatedDate)
+                                        .FirstOrDefault().Status == 0 && bcp.Partner != null && bcp.Partner.Email == email))
+                    .Select(bcp =>
+                        new PendingBookingDTO
+                        {
+                            BookingId = bcp.BookingCustomer.Booking.BookingId,
+                            Status = bcp.BookingCustomer.Booking.BookingLogs.OrderByDescending(bl => bl.CreatedDate)
+                                        .FirstOrDefault().Status ?? 0,
+                            // Map any other properties as needed
+                        })
                     .ToListAsync();
 
                 return pendingBookings;

@@ -30,7 +30,7 @@ namespace LumosSolution.Controllers
             _bookingLogService = bookingLogService;
         }
         [HttpGet("pending")]
-        [Authorize(Roles = "Partner")]
+        [Authorize(Roles = "Partner,Customer")]
         public async Task<ActionResult<ApiResponse<object>>> GetPendingBookings()
         {
             ApiResponse<object> response = new ApiResponse<object>();
