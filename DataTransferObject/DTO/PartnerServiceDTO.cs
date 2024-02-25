@@ -26,6 +26,7 @@ namespace DataTransferObject.DTO
         [JsonIgnore]
         public string? UpdatedBy { get; set; }
         public int BookedQuantity { get; set; }
+        public decimal? Rating { get; set; }
         public IEnumerable<ServiceCategoryDTO>? Categories { get; set; }
 
     }

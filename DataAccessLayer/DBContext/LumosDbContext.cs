@@ -442,6 +442,11 @@ namespace BussinessObject
                     .HasMaxLength(50)
                     .IsUnicode(false);
 
+                entity.Property(e => e.Rating)
+                .HasColumnType("decimal(3,1)")
+                .HasPrecision(3, 1);
+
+
                 entity.HasOne(d => d.Partner)
                     .WithMany(p => p.PartnerServices)
                     .HasForeignKey(d => d.PartnerId)

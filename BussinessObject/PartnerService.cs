@@ -20,7 +20,7 @@ namespace BussinessObject
 
         public int ServiceId { get; set; }
         [JsonIgnore]
-        public int? PartnerId { get; set; }
+        public int PartnerId { get; set; }
         [Required]
         public string Name { get; set; }
         public string? Code { get; set; }
