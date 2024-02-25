@@ -17,6 +17,6 @@ namespace Service.InterfaceService
         Task<List<Booking>> GetIncompleteBookingsByReportIdAsync(int reportId);
         Task<List<Booking>> GetAllIncompleteBookingsAsync();
         Task<List<TopBookedServiceDTO>> GetTopBookedServicesAsync(int top);
-        Task<List<Booking>> GetAllBookingsForYearAsync(int year);
+        Task<List<int?>> GetAllBookingsForYearAsync(int year);
     }
 }
