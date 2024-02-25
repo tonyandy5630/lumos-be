@@ -74,5 +74,19 @@ namespace Service.Service
                 return false;
             }
         }
+
+        public async Task<List<PendingBookingDTO>> GetPendingBookingsByEmailAsync(string email)
+        {
+            try
+            {
+                var pendingBookings = await _unitOfWork.BookingLogRepo.GetPendingBookingsByEmailAsync(email);
+                return pendingBookings;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetPendingBookingsByEmailAsync: {ex.Message}", ex);
+                throw;
+            }
+        }
     }
 }

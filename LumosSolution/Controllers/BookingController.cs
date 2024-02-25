@@ -12,6 +12,7 @@ using AutoMapper;
 using System.Globalization;
 using System.Security.Claims;
 using RequestEntity;
+using DataAccessLayer;
 
 namespace LumosSolution.Controllers
 {
@@ -27,6 +28,43 @@ namespace LumosSolution.Controllers
             _bookingService = bookingService;
             _mapper = mapper;
             _bookingLogService = bookingLogService;
+        }
+        [HttpGet("pending")]
+        [Authorize(Roles = "Partner")]
+        public async Task<ActionResult<ApiResponse<object>>> GetPendingBookings()
+        {
+            ApiResponse<object> response = new ApiResponse<object>();
+            try
+            {
+                var userEmail = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+
+                var pendingBookingDTOs = await _bookingLogService.GetPendingBookingsByEmailAsync(userEmail);
+
+                if (pendingBookingDTOs == null || !pendingBookingDTOs.Any())
+                {
+                    response.message = "No pending bookings found.";
+                    response.StatusCode = ApiStatusCode.NotFound;
+                    return NotFound(response);
+                }
+
+                response.data = pendingBookingDTOs;
+                response.message = "Success";
+                response.StatusCode = ApiStatusCode.OK;
+
+                return Ok(response);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                response.message = "Unauthorized";
+                response.StatusCode = ApiStatusCode.Unauthorized;
+                return Unauthorized(response);
+            }
+            catch (Exception ex)
+            {
+                response.message = "Internal Server Error";
+                response.StatusCode = ApiStatusCode.BadRequest;
+                return BadRequest(response);
+            }
         }
         [HttpPost("/api/booking-logs")]
         [Authorize(Roles = "Partner")]

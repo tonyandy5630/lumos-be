@@ -1,4 +1,5 @@
 ﻿using BussinessObject;
+using DataTransferObject.DTO;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
@@ -101,5 +102,33 @@ namespace DataAccessLayer
                 return false;
             }
         }
+        public async Task<List<PendingBookingDTO>> GetPendingBookingsByEmailAsync(string email)
+        {
+            try
+            {
+                var pendingBookings = await dbContext.Bookings
+                    .Join(dbContext.Customers,
+                        booking => booking.CreatedBy,
+                        customer => customer.Fullname,
+                        (booking, customer) => new { Booking = booking, Customer = customer })
+                    .Where(bc => bc.Booking.BookingLogs.OrderByDescending(bl => bl.CreatedDate).FirstOrDefault().Status == 0
+                                 && bc.Customer.Email == email)
+                    .Select(bc => new PendingBookingDTO
+                    {
+                        BookingId = bc.Booking.BookingId,
+                        Status = (int)bc.Booking.BookingLogs.OrderByDescending(bl => bl.CreatedDate).FirstOrDefault().Status,
+                        // Map any other properties as needed
+                    })
+                    .ToListAsync();
+
+                return pendingBookings;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetPendingBookingsByEmailAsync: {ex.Message}", ex);
+                throw;
+            }
+        }
+
     }
 }

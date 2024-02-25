@@ -1,4 +1,5 @@
 ﻿using BussinessObject;
+using DataTransferObject.DTO;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,5 +14,6 @@ namespace Service.InterfaceService
         Task<bool> UpdateBookingLogStatusForCustomerAsync(int bookingLogId, int newStatus);
         Task<BookingLog> GetLatestBookingLogAsync(int bookingId);
         Task<bool> CreateBookingLogAsync(BookingLog bookingLog);
+        Task<List<PendingBookingDTO>> GetPendingBookingsByEmailAsync(string email);
     }
 }
