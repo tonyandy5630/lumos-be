@@ -228,7 +228,7 @@ namespace LumosSolution.Controllers
                 return BadRequest(res);
             }
         }
-        [HttpGet("/api/partner/{categoryId}")]
+        [HttpGet("/api/partner/category/{categoryId}")]
         [Authorize(Roles = "Admin,Customer")]
         public async Task<ActionResult<IEnumerable<SearchPartnerDTO>>> GetPartnerByCategory(int categoryId)
         {
