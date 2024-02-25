@@ -108,29 +108,44 @@ namespace DataAccessLayer
             {
                 var pendingBookings = await dbContext.Bookings
                     .GroupJoin(dbContext.Customers,
-                        booking => booking.CreatedBy,
-                        customer => customer.Fullname,
+                        booking => booking.BookingDetails.FirstOrDefault().ReportId,
+                        customer => customer.MedicalReports.FirstOrDefault().ReportId,
                         (booking, customers) => new { Booking = booking, Customers = customers })
                     .SelectMany(
                         bc => bc.Customers.DefaultIfEmpty(),
                         (bc, customer) => new { Booking = bc.Booking, Customer = customer })
-                    .GroupJoin(dbContext.Partners,
-                        bc => bc.Booking.CreatedBy,
-                        partner => partner.Email,
-                        (bc, partners) => new { BookingCustomer = bc, Partners = partners })
-                    .SelectMany(
-                        bcp => bcp.Partners.DefaultIfEmpty(),
-                        (bcp, partner) => new { BookingCustomer = bcp.BookingCustomer, Partner = partner })
-                    .Where(bcp => (bcp.BookingCustomer.Customer != null && bcp.BookingCustomer.Customer.Email == email)
-                                  || (bcp.BookingCustomer.Booking.BookingLogs.OrderByDescending(bl => bl.CreatedDate)
-                                        .FirstOrDefault().Status == 0 && bcp.Partner != null && bcp.Partner.Email == email))
-                    .Select(bcp =>
+                    .Where(bc =>
+                        // Filter by customer email
+                        (bc.Customer != null && bc.Customer.Email == email))
+                    .Select(b =>
                         new PendingBookingDTO
                         {
-                            BookingId = bcp.BookingCustomer.Booking.BookingId,
-                            Status = bcp.BookingCustomer.Booking.BookingLogs.OrderByDescending(bl => bl.CreatedDate)
+                            BookingId = b.Booking.BookingId,
+                            Status = b.Booking.BookingLogs.OrderByDescending(bl => bl.CreatedDate)
                                         .FirstOrDefault().Status ?? 0,
-                            // Map any other properties as needed
+                            Services = b.Booking.BookingDetails
+                                        .SelectMany(detail => detail.ServiceBookings)
+                                        .Select(serviceBooking => new PartnerServiceDTO
+                                        {
+                                            ServiceId = serviceBooking.Service.ServiceId,
+                                            Name = serviceBooking.Service.Name,
+                                            Code = serviceBooking.Service.Code,
+                                            Duration = serviceBooking.Service.Duration,
+                                            Status = serviceBooking.Service.Status,
+                                            Description = serviceBooking.Service.Description,
+                                            Price = serviceBooking.Service.Price,
+                                            BookedQuantity = serviceBooking.Service.ServiceBookings.Count,
+                                            Rating = serviceBooking.Service.Rating,
+                                            Categories = serviceBooking.Service.ServiceDetails
+                                                            .Select(detail => new ServiceCategoryDTO
+                                                            {
+                                                                CategoryId = detail.Category.CategoryId,
+                                                                Category = detail.Category.Category,
+                                                                Code = detail.Category.Code
+                                                            })
+                                                            .Distinct() // Ensure distinct categories
+                                                            .ToList()
+                                        }).ToList()
                         })
                     .ToListAsync();
 
