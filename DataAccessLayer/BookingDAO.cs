@@ -299,7 +299,6 @@ namespace DataAccessLayer
                     .OrderBy(r => r.Month)
                     .ToListAsync();
 
-
                 return  result;
             }
             catch (Exception ex)
