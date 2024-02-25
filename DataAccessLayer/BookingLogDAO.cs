@@ -69,5 +69,37 @@ namespace DataAccessLayer
                 return false;
             }
         }
+        public async Task<BookingLog> GetLatestBookingLogAsync(int bookingId)
+        {
+            try
+            {
+                var latestBookingLog = await dbContext.BookingLogs
+                    .Where(log => log.BookingId == bookingId)
+                    .OrderByDescending(log => log.CreatedDate)
+                    .FirstOrDefaultAsync();
+
+                return latestBookingLog;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetLatestBookingLogAsync: {ex.Message}", ex);
+                throw; 
+            }
+        }
+
+        public async Task<bool> CreateBookingLogAsync(BookingLog bookingLog)
+        {
+            try
+            {
+                dbContext.BookingLogs.Add(bookingLog);
+                await dbContext.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in CreateBookingLogAsync: {ex.Message}", ex);
+                return false;
+            }
+        }
     }
 }

@@ -28,7 +28,6 @@ namespace Service.InterfaceService
         Task<PartnerService> AddPartnerServiceAsync(AddPartnerServiceResquest service, string? partnerEmail);
         Task<IEnumerable<SearchPartnerDTO>> GetPartnerByCategoryAsync(int categoryId);
         Task<IEnumerable<PartnerServiceDTO>> GetTopFiveBookedServicesAsync();
-        Task<PartnerServiceDTO?> GetPartnerServiceByIdAsync(int serviceId);
         Task<int> CalculateTotalServicesAsync(int partnerId);
         Task<int> CalculateRevenueAsync(int partnerId);
         Task<List<RevenuePerWeekDTO>> CalculatePartnerRevenueInMonthAsync(int month, int year);

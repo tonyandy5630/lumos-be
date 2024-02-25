@@ -46,5 +46,33 @@ namespace Service.Service
                 return false;
             }
         }
+
+        public async Task<BookingLog> GetLatestBookingLogAsync(int bookingId)
+        {
+            try
+            {
+                var latestBookingLog = await _unitOfWork.BookingLogRepo.GetLatestBookingLogAsync(bookingId);
+                return latestBookingLog;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetLatestBookingLogAsync: {ex.Message}", ex);
+                throw;
+            }
+        }
+
+        public async Task<bool> CreateBookingLogAsync(BookingLog bookingLog)
+        {
+            try
+            {
+                bool result = await _unitOfWork.BookingLogRepo.CreateBookingLogAsync(bookingLog);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in CreateBookingLogAsync: {ex.Message}", ex);
+                return false;
+            }
+        }
     }
 }

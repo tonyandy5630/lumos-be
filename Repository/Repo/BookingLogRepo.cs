@@ -13,6 +13,9 @@ namespace Repository.Repo
     {
         public BookingLogRepo(LumosDBContext context ) { }
 
+        public Task<bool> CreateBookingLogAsync(BookingLog bookingLog) => BookingLogDAO.Instance.CreateBookingLogAsync(bookingLog);
+
+        public Task<BookingLog> GetLatestBookingLogAsync(int bookingId) => BookingLogDAO.Instance.GetLatestBookingLogAsync(bookingId);
 
         public Task<bool> UpdateBookingLogStatusForCustomerAsync(int bookingLogId, int newStatus) => BookingLogDAO.Instance.UpdateBookingLogStatusForCustomerAsync(bookingLogId, newStatus);
 
