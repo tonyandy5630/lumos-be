@@ -11,6 +11,8 @@ using DataTransferObject.DTO;
 using AutoMapper;
 using System.Globalization;
 using System.Security.Claims;
+using RequestEntity;
+using DataAccessLayer;
 
 namespace LumosSolution.Controllers
 {
@@ -27,6 +29,96 @@ namespace LumosSolution.Controllers
             _mapper = mapper;
             _bookingLogService = bookingLogService;
         }
+        [HttpGet("pending")]
+        [Authorize(Roles = "Partner,Customer")]
+        public async Task<ActionResult<ApiResponse<object>>> GetPendingBookings()
+        {
+            ApiResponse<object> response = new ApiResponse<object>();
+            try
+            {
+                var userEmail = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+
+                var pendingBookingDTOs = await _bookingLogService.GetPendingBookingsByEmailAsync(userEmail);
+
+                if (pendingBookingDTOs == null || !pendingBookingDTOs.Any())
+                {
+                    response.message = "No pending bookings found.";
+                    response.StatusCode = ApiStatusCode.NotFound;
+                    return NotFound(response);
+                }
+
+                response.data = pendingBookingDTOs;
+                response.message = "Success";
+                response.StatusCode = ApiStatusCode.OK;
+
+                return Ok(response);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                response.message = "Unauthorized";
+                response.StatusCode = ApiStatusCode.Unauthorized;
+                return Unauthorized(response);
+            }
+            catch (Exception ex)
+            {
+                response.message = "Internal Server Error";
+                response.StatusCode = ApiStatusCode.BadRequest;
+                return BadRequest(response);
+            }
+        }
+        [HttpPost("/api/booking-logs")]
+        [Authorize(Roles = "Partner")]
+        public async Task<ActionResult<ApiResponse<object>>> UpdateBookingStatusAndCreateLog([FromBody] BookingLogRequest updateBookingStatusDTO)
+        {
+            ApiResponse<object> response = new ApiResponse<object>();
+            try
+            {
+                var latestBookingLog = await _bookingLogService.GetLatestBookingLogAsync(updateBookingStatusDTO.BookingId);
+
+                if (latestBookingLog.Status < 0 || latestBookingLog.Status > 2)
+                {
+                    response.message = "The status of the latest booking log is invalid or not allowed.";
+                    response.StatusCode = ApiStatusCode.BadRequest;
+                    return BadRequest(response);
+                }
+
+                if (latestBookingLog.Status == 3)
+                {
+                    response.message = "The status of the latest booking log is already Completed. Cannot create a new one.";
+                    response.StatusCode = ApiStatusCode.BadRequest;
+                    return BadRequest(response);
+                }
+
+                BookingLog newBookingLog = new BookingLog
+                {
+                    BookingId = updateBookingStatusDTO.BookingId,
+                    Note = latestBookingLog.Note,
+                    Status = latestBookingLog.Status + 1,
+                    CreatedDate = DateTime.Now,
+                    CreatedBy = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value
+            };
+
+                bool result = await _bookingLogService.CreateBookingLogAsync(newBookingLog);
+                if (!result)
+                {
+                    response.message = "Failed to create booking log with new status.";
+                    response.StatusCode = ApiStatusCode.BadRequest;
+                    return BadRequest(response);
+                }
+
+                response.message = "Booking log with new status created successfully.";
+                response.StatusCode = ApiStatusCode.OK;
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                response.message = "Internal Server Error";
+                response.StatusCode = ApiStatusCode.BadRequest;
+                return BadRequest(response);
+            }
+        }
+
         [HttpGet("/api/stat/sub")]
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult<ApiResponse<object>>> GetTopBookedServicesInAllTime([FromQuery] int top =5)

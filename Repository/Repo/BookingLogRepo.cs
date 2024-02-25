@@ -1,5 +1,6 @@
 ﻿using BussinessObject;
 using DataAccessLayer;
+using DataTransferObject.DTO;
 using Repository.Interface;
 using System;
 using System.Collections.Generic;
@@ -13,6 +14,11 @@ namespace Repository.Repo
     {
         public BookingLogRepo(LumosDBContext context ) { }
 
+        public Task<bool> CreateBookingLogAsync(BookingLog bookingLog) => BookingLogDAO.Instance.CreateBookingLogAsync(bookingLog);
+
+        public Task<BookingLog> GetLatestBookingLogAsync(int bookingId) => BookingLogDAO.Instance.GetLatestBookingLogAsync(bookingId);
+
+        public Task<List<PendingBookingDTO>> GetPendingBookingsByEmailAsync(string email) => BookingLogDAO.Instance.GetPendingBookingsByEmailAsync(email);
 
         public Task<bool> UpdateBookingLogStatusForCustomerAsync(int bookingLogId, int newStatus) => BookingLogDAO.Instance.UpdateBookingLogStatusForCustomerAsync(bookingLogId, newStatus);
 

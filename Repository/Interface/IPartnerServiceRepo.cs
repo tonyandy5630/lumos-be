@@ -12,6 +12,5 @@ namespace Repository.Interface
     {
         Task<PartnerService?> GetPartnerServiceByServiceNameAsync(string serviceName, int partnerId);
         Task<IEnumerable<PartnerServiceDTO>> GetTopFiveBookedServicesAsync();
-        Task<PartnerServiceDTO?> GetPartnerServiceByIdAsync(int serviceId);
     }
 }

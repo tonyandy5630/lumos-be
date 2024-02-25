@@ -10,6 +10,7 @@ namespace DataTransferObject
     {
         public MappingProfile()
         {
+
             CreateMap<CreateBookingDTO, Booking>()
             .ForMember(dest => dest.PaymentId, opt => opt.MapFrom(src => src.PaymentId))
             .ForMember(dest => dest.TotalPrice, opt => opt.MapFrom(src => src.TotalPrice))

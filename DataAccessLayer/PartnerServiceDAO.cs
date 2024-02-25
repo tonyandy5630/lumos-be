@@ -38,6 +38,7 @@ namespace DataAccessLayer
         }
         public async Task<IEnumerable<PartnerServiceDTO>> GetTopFiveBookedServicesAsync()
         {
+            var partnerDAO = PartnerDAO.Instance;
             var result = from sb in _context.ServiceBookings
                          group sb by sb.ServiceId into grouped
                          orderby grouped.Count() descending
@@ -52,7 +53,7 @@ namespace DataAccessLayer
             var serviceDetails = new List<PartnerServiceDTO>();
             foreach (var service in topFiveServices)
             {
-                var serviceDetail = await GetPartnerServiceByIdAsync(service.ServiceId);
+                var serviceDetail = await partnerDAO.GetPartnerServiceByIdAsync(service.ServiceId);
                 if (serviceDetail != null)
                 {
                     serviceDetail.BookedQuantity = service.BookedQuantity;
@@ -61,38 +62,6 @@ namespace DataAccessLayer
             }
 
             return serviceDetails;
-        }
-        public async Task<PartnerServiceDTO?> GetPartnerServiceByIdAsync(int serviceId)
-        {
-            try
-            {
-                var result = from ps in _context.PartnerServices
-                             join sb in _context.ServiceBookings
-                             on ps.ServiceId equals sb.ServiceId
-                             group new { ps, sb } by new { ps.ServiceId, ps.Name, ps.Description, ps.Price, ps.Code, ps.Status, ps.CreatedDate, ps.UpdatedBy,ps.Rating, ps.Duration, ps.LastUpdate } into grouped
-                             select new PartnerServiceDTO
-                             {
-                                 ServiceId = grouped.Key.ServiceId,
-                                 Name = grouped.Key.Name,
-                                 Description = grouped.Key.Description,
-                                 Price = grouped.Key.Price,
-                                 Code = grouped.Key.Code,
-                                 Status = grouped.Key.Status,
-                                 CreatedDate = grouped.Key.CreatedDate,
-                                 UpdatedBy = grouped.Key.UpdatedBy,
-                                 LastUpdate = grouped.Key.LastUpdate,
-                                 Duration = grouped.Key.Duration,
-                                 Rating = grouped.Key.Rating,
-                                 BookedQuantity = grouped.Count()
-                             };
-
-                return await result.FirstOrDefaultAsync(s => s.ServiceId == serviceId);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error in GetPartnerServiceByIdAsync: {ex.Message}", ex);
-                throw new Exception(ex.Message);
-            }
         }
 
     }
