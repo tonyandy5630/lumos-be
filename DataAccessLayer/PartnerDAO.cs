@@ -45,7 +45,7 @@ namespace DataAccessLayer
                 from sb in serviceBookings.DefaultIfEmpty()
                 where ps.ServiceId == serviceId
                 group new { ps, sb } by
-                new { ps.ServiceId, ps.Name, ps.Description, ps.Price, ps.Code, ps.Status, ps.CreatedDate, ps.UpdatedBy, ps.Duration, ps.LastUpdate }
+                new { ps.ServiceId, ps.Name, ps.Description, ps.Price, ps.Code, ps.Status, ps.CreatedDate, ps.Rating,ps.UpdatedBy, ps.Duration, ps.LastUpdate }
                 into grouped
                 select new PartnerServiceDTO
                 {
@@ -60,6 +60,7 @@ namespace DataAccessLayer
                     LastUpdate = grouped.Key.LastUpdate,
                     Duration = grouped.Key.Duration,
                     BookedQuantity = grouped.Count(entry => entry.sb != null),
+                    Rating = grouped.Key.Rating
                 };
 
                 return await result.FirstOrDefaultAsync(s => s.ServiceId == serviceId);

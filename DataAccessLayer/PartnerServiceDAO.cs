@@ -44,7 +44,7 @@ namespace DataAccessLayer
                          select new PartnerServiceDTO
                          {
                              ServiceId = (int)grouped.Key,
-                             BookedQuantity = grouped.Count()
+                             BookedQuantity = grouped.Count(),
                          };
 
             var topFiveServices = await result.Take(5).ToListAsync();
@@ -69,7 +69,7 @@ namespace DataAccessLayer
                 var result = from ps in _context.PartnerServices
                              join sb in _context.ServiceBookings
                              on ps.ServiceId equals sb.ServiceId
-                             group new { ps, sb } by new { ps.ServiceId, ps.Name, ps.Description, ps.Price, ps.Code, ps.Status, ps.CreatedDate, ps.UpdatedBy, ps.Duration, ps.LastUpdate } into grouped
+                             group new { ps, sb } by new { ps.ServiceId, ps.Name, ps.Description, ps.Price, ps.Code, ps.Status, ps.CreatedDate, ps.UpdatedBy,ps.Rating, ps.Duration, ps.LastUpdate } into grouped
                              select new PartnerServiceDTO
                              {
                                  ServiceId = grouped.Key.ServiceId,
@@ -82,6 +82,7 @@ namespace DataAccessLayer
                                  UpdatedBy = grouped.Key.UpdatedBy,
                                  LastUpdate = grouped.Key.LastUpdate,
                                  Duration = grouped.Key.Duration,
+                                 Rating = grouped.Key.Rating,
                                  BookedQuantity = grouped.Count()
                              };
 
