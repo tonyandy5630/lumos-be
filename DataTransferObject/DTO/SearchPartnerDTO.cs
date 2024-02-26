@@ -27,5 +27,6 @@ namespace DataTransferObject.DTO
         [JsonIgnore]
         public  PartnerType? Type { get; set; }
         public IEnumerable<PartnerServiceDTO>? PartnerServices { get; set; }
+        public List<ScheduleDTO> Schedules { get; set; }
     }
 }

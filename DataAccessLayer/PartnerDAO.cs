@@ -148,7 +148,9 @@ namespace DataAccessLayer
         {
             try
             {
+
                 Partner? partner = await _context.Partners.SingleOrDefaultAsync(u => u.Code.ToLower().Equals(code.ToLower()));
+
                 if (partner != null)
                 {
                     partner.PartnerServices = await _context.PartnerServices.Where(ps => ps.PartnerId == partner.PartnerId).ToListAsync();
@@ -346,7 +348,7 @@ namespace DataAccessLayer
                                     select new
                                     {
                                         PartnerService = ps,
-                                        ServiceBookings = _context.ServiceBookings.Where(sb => sb.ServiceId == ps.ServiceId).ToList(), // Convert to List
+                                        ServiceBookings =  _context.ServiceBookings.Where(sb => sb.ServiceId == ps.ServiceId).ToList(), // Convert to List
                                         Category = sc // Select category
                                     })
                                     .GroupBy(x => x.PartnerService.ServiceId) // Group by ServiceId

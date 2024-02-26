@@ -218,6 +218,9 @@ namespace Service.Service
                 }
 
                 partnerDTO.PartnerServices = partnerServices;
+                List<ScheduleDTO> schedules = await _unitOfWork.ScheduleRepo.GetSchedulesByPartnerIdAsync(id);
+
+                partnerDTO.Schedules = schedules;
 
                 return partnerDTO;
             }
@@ -408,12 +411,13 @@ namespace Service.Service
             }
         }
 
+
         public async Task<StatPartnerServiceDTO> GetStatPartnerServiceAsync(string email)
         {
             StatPartnerServiceDTO stat = new StatPartnerServiceDTO();
             if (email == null)
-                throw new Exception("Partner not found");
 
+                throw new Exception("Partner not found");
             Partner partner = await _unitOfWork.PartnerRepo.GetPartnerByEmailAsync(email);
 
             if (partner == null)
@@ -430,8 +434,6 @@ namespace Service.Service
             stat.revenue = revenue;
 
             return  await Task.FromResult(stat);
-
-
         }
 
       

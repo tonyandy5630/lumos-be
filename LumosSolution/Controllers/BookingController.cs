@@ -30,14 +30,50 @@ namespace LumosSolution.Controllers
             _mapper = mapper;
             _bookingLogService = bookingLogService;
         }
-        [HttpGet("getallboookings/{customerId}")]
-        [Authorize(Roles = "Admin,Customer,Partner")]
-        public async Task<ActionResult<ApiResponse<object>>> GetAllBookingsByCustomerID(int customerId)
+        [HttpGet]
+        [Authorize(Roles = "Customer")]
+        public async Task<ActionResult<ApiResponse<object>>> GetAllBookingsByCustomerID()
         {
             ApiResponse<object> response = new ApiResponse<object>();
             try
             {
-                var pendingBookingDTOs = await _bookingLogService.GetPendingBookingsByCustomerIdAsync(customerId);
+                var userEmail = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+                var pendingBookingDTOs = await _bookingLogService.GetBookingsByCustomerIdAsync(userEmail);
+
+                if (pendingBookingDTOs == null || !pendingBookingDTOs.Any())
+                {
+                    response.message = "No bookings found.";
+                    response.StatusCode = ApiStatusCode.NotFound;
+                    return NotFound(response);
+                }
+
+                response.data = pendingBookingDTOs;
+                response.message = "Success";
+                response.StatusCode = ApiStatusCode.OK;
+
+                return Ok(response);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                response.message = "Unauthorized";
+                response.StatusCode = ApiStatusCode.Unauthorized;
+                return Unauthorized(response);
+            }
+            catch (Exception ex)
+            {
+                response.message = "Internal Server Error";
+                response.StatusCode = ApiStatusCode.BadRequest;
+                return BadRequest(response);
+            }
+        }
+        [HttpGet("customer/{id}")]
+        [Authorize(Roles = "Customer")]
+        public async Task<ActionResult<ApiResponse<object>>> GetIcomeBookingsByCustomerID(int id)
+        {
+            ApiResponse<object> response = new ApiResponse<object>();
+            try
+            {
+                var pendingBookingDTOs = await _bookingLogService.GetPendingBookingsByCustomerIdAsync(id);
 
                 if (pendingBookingDTOs == null || !pendingBookingDTOs.Any())
                 {
@@ -66,7 +102,7 @@ namespace LumosSolution.Controllers
             }
         }
 
-        [HttpGet("pending")]
+        [HttpGet("comming")]
         [Authorize(Roles = "Customer")]
         public async Task<ActionResult<ApiResponse<object>>> GetPendingBookings()
         {
