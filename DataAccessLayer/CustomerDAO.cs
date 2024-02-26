@@ -221,7 +221,7 @@ namespace DataAccessLayer
                 //check if address existed via displayname and Address
                 bool existedAddress = dbContext.Addresses
                     .Where(x => x.CustomerId == address.CustomerId)
-                    .Any(x => x.Address1.ToLower().Equals(address.Address1.ToLower()));
+                    .Any(x => x.Address1.ToLower().Equals(address.Address1.ToLower()));                            
 
                 if (!existedAddress)
                 {
