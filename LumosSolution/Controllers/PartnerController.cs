@@ -53,15 +53,16 @@ namespace LumosSolution.Controllers
                 response.StatusCode = 401;
                 return StatusCode(401, response);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Console.WriteLine(ex.Message);
                 response.message = MessagesResponse.Error.OperationFailed;
                 response.StatusCode = 406;
                 return StatusCode(406, response);
             }
         }
 
-        [HttpGet("/api/stats/revenue/monthly/{year}")]
+        [HttpGet("/api/stat/revenue/monthly/{year}")]
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult<ApiResponse<List<MonthlyRevenueDTO>>>> GetMonthlyRevenue(int year)
         {
@@ -149,14 +150,12 @@ namespace LumosSolution.Controllers
 
                 string? email = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
 
-                int totalServices = await _partnerService.CalculateTotalServicesAsync(email);
-                int revenue = await _partnerService.CalculateRevenueAsync(email);
+               StatPartnerServiceDTO res = await _partnerService.GetStatPartnerServiceAsync(email);
 
-                var data = new { totalServices, revenue };
 
                 response.message = MessagesResponse.Success.Completed;
                 response.StatusCode = 200;
-                response.data = data;
+                response.data = res;
 
                 return Ok(response);
             }
@@ -465,6 +464,8 @@ namespace LumosSolution.Controllers
                 return BadRequest(response);
             }
         }
+
+
 
     }
 }

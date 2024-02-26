@@ -40,28 +40,28 @@ namespace DataAccessLayer
             {
 
                 var result = from ps in _context.PartnerServices
-                join sb in _context.ServiceBookings
-                on ps.ServiceId equals sb.ServiceId into serviceBookings
-                from sb in serviceBookings.DefaultIfEmpty()
-                where ps.ServiceId == serviceId
-                group new { ps, sb } by
-                new { ps.ServiceId, ps.Name, ps.Description, ps.Price, ps.Code, ps.Status, ps.CreatedDate, ps.Rating,ps.UpdatedBy, ps.Duration, ps.LastUpdate }
+                             join sb in _context.ServiceBookings
+                             on ps.ServiceId equals sb.ServiceId into serviceBookings
+                             from sb in serviceBookings.DefaultIfEmpty()
+                             where ps.ServiceId == serviceId
+                             group new { ps, sb } by
+                             new { ps.ServiceId, ps.Name, ps.Description, ps.Price, ps.Code, ps.Status, ps.CreatedDate, ps.Rating, ps.UpdatedBy, ps.Duration, ps.LastUpdate }
                 into grouped
-                select new PartnerServiceDTO
-                {
-                    ServiceId = grouped.Key.ServiceId,
-                    Name = grouped.Key.Name,
-                    Description = grouped.Key.Description,
-                    Price = grouped.Key.Price,
-                    Code = grouped.Key.Code,
-                    Status = grouped.Key.Status,
-                    CreatedDate = grouped.Key.CreatedDate,
-                    UpdatedBy = grouped.Key.UpdatedBy,
-                    LastUpdate = grouped.Key.LastUpdate,
-                    Duration = grouped.Key.Duration,
-                    BookedQuantity = grouped.Count(entry => entry.sb != null),
-                    Rating = grouped.Key.Rating
-                };
+                             select new PartnerServiceDTO
+                             {
+                                 ServiceId = grouped.Key.ServiceId,
+                                 Name = grouped.Key.Name,
+                                 Description = grouped.Key.Description,
+                                 Price = grouped.Key.Price,
+                                 Code = grouped.Key.Code,
+                                 Status = grouped.Key.Status,
+                                 CreatedDate = grouped.Key.CreatedDate,
+                                 UpdatedBy = grouped.Key.UpdatedBy,
+                                 LastUpdate = grouped.Key.LastUpdate,
+                                 Duration = grouped.Key.Duration,
+                                 BookedQuantity = grouped.Count(entry => entry.sb != null),
+                                 Rating = grouped.Key.Rating
+                             };
 
                 return await result.FirstOrDefaultAsync(s => s.ServiceId == serviceId);
             }
@@ -148,7 +148,9 @@ namespace DataAccessLayer
         {
             try
             {
-                Partner? partner =  await _context.Partners.SingleOrDefaultAsync(u => u.Code.ToLower().Equals(code.ToLower()));
+
+                Partner? partner = await _context.Partners.SingleOrDefaultAsync(u => u.Code.ToLower().Equals(code.ToLower()));
+
                 if (partner != null)
                 {
                     partner.PartnerServices = await _context.PartnerServices.Where(ps => ps.PartnerId == partner.PartnerId).ToListAsync();
@@ -181,7 +183,7 @@ namespace DataAccessLayer
                     .Any(p => p.PartnerName.ToLower().Equals(partner.PartnerName.ToLower())
                         || p.DisplayName.ToLower().Equals(partner.DisplayName.ToLower())
                         || p.Email.ToLower().Equals(partner.Email.ToLower())
-                        || p.BusinessLicenseNumber.ToLower().Equals(partner.BusinessLicenseNumber.ToLower()));                   
+                        || p.BusinessLicenseNumber.ToLower().Equals(partner.BusinessLicenseNumber.ToLower()));
 
                 if (!existing)
                 {
@@ -190,7 +192,7 @@ namespace DataAccessLayer
                     partner.LastUpdate = DateTime.Now;
                     _context.Partners.Add(partner);
                     await _context.SaveChangesAsync();
-                    
+
                     return await _context.Partners.SingleOrDefaultAsync(p => p.Code.Equals(partner.Code));
                 }
 

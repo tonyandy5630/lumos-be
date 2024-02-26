@@ -411,37 +411,32 @@ namespace Service.Service
             }
         }
 
-        public async Task<int> CalculateTotalServicesAsync(string? email)
+
+        public async Task<StatPartnerServiceDTO> GetStatPartnerServiceAsync(string email)
         {
-            if(email == null)
-                throw new Exception("Partner not found");
-
-            Partner partner = await _unitOfWork.PartnerRepo.GetPartnerByEmailAsync(email);
-
-            if (partner == null)
-            {
-                throw new Exception("Partner not found");
-            }
-            return partner.PartnerServices.Count;
-        }
-
-        public async Task<int> CalculateRevenueAsync(string? email)
-        {
+            StatPartnerServiceDTO stat = new StatPartnerServiceDTO();
             if (email == null)
-                throw new Exception("Partner not found");
 
+                throw new Exception("Partner not found");
             Partner partner = await _unitOfWork.PartnerRepo.GetPartnerByEmailAsync(email);
+
             if (partner == null)
             {
                 throw new Exception("Partner not found");
             }
             int revenue = 0;
+
             foreach (var service in partner.PartnerServices)
             {
                 revenue += service.Price;
             }
-            return revenue;
+            stat.totalServices = partner.PartnerServices.Count;
+            stat.revenue = revenue;
+
+            return  await Task.FromResult(stat);
         }
+
+      
         public async Task<List<RevenuePerWeekDTO>> CalculatePartnerRevenueInMonthAsync(int month, int year)
         {
             try

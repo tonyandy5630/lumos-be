@@ -10,10 +10,8 @@ namespace DataTransferObject.DTO
 {
     public class PartnerServiceDTO
     {
-        [JsonIgnore]
         public int ServiceId { get; set; }
         public string Name { get; set; }
-        [JsonIgnore]
         public string? Code { get; set; }
         public int? Duration { get; set; }
         public int? Status { get; set; }
