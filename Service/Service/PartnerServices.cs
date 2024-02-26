@@ -218,6 +218,9 @@ namespace Service.Service
                 }
 
                 partnerDTO.PartnerServices = partnerServices;
+                List<ScheduleDTO> schedules = await _unitOfWork.ScheduleRepo.GetSchedulesByPartnerIdAsync(id);
+
+                partnerDTO.Schedules = schedules;
 
                 return partnerDTO;
             }

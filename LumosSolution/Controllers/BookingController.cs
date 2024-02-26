@@ -30,7 +30,7 @@ namespace LumosSolution.Controllers
             _mapper = mapper;
             _bookingLogService = bookingLogService;
         }
-        [HttpGet()]
+        [HttpGet]
         [Authorize(Roles = "Customer")]
         public async Task<ActionResult<ApiResponse<object>>> GetAllBookingsByCustomerID()
         {
@@ -66,7 +66,7 @@ namespace LumosSolution.Controllers
                 return BadRequest(response);
             }
         }
-        [HttpGet("{id}")]
+        [HttpGet("customer/{id}")]
         [Authorize(Roles = "Customer")]
         public async Task<ActionResult<ApiResponse<object>>> GetIcomeBookingsByCustomerID(int id)
         {
