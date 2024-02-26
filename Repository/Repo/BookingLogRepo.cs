@@ -19,7 +19,7 @@ namespace Repository.Repo
         public Task<BookingLog> GetLatestBookingLogAsync(int bookingId) => BookingLogDAO.Instance.GetLatestBookingLogAsync(bookingId);
 
         public Task<List<PendingBookingDTO>> GetPendingBookingsByCustomerIdAsync(int customerId) => BookingLogDAO.Instance.GetPendingBookingsByCustomerIdAsync(customerId);
-
+        public Task<List<PendingBookingDTO>> GetBookingsByCustomerIdAsync(string email) => BookingLogDAO.Instance.GetBookingsByCustomerIdAsync(email);
         public Task<List<PendingBookingDTO>> GetPendingBookingsByEmailAsync(string email) => BookingLogDAO.Instance.GetPendingBookingsByEmailAsync(email);
 
         public Task<bool> UpdateBookingLogStatusForCustomerAsync(int bookingLogId, int newStatus) => BookingLogDAO.Instance.UpdateBookingLogStatusForCustomerAsync(bookingLogId, newStatus);
