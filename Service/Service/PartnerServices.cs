@@ -408,9 +408,13 @@ namespace Service.Service
             }
         }
 
-        public async Task<int> CalculateTotalServicesAsync(int partnerId)
+        public async Task<int> CalculateTotalServicesAsync(string? email)
         {
-            var partner = await _unitOfWork.PartnerRepo.GetPartnerByIDAsync(partnerId);
+            if(email == null)
+                throw new Exception("Partner not found");
+
+            Partner partner = await _unitOfWork.PartnerRepo.GetPartnerByEmailAsync(email);
+
             if (partner == null)
             {
                 throw new Exception("Partner not found");
@@ -418,9 +422,12 @@ namespace Service.Service
             return partner.PartnerServices.Count;
         }
 
-        public async Task<int> CalculateRevenueAsync(int partnerId)
+        public async Task<int> CalculateRevenueAsync(string? email)
         {
-            var partner = await _unitOfWork.PartnerRepo.GetPartnerByIDAsync(partnerId);
+            if (email == null)
+                throw new Exception("Partner not found");
+
+            Partner partner = await _unitOfWork.PartnerRepo.GetPartnerByEmailAsync(email);
             if (partner == null)
             {
                 throw new Exception("Partner not found");
@@ -458,11 +465,14 @@ namespace Service.Service
             }
         }
 
-        public async Task<List<PartnerServiceDTO>> GetPartnerServicesWithBookingCountAsync(int partnerId)
+        public async Task<List<PartnerServiceDTO>> GetPartnerServicesWithBookingCountAsync(string email)
         {
             try
             {
-                return await _unitOfWork.PartnerRepo.GetPartnerServicesWithBookingCountAsync(partnerId);
+                Partner partner = await _unitOfWork.PartnerRepo.GetPartnerByEmailAsync(email);
+                if (partner == null)
+                    throw new Exception();
+                return await _unitOfWork.PartnerRepo.GetPartnerServicesWithBookingCountAsync(partner.PartnerId);
             }
             catch (Exception ex)
             {
