@@ -66,7 +66,7 @@ namespace LumosSolution.Controllers
                 return BadRequest(response);
             }
         }
-        [HttpGet("/{id}")]
+        [HttpGet("{id}")]
         [Authorize(Roles = "Customer")]
         public async Task<ActionResult<ApiResponse<object>>> GetIcomeBookingsByCustomerID(int id)
         {

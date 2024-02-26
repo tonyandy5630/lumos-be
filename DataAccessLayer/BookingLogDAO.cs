@@ -173,7 +173,13 @@ namespace DataAccessLayer
                                                 .ToList()
                                     }).GroupBy(service => service.ServiceId)
                                     .Select(group => group.First())
-                                    .ToListAsync()
+                                    .ToListAsync(),
+                                        Address = booking.Address,
+                                        PaymentMethod = await dbContext.PaymentMethods
+                                    .Where(payment => payment.PaymentId == booking.PaymentId)
+                                    .Select(payment => payment.Name)
+                                    .FirstOrDefaultAsync(),
+                                        MedicalName = medicalReport.Fullname
                                     };
 
                                     // Lấy thông tin về dịch vụ và thêm vào danh sách services của pendingBooking
@@ -288,7 +294,13 @@ namespace DataAccessLayer
                                                 .ToList()
                                                 }).GroupBy(service => service.ServiceId)
                                     .Select(group => group.First())
-                                    .ToListAsync()
+                                    .ToListAsync(),
+                                        Address = booking.Address,
+                                        PaymentMethod = await dbContext.PaymentMethods
+                                    .Where(payment => payment.PaymentId == booking.PaymentId)
+                                    .Select(payment => payment.Name)
+                                    .FirstOrDefaultAsync(),
+                                        MedicalName = medicalReport.Fullname
                                     };
 
                                     // Lấy thông tin về dịch vụ và thêm vào danh sách services của pendingBooking
@@ -400,9 +412,14 @@ namespace DataAccessLayer
                                             })
                                             .GroupBy(service => service.ServiceId)
                                             .Select(group => group.First())
-                                            .ToListAsync()
+                                            .ToListAsync(),
+                                        Address = booking.Address,
+                                        PaymentMethod = await dbContext.PaymentMethods
+                                    .Where(payment => payment.PaymentId == booking.PaymentId)
+                                    .Select(payment => payment.Name)
+                                    .FirstOrDefaultAsync(),
+                                        MedicalName = medicalReport.Fullname
                                     };
-
                                     // Lấy thông tin về dịch vụ và thêm vào danh sách services của pendingBooking
                                     var serviceBooking = await dbContext.ServiceBookings.FirstOrDefaultAsync(sb => sb.DetailId == bookingDetail.DetailId);
                                     if (serviceBooking != null)
@@ -438,7 +455,7 @@ namespace DataAccessLayer
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error in GetPendingBookingsByCustomerIdAsync: {ex.Message}", ex);
+                Console.WriteLine($"Error in GetBookingsByCustomerIdAsync: {ex.Message}", ex);
                 throw;
             }
         }
