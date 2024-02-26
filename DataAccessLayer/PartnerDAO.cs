@@ -167,7 +167,12 @@ namespace DataAccessLayer
         {
             try
             {
-                return await _context.Partners.SingleOrDefaultAsync(u => u.Email.ToLower().Equals(email.ToLower()));
+               Partner partner = await _context.Partners.SingleOrDefaultAsync(u => u.Email.ToLower().Equals(email.ToLower()));
+                if (partner != null)
+                {
+                    partner.PartnerServices = await _context.PartnerServices.Where(ps => ps.PartnerId == partner.PartnerId).ToListAsync();
+                }
+                return partner;
             }
             catch (Exception ex)
             {
