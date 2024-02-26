@@ -1,4 +1,5 @@
 ﻿using BussinessObject;
+using DataTransferObject.DTO;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,5 +12,6 @@ namespace Repository.Interface
     {
         Task<List<Schedule>> GetScheduleByPartnerIdAsyn(int id);
         Task<Schedule> AddPartnerScheduleAsync(Schedule schedule);
+        Task<List<ScheduleDTO>> GetSchedulesByPartnerIdAsync(int partnerId);
     }
 }
