@@ -1,7 +1,9 @@
-﻿using BussinessObject;
+﻿using AutoMapper;
+using BussinessObject;
 using DataTransferObject.DTO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using RequestEntity;
 using Service.InterfaceService;
 using Service.Service;
 using System.Security.Claims;
@@ -14,9 +16,12 @@ namespace LumosSolution.Controllers
     [ApiController]
     public class CustomerController : ControllerBase
     {
+        private readonly IMapper _mapper;
         private readonly ICustomerService _customerService;
-        public CustomerController(ICustomerService customerService)
+
+        public CustomerController(IMapper mapper, ICustomerService customerService)
         {
+            _mapper = mapper;
             _customerService = customerService;
         }
 
@@ -158,19 +163,21 @@ namespace LumosSolution.Controllers
 
         [HttpPost("address")]
         [Authorize(Roles = "Customer")]
-        public async Task<ActionResult<ApiResponse<Address>>> AddCustomerAddressAsync([FromBody] Address address)
+        public async Task<ActionResult<ApiResponse<Address>>> AddCustomerAddressAsync([FromBody] AddAddressRequest addressrequest)
         {
             ApiResponse<Address> response = new ApiResponse<Address>();
             try
             {
-                bool existingAddress = await _customerService.CheckExistingAddressAsync(address.DisplayName, address.Address1);
+                var userEmail = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+                bool existingAddress = await _customerService.CheckExistingAddressAsync(addressrequest.displayName, addressrequest.address1);
                 if (existingAddress)
                 {
                     response.message = "Address with the same name already exists";
                     response.StatusCode = ApiStatusCode.BadRequest;
                     return BadRequest(response);
                 }
-                response.data = await _customerService.AddCustomerAddressAsync(address);
+                var address = _mapper.Map<Address>(addressrequest);
+                response.data = await _customerService.AddCustomerAddressAsync(address, userEmail);
                 if (response.data == null)
                 {
                     response.message = MessagesResponse.Error.OperationFailed;
@@ -192,6 +199,7 @@ namespace LumosSolution.Controllers
                 return BadRequest(response);
             }
         }
+
 
         [HttpGet("medical-report/{id}")]
         [Authorize(Roles = "Admin,Customer")]

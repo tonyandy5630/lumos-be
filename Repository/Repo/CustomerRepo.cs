@@ -31,7 +31,7 @@ namespace Repository.Repo
 
         public Task<List<Address>> GetCustomersAddressByCustomerIdAsync(int id) => CustomerDAO.Instance.GetCustomerAddressByCustomerIdAsync(id);
 
-        public Task<Address> AddCustomerAddressAsync(Address address) => CustomerDAO.Instance.AddCustomerAddressAsync(address);
+        public Task<Address> AddCustomerAddressAsync(Address address, string email) => CustomerDAO.Instance.AddCustomerAddressAsync(address, email);
 
         public Task<bool> CheckExistingAddressAsync(string displayName, string address) => CustomerDAO.Instance.CheckExistingAddressAsync(displayName, address);
 

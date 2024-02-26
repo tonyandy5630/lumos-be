@@ -214,7 +214,7 @@ namespace DataAccessLayer
             }
         }
 
-        public async Task<Address> AddCustomerAddressAsync(Address address)
+        public async Task<Address> AddCustomerAddressAsync(Address address, string email)
         {
             try
             {
@@ -230,6 +230,7 @@ namespace DataAccessLayer
                     address.Status = 1;
                     address.CreatedDate = DateTime.UtcNow;
                     address.LastUpdate = DateTime.UtcNow;
+                    address.CreatedBy = email;
                     //address.UpdatedBy = "admin";
                     //address.CreatedBy = "admin";
 

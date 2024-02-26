@@ -23,7 +23,7 @@ namespace Service.InterfaceService
         Task<List<MedicalReport>> GetMedicalReportByCustomerIdAsync(int id);
         Task<List<Address>> GetCustomerAddressByCustomerIdAsync(int id);
         Task<MedicalReport> AddMedicalReportAsync(MedicalReportDTO medicalReport, string cusEmail);
-        Task<Address> AddCustomerAddressAsync(Address address);
+        Task<Address> AddCustomerAddressAsync(Address address, string email);
         Task<MedicalReport> GetMedicalReportByIdAsync(int id);
         Task<bool> CheckExistingAddressAsync(string displayName, string address);
         Task<bool> CheckExistingMedicalReportAsync(string fullName);
