@@ -68,23 +68,23 @@ namespace BussinessObject
 
                 entity.Property(e => e.Code)
                     .HasMaxLength(50)
-                    .IsUnicode(false);
+                    .IsUnicode(true);
 
                 entity.Property(e => e.CreatedBy)
                     .HasMaxLength(50)
-                    .IsUnicode(false);
+                    .IsUnicode(true);
 
                 entity.Property(e => e.CreatedDate).HasColumnType("datetime");
 
                 entity.Property(e => e.DisplayName)
                     .HasMaxLength(50)
-                    .IsUnicode(false);
+                    .IsUnicode(true);
 
                 entity.Property(e => e.LastUpdate).HasColumnType("datetime");
 
                 entity.Property(e => e.UpdatedBy)
                     .HasMaxLength(50)
-                    .IsUnicode(false);
+                    .IsUnicode(true);
 
                 entity.HasOne(d => d.Customer)
                     .WithMany(p => p.Addresses)
@@ -100,31 +100,31 @@ namespace BussinessObject
 
                 entity.Property(e => e.Code)
                     .HasMaxLength(50)
-                    .IsUnicode(false);
+                    .IsUnicode(true);
 
                 entity.Property(e => e.CreatedBy)
                     .HasMaxLength(50)
-                    .IsUnicode(false);
+                    .IsUnicode(true);
 
                 entity.Property(e => e.CreatedDate).HasColumnType("datetime");
 
                 entity.Property(e => e.Email)
                     .HasMaxLength(50)
-                    .IsUnicode(false);
+                    .IsUnicode(true);
 
-                entity.Property(e => e.ImgUrl).IsUnicode(false);
+                entity.Property(e => e.ImgUrl).IsUnicode(true);
 
                 entity.Property(e => e.LastUpdate).HasColumnType("datetime");
 
                 entity.Property(e => e.Password)
                     .HasMaxLength(100)
-                    .IsUnicode(false);
+                    .IsUnicode(true);
 
-                entity.Property(e => e.RefreshToken).IsUnicode(false);
+                entity.Property(e => e.RefreshToken).IsUnicode(true);
 
                 entity.Property(e => e.UpdatedBy)
                     .HasMaxLength(50)
-                    .IsUnicode(false);
+                    .IsUnicode(true);
             });
 
             modelBuilder.Entity<AdminConfiguration>(entity =>
@@ -140,7 +140,7 @@ namespace BussinessObject
 
                 entity.Property(e => e.UpdateBy)
                     .HasMaxLength(50)
-                    .IsUnicode(false);
+                    .IsUnicode(true);
 
                 entity.HasOne(d => d.Admin)
                     .WithMany(p => p.AdminConfigurations)
@@ -165,17 +165,17 @@ namespace BussinessObject
 
                 entity.Property(e => e.Code)
                     .HasMaxLength(50)
-                    .IsUnicode(false);
+                    .IsUnicode(true);
 
                 entity.Property(e => e.CreatedBy)
                     .HasMaxLength(50)
-                    .IsUnicode(false);
+                    .IsUnicode(true);
 
                 entity.Property(e => e.CreatedDate).HasColumnType("datetime");
 
                 entity.Property(e => e.FeedbackImage)
                     .HasMaxLength(1024)
-                    .IsUnicode(false);
+                    .IsUnicode(true);
 
                 entity.Property(e => e.FeedbackLumos).HasMaxLength(200);
 
@@ -198,7 +198,7 @@ namespace BussinessObject
 
                 entity.Property(e => e.CreatedBy)
                     .HasMaxLength(50)
-                    .IsUnicode(false);
+                    .IsUnicode(true);
 
                 entity.Property(e => e.CreatedDate).HasColumnType("datetime");
 
@@ -223,7 +223,7 @@ namespace BussinessObject
 
                 entity.Property(e => e.CreatedBy)
                     .HasMaxLength(50)
-                    .IsUnicode(false);
+                    .IsUnicode(true);
 
                 entity.Property(e => e.CreatedDate).HasColumnType("datetime");
 
@@ -243,17 +243,17 @@ namespace BussinessObject
 
                 entity.Property(e => e.Code)
                     .HasMaxLength(50)
-                    .IsUnicode(false);
+                    .IsUnicode(true);
 
                 entity.Property(e => e.CreatedDate).HasColumnType("datetime");
 
                 entity.Property(e => e.Email)
                     .HasMaxLength(50)
-                    .IsUnicode(false);
+                    .IsUnicode(true);
 
                 entity.Property(e => e.Fullname).HasMaxLength(100);
 
-                entity.Property(e => e.ImgUrl).IsUnicode(false);
+                entity.Property(e => e.ImgUrl).IsUnicode(true);
 
                 entity.Property(e => e.LastLogin).HasColumnType("datetime");
 
@@ -261,17 +261,17 @@ namespace BussinessObject
 
                 entity.Property(e => e.Password)
                     .HasMaxLength(100)
-                    .IsUnicode(false);
+                    .IsUnicode(true);
 
                 entity.Property(e => e.Phone)
                     .HasMaxLength(20)
-                    .IsUnicode(false);
+                    .IsUnicode(true);
 
-                entity.Property(e => e.RefreshToken).IsUnicode(false);
+                entity.Property(e => e.RefreshToken).IsUnicode(true);
 
                 entity.Property(e => e.UpdateBy)
                     .HasMaxLength(50)
-                    .IsUnicode(false);
+                    .IsUnicode(true);
             });
 
             modelBuilder.Entity<FavoritePartner>(entity =>
@@ -291,7 +291,7 @@ namespace BussinessObject
 
                 entity.Property(e => e.UpdatedBy)
                     .HasMaxLength(50)
-                    .IsUnicode(false);
+                    .IsUnicode(true);
 
                 entity.HasOne(d => d.Customer)
                     .WithMany(p => p.FavoritePartners)
@@ -329,7 +329,7 @@ namespace BussinessObject
 
                 entity.Property(e => e.Code)
                     .HasMaxLength(50)
-                    .IsUnicode(false);
+                    .IsUnicode(true);
 
                 entity.Property(e => e.CreatedDate).HasColumnType("datetime");
 
@@ -345,11 +345,11 @@ namespace BussinessObject
 
                 entity.Property(e => e.Phone)
                     .HasMaxLength(20)
-                    .IsUnicode(false);
+                    .IsUnicode(true);
 
                 entity.Property(e => e.UpdatedBy)
                     .HasMaxLength(50)
-                    .IsUnicode(false);
+                    .IsUnicode(true);
 
                 entity.HasOne(d => d.Customer)
                     .WithMany(p => p.MedicalReports)
@@ -365,15 +365,15 @@ namespace BussinessObject
 
                 entity.Property(e => e.Address).HasMaxLength(255);
 
-                entity.Property(e => e.BusinessLicenseNumber).IsUnicode(false);
+                entity.Property(e => e.BusinessLicenseNumber).IsUnicode(true);
 
                 entity.Property(e => e.Code)
                     .HasMaxLength(50)
-                    .IsUnicode(false);
+                    .IsUnicode(true);
 
                 entity.Property(e => e.CreatedBy)
                     .HasMaxLength(50)
-                    .IsUnicode(false);
+                    .IsUnicode(true);
 
                 entity.Property(e => e.CreatedDate).HasColumnType("datetime");
 
@@ -383,29 +383,29 @@ namespace BussinessObject
 
                 entity.Property(e => e.Email)
                     .HasMaxLength(50)
-                    .IsUnicode(false);
+                    .IsUnicode(true);
 
-                entity.Property(e => e.ImgUrl).IsUnicode(false);
+                entity.Property(e => e.ImgUrl).IsUnicode(true);
 
                 entity.Property(e => e.LastLogin).HasColumnType("datetime");
 
                 entity.Property(e => e.LastUpdate).HasColumnType("datetime");
 
-                entity.Property(e => e.PartnerName).HasMaxLength(100);
+                entity.Property(e => e.PartnerName).HasMaxLength(100).IsRequired();
 
                 entity.Property(e => e.Password)
                     .HasMaxLength(100)
-                    .IsUnicode(false);
+                    .IsUnicode(true);
 
                 entity.Property(e => e.Phone)
                     .HasMaxLength(20)
-                    .IsUnicode(false);
+                    .IsUnicode(true);
 
-                entity.Property(e => e.RefreshToken).IsUnicode(false);
+                entity.Property(e => e.RefreshToken).IsUnicode(true);
 
                 entity.Property(e => e.UpdatedBy)
                     .HasMaxLength(50)
-                    .IsUnicode(false);
+                    .IsUnicode(true);
 
                 entity.HasOne(d => d.Type)
                     .WithMany(p => p.Partners)
@@ -424,7 +424,7 @@ namespace BussinessObject
 
                 entity.Property(e => e.Code)
                     .HasMaxLength(50)
-                    .IsUnicode(false);
+                    .IsUnicode(true);
 
                 entity.Property(e => e.CreatedDate).HasColumnType("datetime");
 
@@ -436,15 +436,18 @@ namespace BussinessObject
 
                 entity.Property(e => e.Name)
                     .HasMaxLength(50)
-                    .IsUnicode(false);
+                    .IsUnicode(true)
+                    .IsRequired();
 
                 entity.Property(e => e.UpdatedBy)
                     .HasMaxLength(50)
-                    .IsUnicode(false);
+                    .IsUnicode(true);
 
                 entity.Property(e => e.Rating)
                 .HasColumnType("decimal(3,1)")
                 .HasPrecision(3, 1);
+
+                entity.Property(e => e.Price).HasColumnType("int").IsRequired();
 
 
                 entity.HasOne(d => d.Partner)
@@ -464,11 +467,11 @@ namespace BussinessObject
 
                 entity.Property(e => e.Code)
                     .HasMaxLength(50)
-                    .IsUnicode(false);
+                    .IsUnicode(true);
 
                 entity.Property(e => e.CreatedBy)
                     .HasMaxLength(50)
-                    .IsUnicode(false);
+                    .IsUnicode(true);
 
                 entity.Property(e => e.CreatedDate).HasColumnType("datetime");
 
@@ -480,7 +483,7 @@ namespace BussinessObject
 
                 entity.Property(e => e.UpdatedBy)
                     .HasMaxLength(50)
-                    .IsUnicode(false);
+                    .IsUnicode(true);
             });
 
             modelBuilder.Entity<PaymentMethod>(entity =>
@@ -494,23 +497,23 @@ namespace BussinessObject
 
                 entity.Property(e => e.Code)
                     .HasMaxLength(50)
-                    .IsUnicode(false);
+                    .IsUnicode(true);
 
                 entity.Property(e => e.CreateDate).HasColumnType("datetime");
 
                 entity.Property(e => e.CreatedBy)
                     .HasMaxLength(50)
-                    .IsUnicode(false);
+                    .IsUnicode(true);
 
                 entity.Property(e => e.LastUpdate).HasColumnType("datetime");
 
                 entity.Property(e => e.Name)
                     .HasMaxLength(50)
-                    .IsUnicode(false);
+                    .IsUnicode(true);
 
                 entity.Property(e => e.UpdatedBy)
                     .HasMaxLength(50)
-                    .IsUnicode(false);
+                    .IsUnicode(true);
             });
 
             modelBuilder.Entity<Schedule>(entity =>
@@ -519,31 +522,38 @@ namespace BussinessObject
 
                 entity.Property(e => e.ScheduleId).ValueGeneratedOnAdd();
 
-                entity.Property(e => e.From).HasColumnType("datetime");
-                entity.Property(e => e.To).HasColumnType("datetime");
+                entity.Property(e => e.From).HasColumnType("time(0)");
+                entity.Property(e => e.To).HasColumnType("time(0)");
 
                 entity.Property(e => e.Code)
                     .HasMaxLength(50)
-                    .IsUnicode(false);
+                    .IsUnicode(true);
 
                 entity.Property(e => e.CreatedBy)
-                    .HasMaxLength(50)
-                    .IsUnicode(false);
+                        .HasMaxLength(50)
+                        .IsUnicode(true);
+
+                entity.Property(e => e.WorkShift).HasColumnType("int").IsRequired();
+
+                entity.Property(e => e.DayOfWeek).HasColumnType("int").IsRequired();
 
                 entity.Property(e => e.CreatedDate).HasColumnType("datetime");
 
                 entity.Property(e => e.LastUpdate).HasColumnType("datetime");
 
-                entity.Property(e => e.Note).HasColumnType("text");
+                entity.Property(e => e.Note)
+                    .HasMaxLength(100)
+                    .IsUnicode(true);
 
                 entity.Property(e => e.UpdatedBy)
                     .HasMaxLength(50)
-                    .IsUnicode(false);
+                    .IsUnicode(true);
 
                 entity.HasOne(d => d.Partner)
                     .WithMany(p => p.Schedules)
                     .HasForeignKey(d => d.PartnerId)
-                    .HasConstraintName("FK_Schedule_Partner");
+                    .HasConstraintName("FK_Schedule_Partner")
+                    .IsRequired();
             });
 
             modelBuilder.Entity<ServiceBooking>(entity =>
@@ -560,7 +570,7 @@ namespace BussinessObject
 
                 entity.Property(e => e.UpdatedBy)
                     .HasMaxLength(50)
-                    .IsUnicode(false);
+                    .IsUnicode(true);
 
                 entity.HasOne(d => d.Detail)
                     .WithMany(p => p.ServiceBookings)
@@ -584,15 +594,15 @@ namespace BussinessObject
 
                 entity.Property(e => e.Category)
                     .HasMaxLength(50)
-                    .IsUnicode(false);
+                    .IsUnicode(true);
 
                 entity.Property(e => e.Code)
                     .HasMaxLength(50)
-                    .IsUnicode(false);
+                    .IsUnicode(true);
 
                 entity.Property(e => e.CreatedBy)
                     .HasMaxLength(50)
-                    .IsUnicode(false);
+                    .IsUnicode(true);
 
                 entity.Property(e => e.CreatedDate).HasColumnType("datetime");
 
@@ -600,7 +610,7 @@ namespace BussinessObject
 
                 entity.Property(e => e.UpdatedBy)
                     .HasMaxLength(50)
-                    .IsUnicode(false);
+                    .IsUnicode(true);
             });
 
             modelBuilder.Entity<ServiceDetail>(entity =>
@@ -614,7 +624,7 @@ namespace BussinessObject
 
                 entity.Property(e => e.CreatedBy)
                     .HasMaxLength(50)
-                    .IsUnicode(false);
+                    .IsUnicode(true);
 
                 entity.Property(e => e.CreatedDate).HasColumnType("datetime");
 
@@ -622,7 +632,7 @@ namespace BussinessObject
 
                 entity.Property(e => e.UpdatedBy)
                     .HasMaxLength(50)
-                    .IsUnicode(false);
+                    .IsUnicode(true);
 
                 entity.HasOne(d => d.Category)
                     .WithMany(p => p.ServiceDetails)
@@ -647,13 +657,13 @@ namespace BussinessObject
                 entity.Property(e => e.Config).HasColumnType("text");
 
                 entity.Property(e => e.Field).HasMaxLength(50)
-                    .IsUnicode(false);
+                    .IsUnicode(true);
 
                 entity.Property(e => e.LastUpdate).HasColumnType("datetime");
 
                 entity.Property(e => e.UpdatedBy)
                     .HasMaxLength(50)
-                    .IsUnicode(false);
+                    .IsUnicode(true);
             });
 
             OnModelCreatingPartial(modelBuilder);
