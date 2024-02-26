@@ -197,11 +197,11 @@ namespace Service.Service
             }
         }
 
-        public async Task<Address> AddCustomerAddressAsync(Address address) 
+        public async Task<Address> AddCustomerAddressAsync(Address address, string email) 
         {
             try
             {
-                Address addedAddress = await _unitOfWork.CustomerRepo.AddCustomerAddressAsync(address);
+                Address addedAddress = await _unitOfWork.CustomerRepo.AddCustomerAddressAsync(address,email);
                 if (addedAddress != null)
                 {
                        Console.WriteLine("Address added successfully!");
@@ -242,11 +242,11 @@ namespace Service.Service
                 throw;
             }
         }
-        public async Task<bool> CheckExistingAddressAsync(string displayName, string address)
+        public async Task<bool> CheckExistingAddressAsync(string address)
         {
             try
             {
-                return await _unitOfWork.CustomerRepo.CheckExistingAddressAsync(displayName, address);
+                return await _unitOfWork.CustomerRepo.CheckExistingAddressAsync(address);
             }
             catch (Exception ex)
             {

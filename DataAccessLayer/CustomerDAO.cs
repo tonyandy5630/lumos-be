@@ -214,15 +214,14 @@ namespace DataAccessLayer
             }
         }
 
-        public async Task<Address> AddCustomerAddressAsync(Address address)
+        public async Task<Address> AddCustomerAddressAsync(Address address, string email)
         {
             try
             {
                 //check if address existed via displayname and Address
                 bool existedAddress = dbContext.Addresses
                     .Where(x => x.CustomerId == address.CustomerId)
-                    .Any(x => x.DisplayName.ToLower().Equals(address.DisplayName.ToLower()) || 
-                              x.Address1.ToLower().Equals(address.Address1.ToLower()));
+                    .Any(x => x.Address1.ToLower().Equals(address.Address1.ToLower()));
 
                 if (!existedAddress)
                 {
@@ -230,6 +229,7 @@ namespace DataAccessLayer
                     address.Status = 1;
                     address.CreatedDate = DateTime.UtcNow;
                     address.LastUpdate = DateTime.UtcNow;
+                    address.CreatedBy = email;
                     //address.UpdatedBy = "admin";
                     //address.CreatedBy = "admin";
 
@@ -246,13 +246,12 @@ namespace DataAccessLayer
                 throw new Exception(ex.Message);
             }
         }
-        public async Task<bool> CheckExistingAddressAsync(string displayName, string address)
+        public async Task<bool> CheckExistingAddressAsync(string address)
         {
             try
             {
                 bool existingAddress = await dbContext.Addresses
-                    .AnyAsync(a => a.DisplayName.ToLower().Equals(displayName.ToLower()) &&
-                                   a.Address1.ToLower().Equals(address.ToLower()));
+                    .AnyAsync(a => a.Address1.ToLower().Equals(address.ToLower()));
 
                 return existingAddress;
             }
