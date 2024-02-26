@@ -33,7 +33,7 @@ namespace Repository.Repo
 
         public Task<Address> AddCustomerAddressAsync(Address address, string email) => CustomerDAO.Instance.AddCustomerAddressAsync(address, email);
 
-        public Task<bool> CheckExistingAddressAsync(string displayName, string address) => CustomerDAO.Instance.CheckExistingAddressAsync(displayName, address);
+        public Task<bool> CheckExistingAddressAsync(string address) => CustomerDAO.Instance.CheckExistingAddressAsync(address);
 
         public Task<bool> CheckExistingMedicalReportAsync(string fullName) => CustomerDAO.Instance.CheckExistingMedicalReportAsync(fullName);
     }

@@ -247,13 +247,12 @@ namespace DataAccessLayer
                 throw new Exception(ex.Message);
             }
         }
-        public async Task<bool> CheckExistingAddressAsync(string displayName, string address)
+        public async Task<bool> CheckExistingAddressAsync(string address)
         {
             try
             {
                 bool existingAddress = await dbContext.Addresses
-                    .AnyAsync(a => a.DisplayName.ToLower().Equals(displayName.ToLower()) &&
-                                   a.Address1.ToLower().Equals(address.ToLower()));
+                    .AnyAsync(a => a.Address1.ToLower().Equals(address.ToLower()));
 
                 return existingAddress;
             }

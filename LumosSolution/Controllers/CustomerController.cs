@@ -169,8 +169,8 @@ namespace LumosSolution.Controllers
             try
             {
                 var userEmail = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
-                bool existingAddress = await _customerService.CheckExistingAddressAsync(addressrequest.displayName, addressrequest.address1);
-                if (existingAddress)
+                bool existingAddress = await _customerService.CheckExistingAddressAsync(addressrequest.address1);
+                if (!existingAddress)
                 {
                     response.message = "Address with the same name already exists";
                     response.StatusCode = ApiStatusCode.BadRequest;

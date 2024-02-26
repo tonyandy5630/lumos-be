@@ -242,11 +242,11 @@ namespace Service.Service
                 throw;
             }
         }
-        public async Task<bool> CheckExistingAddressAsync(string displayName, string address)
+        public async Task<bool> CheckExistingAddressAsync(string address)
         {
             try
             {
-                return await _unitOfWork.CustomerRepo.CheckExistingAddressAsync(displayName, address);
+                return await _unitOfWork.CustomerRepo.CheckExistingAddressAsync(address);
             }
             catch (Exception ex)
             {
