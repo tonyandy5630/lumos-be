@@ -16,6 +16,9 @@ namespace DataTransferObject.DTO
         public string To { get; set; }
         public int DayOfWeek { get; set; }
         public int WorkShift { get; set; }
+        public string Address { get; set; }
+        public string PaymentMethod { get; set; }
+        public string MedicalName { get; set; } 
         public List<PartnerServiceDTO> Services { get; set; }
     }
 }
