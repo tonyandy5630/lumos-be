@@ -182,6 +182,7 @@ namespace LumosSolution.Controllers
                 {
                     response.message = MessagesResponse.Error.OperationFailed;
                     response.StatusCode = ApiStatusCode.BadRequest;
+                    return BadRequest(response);
                 }
                 else
                 {
