@@ -56,12 +56,11 @@ namespace Service.Service
 
                 PartnerService partnerService = _mapper.Map<PartnerService>(service);
                 partnerService.PartnerId = partner.PartnerId;
-                partnerService.Partner = partner;
                 partnerService.Status = 1;
                 partnerService.CreatedDate = DateTime.Now;
                 partnerService.LastUpdate = DateTime.Now;
                 partnerService.Rating = 0;
-                partner.UpdatedBy = partner.PartnerName;
+                partnerService.UpdatedBy = partner.PartnerName;
                 // Validate categories
                 // better if can do concurrently
                 foreach (int cateId in service.Categories)
@@ -142,10 +141,10 @@ namespace Service.Service
 
                 await Task.WhenAll(existedPartnerName, existedLicense, existedDisplayName, existedEmail);
 
-                bool partnerNameError =  existedPartnerName != null;
-                bool licenseError =  existedLicense != null;
-                bool displayNameError =  existedDisplayName != null;
-                bool emailError =  existedEmail != null;
+                bool partnerNameError = await existedPartnerName != null;
+                bool licenseError = await existedLicense != null;
+                bool displayNameError = await existedDisplayName != null;
+                bool emailError = await existedEmail != null;
 
                 bool hasError = partnerNameError|| licenseError|| displayNameError|| emailError;
                 if (hasError)
