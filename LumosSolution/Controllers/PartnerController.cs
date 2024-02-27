@@ -23,6 +23,45 @@ namespace LumosSolution.Controllers
         {
             _partnerService = partnerService;
         }
+        [HttpGet("bookings/{page}")]
+        [Authorize(Roles = "Partner")]
+        public async Task<ActionResult<ApiResponse<List<BookingDTO>>>> GetPartnerBookings(int page)
+        {
+            ApiResponse<List<BookingDTO>> response = new ApiResponse<List<BookingDTO>>();
+            try
+            {
+                const int PageSize = 7;
+                string email = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+
+                if (email == null)
+                {
+                    response.message = MessagesResponse.Error.Unauthorized;
+                    response.StatusCode = ApiStatusCode.Unauthorized;
+                    return Unauthorized(response);
+                }
+
+                var bookings = await _partnerService.GetPartnerBookingsAsync(email, page, PageSize);
+
+                if (bookings == null || !bookings.Any())
+                {
+                    response.message = MessagesResponse.Error.NotFound;
+                    response.StatusCode = ApiStatusCode.NotFound;
+                    return NotFound(response);
+                }
+
+                response.data = bookings;
+                response.message = MessagesResponse.Success.Completed;
+                response.StatusCode = ApiStatusCode.OK;
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                response.message = MessagesResponse.Error.OperationFailed;
+                response.StatusCode = ApiStatusCode.BadRequest;
+                return BadRequest(response);
+            }
+        }
         [HttpGet("services")]
         [Authorize(Roles = "Partner")]
         public async Task<ActionResult<ApiResponse<List<PartnerServiceDTO>>>> GetPartnerServices()
