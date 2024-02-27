@@ -14,5 +14,6 @@ namespace DataTransferObject.DTO
         public string PartnerName { get; set; }
         public decimal Rating { get; set; }
         public int NumberOfBooking { get; set; }
+        public decimal Price { get; set; }
     }
 }

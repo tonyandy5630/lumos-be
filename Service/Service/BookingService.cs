@@ -113,6 +113,20 @@ namespace Service.Service
                 throw new Exception(ex.Message);
             }
         }
+        public async Task<TopBookingSummaryDTO> GetAllBookedServicesByPartnerEmailAsync(string email)
+        {
+            try
+            {
+                var topServices = await _unitOfWork.BookingRepo.GetAllBookedServicesByPartnerEmailAsync(email);
+
+                return topServices;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetAllBookedServicesAsync: {ex.Message}", ex);
+                throw new Exception(ex.Message);
+            }
+        }
 
         public async Task<List<int?>> GetAllBookingsForYearAsync(int year)
         {

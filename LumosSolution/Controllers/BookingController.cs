@@ -222,43 +222,38 @@ namespace LumosSolution.Controllers
             }
         }
 
-        [HttpGet("/api/stat/sub")]
-        [Authorize(Roles = "Admin")]
-        public async Task<ActionResult<ApiResponse<object>>> GetTopBookedServicesInAllTime([FromQuery] int top =5)
+        [HttpGet("/api/stat/sub/partner")]
+        [Authorize(Roles = "Partner")]
+        public async Task<ActionResult<ApiResponse<object>>> GetTopBookedServicesInAllTime()
         {
             ApiResponse<object> response = new ApiResponse<object>();
             try
             {
-                if(top <= 0)
+                var userEmail = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+                if (userEmail == null)
                 {
-                    response.message = "Invalid top parameter.";
+                    response.message = "không tìm thấy email";
                     response.StatusCode = ApiStatusCode.BadRequest;
                     return BadRequest(response);
                 }
 
                 // Get top booked services
-                var topServices = await _bookingService.GetTopBookedServicesAsync(top);
+                var topServices = await _bookingService.GetAllBookedServicesByPartnerEmailAsync(userEmail);
 
-                if (topServices == null || !topServices.Any())
+                if (topServices == null)
                 {
                     response.message = "No data found.";
                     response.StatusCode = ApiStatusCode.NotFound;
                     return NotFound(response);
                 }
 
-                // Calculate total bookings, return patients, operations, and earnings
-                int totalBookings = topServices.Sum(s => s.NumberOfBooking);
-                int returnPatients = topServices.Count(s => s.NumberOfBooking > 2);
-                int operations = topServices.Sum(s => s.NumberOfBooking); // Assuming operation count is the same as total bookings
-                int earning = totalBookings * 1000; // Placeholder earning calculation
-
                 // Prepare output data
                 var responseData = new
                 {
-                    TotalBookings = totalBookings,
-                    ReturnPatients = returnPatients,
-                    Operations = operations,
-                    Earning = earning
+                    TotalBookings = topServices.TotalBookings,
+                    ReturnPatients = topServices.ReturnPatients,
+                    Operations = topServices.Operations,
+                    Earning = topServices.Earning
                 };
 
                 response.data = responseData;

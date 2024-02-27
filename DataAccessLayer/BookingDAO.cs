@@ -272,13 +272,16 @@ namespace DataAccessLayer
                 throw;
             }
         }
-      
-        /*public async Task<List<TopBookedServiceDTO>> GetAllTopBookedServicesAsync()
+
+        public async Task<TopBookingSummaryDTO> GetAllBookedServicesByPartnerEmailAsync(string partnerEmail)
         {
             try
             {
-                var topServices = await dbContext.ServiceBookings
+                var allServices = await dbContext.ServiceBookings
                     .Include(sb => sb.Service)
+                    .Where(sb => sb.Detail != null
+                                 && sb.Detail.Booking != null
+                                 && sb.Service.Partner.Email == partnerEmail)
                     .GroupBy(sb => new { sb.ServiceId, sb.Service.Name, sb.Service.PartnerId })
                     .Select(g => new TopBookedServiceDTO
                     {
@@ -287,21 +290,56 @@ namespace DataAccessLayer
                         ServiceName = g.Key.Name,
                         PartnerName = g.Select(sb => sb.Service.Partner.PartnerName).FirstOrDefault(),
                         Rating = g.Select(sb => sb.Service.Rating).FirstOrDefault(),
-                        NumberOfBooking = g.Count()
+                        NumberOfBooking = g.Count(),
+                        Price = g.Select(sb => sb.Service.Price).FirstOrDefault()
                     })
                     .OrderByDescending(g => g.NumberOfBooking)
                     .ToListAsync();
 
-                return topServices;
+                int totalBookings = await dbContext.ServiceBookings
+                    .Include(sb => sb.Service)
+                    .Where(sb => sb.Service.Partner.Email == partnerEmail)
+                    .GroupBy(sb => sb.DetailId)
+                    .Select(group => group.Select(sb => sb.ServiceId).Distinct().Count())
+                    .CountAsync();
+
+
+                int returnPatients = allServices.Count(s => s.NumberOfBooking > 2);
+
+                decimal earning = await dbContext.ServiceBookings
+                    .Include(sb => sb.Service)
+                    .Where(sb => sb.Detail != null
+                                 && sb.Detail.Booking != null
+                                 && sb.Service.Partner.Email == partnerEmail
+                                 && sb.Detail.Booking.BookingLogs.Any(bl => bl.Status == 4))
+                    .SumAsync(sb => sb.Service.Price);
+
+                int operations = await dbContext.ServiceBookings
+                            .Include(sb => sb.Detail)
+                            .Where(sb => sb.Detail != null
+                                         && sb.Detail.Booking != null
+                                         && sb.Service.Partner.Email == partnerEmail)
+                            .GroupBy(sb => sb.Detail.BookingId)
+                            .Where(g => g.OrderByDescending(sb => sb.Detail.Booking.BookingLogs.Max(bl => bl.CreatedDate)).FirstOrDefault().Detail.Booking.BookingLogs.Max(bl => bl.Status) == 2)
+                            .CountAsync();
+
+                return new TopBookingSummaryDTO
+                {
+                    TopBookedServices = allServices,
+                    TotalBookings = totalBookings,
+                    ReturnPatients = returnPatients,
+                    Operations = operations,
+                    Earning = earning
+                };
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error in GetAllTopBookedServicesAsync: {ex.Message}", ex);
+                Console.WriteLine($"Error in GetAllBookedServicesByPartnerEmailAsync: {ex.Message}", ex);
                 throw;
             }
-        }*/
+        }
 
-       public async Task<List<TotalBookingMonthlyStat>> GetAllBookingsForYearAsync(int year)
+        public async Task<List<TotalBookingMonthlyStat>> GetAllBookingsForYearAsync(int year)
         {
             try
             {
