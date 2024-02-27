@@ -444,6 +444,7 @@ namespace DataAccessLayer
         }
         public async Task<StatPartnerServiceDTO> CalculateServicesAndRevenueAsync(string? email)
         {
+            using var _context = new LumosDBContext();
             if (email == null)
                 throw new ArgumentNullException(nameof(email), "Partner email is null");
 
