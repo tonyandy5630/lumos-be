@@ -140,25 +140,6 @@ namespace DataAccessLayer
                             };
 
                             dbContext.ServiceBookings.Add(serviceBooking);
-
-                            var categoryId = await dbContext.ServiceDetails
-                            .Where(s => s.ServiceId == service.ServiceId)
-                            .Select(s => s.CategoryId)
-                            .FirstOrDefaultAsync();
-
-                            if (categoryId != null)
-                            {
-                                var serviceDetail = new ServiceDetail
-                                {
-                                    ServiceId = service.ServiceId,
-                                    CategoryId = categoryId,
-                                    CreatedDate = (DateTime)booking.CreatedDate,
-                                    LastUpdate = (DateTime)booking.CreatedDate,
-                                    CreatedBy = email,
-                                    UpdatedBy = email
-                                };
-                                dbContext.ServiceDetails.Add(serviceDetail);
-                            }
                         }
                     }
 
