@@ -17,6 +17,7 @@ using RequestEntity;
 using Utils;
 using Microsoft.Extensions.DependencyInjection;
 using Repository.Interface;
+using Service.ErrorObject;
 
 namespace Service.Service
 {
@@ -128,16 +129,50 @@ namespace Service.Service
             }
         }
 
-        public async Task<Partner?> AddPartnereAsync(AddPartnerRequest partner)
+        public async Task<(Partner?, PartnerError?)> AddPartnereAsync(AddPartnerRequest partner)
         {
             try
             {
+                PartnerError? errorPartner = null;
+
+                Partner? existedPartnerName = await _unitOfWork.PartnerRepo.GetPartnerByPartnerNameAsync(partner.PartnerName);
+                Partner? existedLicense = await _unitOfWork.PartnerRepo.GetPartnerByBussinessLicenseAsync(partner.BusinessLicenseNumber);
+                Partner? existedDisplayName = await _unitOfWork.PartnerRepo.GetPartnerByDisplayNameAsync(partner.DisplayName);
+                Partner? existedEmail = await _unitOfWork.PartnerRepo.GetPartnerByEmailAsync(partner.Email);
+
+                bool partnerNameError = existedPartnerName != null;
+                bool licenseError = existedLicense != null;
+                bool displayNameError = existedDisplayName != null;
+                bool emailError = existedEmail != null;
+
+                bool hasError = partnerNameError|| licenseError|| displayNameError|| emailError;
+                if (hasError)
+                {
+                    errorPartner = new PartnerError();
+                    if (partnerNameError)
+                        errorPartner.PartnerName = "Existed Partner Name";
+
+                    if (licenseError)
+                        errorPartner.BusinessLicenseNumber = "Existed License";
+
+                    if (displayNameError)
+                        errorPartner.DisplayName = "Existed Display Name";
+
+                    if (emailError)
+                        errorPartner.Email = "Existed Email";
+
+                    return  (null,  errorPartner);
+                }
 
                 PartnerType? partnerType = await _unitOfWork.PartnerTypeRepo.GetPartnerTypeByIdAsync(partner.TypeId);
+
                 if(partnerType == null)
                     throw new NullReferenceException("Partner Type is not existed");
 
                 Partner addPartner = _mapper.Map<Partner>(partner);
+                addPartner.Code = GenerateCode.GenerateRoleCode("partner");
+                addPartner.CreatedDate = DateTime.Now;
+                addPartner.LastUpdate = DateTime.Now;
                 // Hash password
                 IUserManagerRepo<AddPartnerRequest> userManager = new UserManagerRepo<AddPartnerRequest>();
                 addPartner.Password = userManager.HashPassword(partner, partner.Email);
@@ -149,7 +184,7 @@ namespace Service.Service
                     Console.WriteLine("Failed to add partner!");
                     throw new Exception("Something went wrong when adding partner");
                 } 
-                return part;
+                return (part,null);
             }
             catch (Exception ex)
             {

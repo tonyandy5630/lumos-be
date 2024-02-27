@@ -43,6 +43,13 @@ namespace Repository.Repo
         public Task<List<RevenuePerWeekDTO>> CalculatePartnerRevenueInMonthAsync(int month,int year) => PartnerDAO.Instance.CalculatePartnerRevenueInMonthAsync(month, year);
         public Task<List<MonthlyRevenueDTO>> CalculateMonthlyRevenueAsync(int year) => PartnerDAO.Instance.CalculateMonthlyRevenueAsync(year);
 
-        public Task<List<PartnerServiceDTO>> GetPartnerServicesWithBookingCountAsync(int partnerId) => PartnerDAO.Instance.GetPartnerServicesWithBookingCountAsync(partnerId);  
+        public Task<List<PartnerServiceDTO>> GetPartnerServicesWithBookingCountAsync(int partnerId) => PartnerDAO.Instance.GetPartnerServicesWithBookingCountAsync(partnerId);
+
+        public Task<Partner?> GetPartnerByBussinessLicenseAsync(string license) => PartnerDAO.Instance.GetPartnerByBussinessLicenseAsync(license);
+
+        public Task<Partner?> GetPartnerByDisplayNameAsync(string displayName) => PartnerDAO.Instance.GetPartnerByDisplayNameAsync(displayName);
+
+        public Task<Partner?> GetPartnerByPartnerNameAsync(string name) => PartnerDAO.Instance.GetPartnerByPartnerNameAsync(name);
+
     }
 }

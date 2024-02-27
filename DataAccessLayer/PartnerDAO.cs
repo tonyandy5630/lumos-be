@@ -184,28 +184,60 @@ namespace DataAccessLayer
         {
             try
             {
-                bool existing = (await GetAllPartnersAsync())
-                    .Any(p => p.PartnerName.ToLower().Equals(partner.PartnerName.ToLower())
-                        || p.DisplayName.ToLower().Equals(partner.DisplayName.ToLower())
-                        || p.Email.ToLower().Equals(partner.Email.ToLower())
-                        || p.BusinessLicenseNumber.ToLower().Equals(partner.BusinessLicenseNumber.ToLower()));
-
-                if (!existing)
-                {
-                    partner.Code = GenerateCode.GenerateRoleCode("partner");
-                    partner.CreatedDate = DateTime.Now;
-                    partner.LastUpdate = DateTime.Now;
-                    await _context.Partners.AddAsync(partner);
-                    int success = await _context.SaveChangesAsync();
-                    if (success != 1)
-                        return null;
-                    return partner;
-                }
-                return null;
+                await _context.Partners.AddAsync(partner);
+                int success = await _context.SaveChangesAsync();
+                if (success != 1)
+                    return null;
+                return partner;
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error in AddPartnereAsync: {ex.Message}", ex);
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<Partner?> GetPartnerByDisplayNameAsync(string displayName)
+        {
+            try
+            {
+                return await _context.Partners.FirstOrDefaultAsync(p => p.DisplayName.Equals(displayName));
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<Partner?> GetPartnerByBussinessLicenseAsync(string bussinessLisence)
+        {
+            try
+            {
+                return await _context.Partners.FirstOrDefaultAsync(p => p.BusinessLicenseNumber.Equals(bussinessLisence));
+            }catch(Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<Partner?> GetPartnerByPartnerNameAsync(string name)
+        {
+            try
+            {
+                return await _context.Partners.FirstOrDefaultAsync(p => p.PartnerName.Equals(name));
+            }catch(Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<Partner?> GetPartnerByPartnerEmailAsync(string email)
+        {
+            try
+            {
+                return await _context.Partners.FirstOrDefaultAsync(p => p.Email.Equals(email));
+            }catch(Exception ex)
+            {
                 throw new Exception(ex.Message);
             }
         }

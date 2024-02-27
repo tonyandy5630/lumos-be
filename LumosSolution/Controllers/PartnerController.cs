@@ -6,11 +6,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.DotNet.Scaffolding.Shared.Messaging;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using RequestEntity;
+using Service.ErrorObject;
 using Service.InterfaceService;
 using Service.Service;
 using System.Collections.Generic;
 using System.Security.Claims;
 using Utils;
+using static Utils.MessagesResponse;
 
 namespace LumosSolution.Controllers
 {
@@ -381,27 +383,32 @@ namespace LumosSolution.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult<ApiResponse<Partner>>> AddPartnerAsync([FromBody] AddPartnerRequest partner)
+        public async Task<ActionResult<ApiResponse<object>>> AddPartnerAsync([FromBody] AddPartnerRequest partner)
         {
-            ApiResponse<Partner> response = new ApiResponse<Partner>
+            ApiResponse<object> response = new ApiResponse<object>
             {
                 message = MessagesResponse.Error.OperationFailed,
                 StatusCode = ApiStatusCode.BadRequest,
             };
+
             try
             {
                 if (!ModelState.IsValid)
                 {
                     return UnprocessableEntity(response);
                 }
-                response.data = await _partnerService.AddPartnereAsync(partner);
+                (Partner? data, PartnerError? error) =  await _partnerService.AddPartnereAsync(partner);
 
-                if (response.data == null)
-                    throw new Exception();
+                if (data == null)
+                {
+                    response.StatusCode = 409;
+                    response.data = error;
+                    return Conflict(response);
+                }
 
                 response.StatusCode = ApiStatusCode.OK;
                 response.message = MessagesResponse.Success.Completed;
-
+                response.data = data;
                 return Ok(response);
             }
             catch(Exception ex)

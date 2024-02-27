@@ -1,6 +1,7 @@
 using BussinessObject;
 using DataTransferObject.DTO;
 using RequestEntity;
+using Service.ErrorObject;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,7 +19,7 @@ namespace Service.InterfaceService
         Task<Partner> GetPartnerByRefreshTokenAsync(string token);
         Task<Partner> GetPartnerByEmailAsync(string email);
         Task<Partner> GetPartnerByCodeAsync(string code);
-        Task<Partner?> AddPartnereAsync(AddPartnerRequest partner);
+        Task<(Partner?, PartnerError?)>  AddPartnereAsync(AddPartnerRequest partner);
         Task<bool> UpdatePartnerAsync(Partner partner);
         Task<bool> BanPartnerAsync(int partnerId);
         Task<List<Schedule>> GetScheduleByPartnerIdAsyn(int id);
