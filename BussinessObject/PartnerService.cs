@@ -4,8 +4,6 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
-using RequestEntity.Constraint;
-using static RequestEntity.Constraint.Constraint;
 
 namespace BussinessObject
 {
@@ -27,9 +25,6 @@ namespace BussinessObject
         public int? Duration { get; set; }
         public int? Status { get; set; }
         public string? Description { get; set; }
-
-        [Required]
-        [Range(PriceConstraint.FLOOR, PriceConstraint.CEIL, ErrorMessage = PriceConstraint.MESSAGE)]
         public int Price { get; set; }
         public DateTime? CreatedDate { get; set; }
         public DateTime? LastUpdate { get; set; }

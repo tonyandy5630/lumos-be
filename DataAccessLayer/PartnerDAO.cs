@@ -180,7 +180,7 @@ namespace DataAccessLayer
                 throw new Exception(ex.Message);
             }
         }
-        public async Task<Partner> AddPartnereAsync(Partner partner)
+        public async Task<Partner?> AddPartnereAsync(Partner partner)
         {
             try
             {
@@ -195,12 +195,12 @@ namespace DataAccessLayer
                     partner.Code = GenerateCode.GenerateRoleCode("partner");
                     partner.CreatedDate = DateTime.Now;
                     partner.LastUpdate = DateTime.Now;
-                    _context.Partners.Add(partner);
-                    await _context.SaveChangesAsync();
-
-                    return await _context.Partners.SingleOrDefaultAsync(p => p.Code.Equals(partner.Code));
+                    await _context.Partners.AddAsync(partner);
+                    int success = await _context.SaveChangesAsync();
+                    if (success != 1)
+                        return null;
+                    return partner;
                 }
-
                 return null;
             }
             catch (Exception ex)

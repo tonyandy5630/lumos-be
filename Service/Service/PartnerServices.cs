@@ -16,6 +16,7 @@ using System.Threading.Tasks;
 using RequestEntity;
 using Utils;
 using Microsoft.Extensions.DependencyInjection;
+using Repository.Interface;
 
 namespace Service.Service
 {
@@ -127,24 +128,33 @@ namespace Service.Service
             }
         }
 
-        public async Task<Partner> AddPartnereAsync(Partner partner)
+        public async Task<Partner?> AddPartnereAsync(AddPartnerRequest partner)
         {
             try
             {
-                Partner part = await _unitOfWork.PartnerRepo.AddPartnereAsync(partner);
+
+                PartnerType? partnerType = await _unitOfWork.PartnerTypeRepo.GetPartnerTypeByIdAsync(partner.TypeId);
+                if(partnerType == null)
+                    throw new NullReferenceException("Partner Type is not existed");
+                // Hash password
+                IUserManagerRepo<AddPartnerRequest> userManager = new UserManagerRepo<AddPartnerRequest>();
+                partner.Password = userManager.HashPassword(partner, partner.Password);
+                
+                Partner addPartner = _mapper.Map<Partner>(partner);
+                Partner? part = await _unitOfWork.PartnerRepo.AddPartnereAsync(addPartner);
+
                 if(partner == null)
                 {
                     Console.WriteLine("Failed to add partner!");
+                    throw new Exception("Something went wrong when adding partner");
                 } 
-                else
-                {
-                    Console.WriteLine("Partner added successfully!");
-                }
                 return part;
             }
             catch (Exception ex)
             {
-                Console.WriteLine(MessagesResponse.Error.OperationFailed);
+                Console.WriteLine(ex.Message);
+                if (ex is NullReferenceException)
+                    throw new NullReferenceException(ex.Message);
                 throw new Exception(ex.Message);
             }
         }

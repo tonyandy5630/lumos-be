@@ -1,4 +1,5 @@
 ﻿using BussinessObject;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -49,6 +50,18 @@ namespace DataAccessLayer
             {
                 Console.WriteLine($"Error in GetPartnerTypesAsync: {ex.Message}", ex);
                 throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<PartnerType?> GetPartnertypeByIdAsync(int id)
+        {
+            try
+            {
+                PartnerType? type = await _context.PartnerTypes.FirstOrDefaultAsync(pt => pt.TypeId == id);
+                return type;
+            }catch(Exception ex)
+            {
+                throw new Exception (ex.Message);
             }
         }
     }

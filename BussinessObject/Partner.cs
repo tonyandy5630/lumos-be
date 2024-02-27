@@ -45,5 +45,6 @@ namespace BussinessObject
         public virtual ICollection<PartnerService> PartnerServices { get; set; }
         [JsonIgnore]
         public virtual ICollection<Schedule> Schedules { get; set; }
+
     }
 }

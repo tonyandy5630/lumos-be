@@ -389,7 +389,7 @@ namespace BussinessObject
 
                 entity.Property(e => e.PartnerName).HasMaxLength(100).IsRequired();
 
-                entity.Property(e => e.Password).HasMaxLength(100).IsUnicode(true).IsRequired();
+                entity.Property(e => e.Password).HasMaxLength(100).IsUnicode(false).IsRequired();
 
                 entity.Property(e => e.Phone)
                     .HasMaxLength(13)
