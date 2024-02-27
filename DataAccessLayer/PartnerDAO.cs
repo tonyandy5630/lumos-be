@@ -84,7 +84,7 @@ namespace DataAccessLayer
         public async Task<IEnumerable<Partner>> SearchPartnerByServiceOrPartnerNameAsync(string keyword)
         {
             var result = _context.Partners
-                        .Where(p => p.PartnerName.Contains(keyword) || p.PartnerServices.Any(s => s.Name.Contains(keyword)))
+                        .Where(p => p.Status == 1 && (p.PartnerName.Contains(keyword) || p.PartnerServices.Any(s => s.Name.Contains(keyword))))
                         .Include(s => s.PartnerServices
                         .Where(s => s.Name.Contains(keyword)))
                         .AsNoTracking()

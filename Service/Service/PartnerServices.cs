@@ -313,6 +313,10 @@ namespace Service.Service
             try
             {
                 IEnumerable<Partner> searchedPartner = await _unitOfWork.PartnerRepo.SearchPartnerByPartnerOrServiceNameAsync(keyword.Trim());
+                if (searchedPartner == null)
+                {
+                    throw new Exception("Partner not found.");
+                }
                 IEnumerable<SearchPartnerDTO> results = _mapper.Map<IEnumerable<SearchPartnerDTO>>(searchedPartner);
                 List<PartnerServiceDTO?> serviceDetails = new List<PartnerServiceDTO?>();
                 foreach (var partner in results)
