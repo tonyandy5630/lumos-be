@@ -40,28 +40,28 @@ namespace DataAccessLayer
             {
 
                 var result = from ps in _context.PartnerServices
-                join sb in _context.ServiceBookings
-                on ps.ServiceId equals sb.ServiceId into serviceBookings
-                from sb in serviceBookings.DefaultIfEmpty()
-                where ps.ServiceId == serviceId
-                group new { ps, sb } by
-                new { ps.ServiceId, ps.Name, ps.Description, ps.Price, ps.Code, ps.Status, ps.CreatedDate, ps.Rating,ps.UpdatedBy, ps.Duration, ps.LastUpdate }
+                             join sb in _context.ServiceBookings
+                             on ps.ServiceId equals sb.ServiceId into serviceBookings
+                             from sb in serviceBookings.DefaultIfEmpty()
+                             where ps.ServiceId == serviceId
+                             group new { ps, sb } by
+                             new { ps.ServiceId, ps.Name, ps.Description, ps.Price, ps.Code, ps.Status, ps.CreatedDate, ps.Rating, ps.UpdatedBy, ps.Duration, ps.LastUpdate }
                 into grouped
-                select new PartnerServiceDTO
-                {
-                    ServiceId = grouped.Key.ServiceId,
-                    Name = grouped.Key.Name,
-                    Description = grouped.Key.Description,
-                    Price = grouped.Key.Price,
-                    Code = grouped.Key.Code,
-                    Status = grouped.Key.Status,
-                    CreatedDate = grouped.Key.CreatedDate,
-                    UpdatedBy = grouped.Key.UpdatedBy,
-                    LastUpdate = grouped.Key.LastUpdate,
-                    Duration = grouped.Key.Duration,
-                    BookedQuantity = grouped.Count(entry => entry.sb != null),
-                    Rating = grouped.Key.Rating
-                };
+                             select new PartnerServiceDTO
+                             {
+                                 ServiceId = grouped.Key.ServiceId,
+                                 Name = grouped.Key.Name,
+                                 Description = grouped.Key.Description,
+                                 Price = grouped.Key.Price,
+                                 Code = grouped.Key.Code,
+                                 Status = grouped.Key.Status,
+                                 CreatedDate = grouped.Key.CreatedDate,
+                                 UpdatedBy = grouped.Key.UpdatedBy,
+                                 LastUpdate = grouped.Key.LastUpdate,
+                                 Duration = grouped.Key.Duration,
+                                 BookedQuantity = grouped.Count(entry => entry.sb != null),
+                                 Rating = grouped.Key.Rating
+                             };
 
                 return await result.FirstOrDefaultAsync(s => s.ServiceId == serviceId);
             }
@@ -148,7 +148,14 @@ namespace DataAccessLayer
         {
             try
             {
-                return await _context.Partners.SingleOrDefaultAsync(u => u.Code.ToLower().Equals(code.ToLower()));
+
+                Partner? partner = await _context.Partners.SingleOrDefaultAsync(u => u.Code.ToLower().Equals(code.ToLower()));
+
+                if (partner != null)
+                {
+                    partner.PartnerServices = await _context.PartnerServices.Where(ps => ps.PartnerId == partner.PartnerId).ToListAsync();
+                }
+                return partner;
             }
             catch (Exception ex)
             {
@@ -160,7 +167,12 @@ namespace DataAccessLayer
         {
             try
             {
-                return await _context.Partners.SingleOrDefaultAsync(u => u.Email.ToLower().Equals(email.ToLower()));
+               Partner partner = await _context.Partners.SingleOrDefaultAsync(u => u.Email.ToLower().Equals(email.ToLower()));
+                if (partner != null)
+                {
+                    partner.PartnerServices = await _context.PartnerServices.Where(ps => ps.PartnerId == partner.PartnerId).ToListAsync();
+                }
+                return partner;
             }
             catch (Exception ex)
             {
@@ -176,7 +188,7 @@ namespace DataAccessLayer
                     .Any(p => p.PartnerName.ToLower().Equals(partner.PartnerName.ToLower())
                         || p.DisplayName.ToLower().Equals(partner.DisplayName.ToLower())
                         || p.Email.ToLower().Equals(partner.Email.ToLower())
-                        || p.BusinessLicenseNumber.ToLower().Equals(partner.BusinessLicenseNumber.ToLower()));                   
+                        || p.BusinessLicenseNumber.ToLower().Equals(partner.BusinessLicenseNumber.ToLower()));
 
                 if (!existing)
                 {
@@ -185,7 +197,7 @@ namespace DataAccessLayer
                     partner.LastUpdate = DateTime.Now;
                     _context.Partners.Add(partner);
                     await _context.SaveChangesAsync();
-                    
+
                     return await _context.Partners.SingleOrDefaultAsync(p => p.Code.Equals(partner.Code));
                 }
 
@@ -341,7 +353,7 @@ namespace DataAccessLayer
                                     select new
                                     {
                                         PartnerService = ps,
-                                        ServiceBookings = _context.ServiceBookings.Where(sb => sb.ServiceId == ps.ServiceId).ToList(), // Convert to List
+                                        ServiceBookings =  _context.ServiceBookings.Where(sb => sb.ServiceId == ps.ServiceId).ToList(), // Convert to List
                                         Category = sc // Select category
                                     })
                                     .GroupBy(x => x.PartnerService.ServiceId) // Group by ServiceId
@@ -380,6 +392,38 @@ namespace DataAccessLayer
                 throw;
             }
         }
+        public async Task<StatPartnerServiceDTO> CalculateServicesAndRevenueAsync(string? email)
+        {
+            if (email == null)
+                throw new ArgumentNullException(nameof(email), "Partner email is null");
 
+            var partner = await _context.Partners.Include(p => p.PartnerServices).SingleOrDefaultAsync(p => p.Email == email);
+            if (partner == null)
+                throw new Exception("Partner not found");
+
+            int totalServices = partner.PartnerServices.Count;
+
+            var completedBookings = await _context.Bookings
+                .Where(b => b.BookingLogs.Any(bl => bl.Status == 4))
+                .ToListAsync();
+
+            int revenue = 0;
+            foreach (var booking in completedBookings)
+            {
+                var serviceBookings = await _context.ServiceBookings
+                    .FirstOrDefaultAsync(sb => sb.Detail != null && sb.Detail.BookingId == booking.BookingId);
+
+                if (serviceBookings != null)
+                    revenue += serviceBookings.Price ?? 0;
+            }
+
+            var statDTO = new StatPartnerServiceDTO
+            {
+                totalServices = totalServices,
+                revenue = revenue
+            };
+
+            return statDTO;
+        }
     }
 }

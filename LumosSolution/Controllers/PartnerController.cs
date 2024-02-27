@@ -24,8 +24,8 @@ namespace LumosSolution.Controllers
             _partnerService = partnerService;
         }
         [HttpGet("services")]
-        [Authorize(Roles = "Admin")]
-        public async Task<ActionResult<ApiResponse<List<PartnerServiceDTO>>>> GetPartnerServices(int id)
+        [Authorize(Roles = "Partner")]
+        public async Task<ActionResult<ApiResponse<List<PartnerServiceDTO>>>> GetPartnerServices()
         {
             ApiResponse<List<PartnerServiceDTO>> response = new ApiResponse<List<PartnerServiceDTO>>
             {
@@ -35,7 +35,8 @@ namespace LumosSolution.Controllers
 
             try
             {
-                List<PartnerServiceDTO> partnerServices = await _partnerService.GetPartnerServicesWithBookingCountAsync(id);
+                string? email = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+                List<PartnerServiceDTO> partnerServices = await _partnerService.GetPartnerServicesWithBookingCountAsync(email);
 
                 if (partnerServices == null || partnerServices.Count == 0)
                     return NotFound(response);
@@ -52,15 +53,16 @@ namespace LumosSolution.Controllers
                 response.StatusCode = 401;
                 return StatusCode(401, response);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Console.WriteLine(ex.Message);
                 response.message = MessagesResponse.Error.OperationFailed;
                 response.StatusCode = 406;
                 return StatusCode(406, response);
             }
         }
 
-        [HttpGet("/api/stats/revenue/monthly/{year}")]
+        [HttpGet("/api/stat/revenue/monthly/{year}")]
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult<ApiResponse<List<MonthlyRevenueDTO>>>> GetMonthlyRevenue(int year)
         {
@@ -134,7 +136,7 @@ namespace LumosSolution.Controllers
 
         [HttpGet("/api/stat/partner/services")]
         [Authorize(Roles = "Partner")]
-        public async Task<ActionResult<ApiResponse<object>>> GetPartnerServiceStatistics(int partnerId)
+        public async Task<ActionResult<ApiResponse<object>>> GetPartnerServiceStatistics()
         {
             ApiResponse<object> response = new ApiResponse<object>
             {
@@ -145,20 +147,15 @@ namespace LumosSolution.Controllers
 
             try
             {
-                var partner = await _partnerService.GetPartnerByIDAsync(partnerId);
-                if (partner == null)
-                {
-                    return NotFound(response);
-                }
 
-                int totalServices = await _partnerService.CalculateTotalServicesAsync(partner.PartnerId);
-                int revenue = await _partnerService.CalculateRevenueAsync(partner.PartnerId);
+                string? email = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
 
-                var data = new { totalServices, revenue };
+               StatPartnerServiceDTO res = await _partnerService.GetStatPartnerServiceAsync(email);
+
 
                 response.message = MessagesResponse.Success.Completed;
                 response.StatusCode = 200;
-                response.data = data;
+                response.data = res;
 
                 return Ok(response);
             }
@@ -467,6 +464,8 @@ namespace LumosSolution.Controllers
                 return BadRequest(response);
             }
         }
+
+
 
     }
 }

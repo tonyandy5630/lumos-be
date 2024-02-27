@@ -148,14 +148,14 @@ namespace LumosSolution.Controllers
             {
                 var latestBookingLog = await _bookingLogService.GetLatestBookingLogAsync(updateBookingStatusDTO.BookingId);
 
-                if (latestBookingLog.Status < 0 || latestBookingLog.Status > 2)
+                if (latestBookingLog.Status < 0 || latestBookingLog.Status > 4)
                 {
                     response.message = "The status of the latest booking log is invalid or not allowed.";
                     response.StatusCode = ApiStatusCode.BadRequest;
                     return BadRequest(response);
                 }
 
-                if (latestBookingLog.Status == 3)
+                if (latestBookingLog.Status == 4)
                 {
                     response.message = "The status of the latest booking log is already Completed. Cannot create a new one.";
                     response.StatusCode = ApiStatusCode.BadRequest;

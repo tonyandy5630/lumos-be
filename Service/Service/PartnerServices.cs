@@ -411,30 +411,19 @@ namespace Service.Service
             }
         }
 
-        public async Task<int> CalculateTotalServicesAsync(int partnerId)
+
+        public async Task<StatPartnerServiceDTO> GetStatPartnerServiceAsync(string email)
         {
-            var partner = await _unitOfWork.PartnerRepo.GetPartnerByIDAsync(partnerId);
-            if (partner == null)
-            {
+            StatPartnerServiceDTO stat = new StatPartnerServiceDTO();
+            if (email == null)
+
                 throw new Exception("Partner not found");
-            }
-            return partner.PartnerServices.Count;
+            stat = await CalculateServicesAndRevenueAsync(email);
+
+            return  await Task.FromResult(stat);
         }
 
-        public async Task<int> CalculateRevenueAsync(int partnerId)
-        {
-            var partner = await _unitOfWork.PartnerRepo.GetPartnerByIDAsync(partnerId);
-            if (partner == null)
-            {
-                throw new Exception("Partner not found");
-            }
-            int revenue = 0;
-            foreach (var service in partner.PartnerServices)
-            {
-                revenue += service.Price;
-            }
-            return revenue;
-        }
+      
         public async Task<List<RevenuePerWeekDTO>> CalculatePartnerRevenueInMonthAsync(int month, int year)
         {
             try
@@ -461,15 +450,33 @@ namespace Service.Service
             }
         }
 
-        public async Task<List<PartnerServiceDTO>> GetPartnerServicesWithBookingCountAsync(int partnerId)
+        public async Task<List<PartnerServiceDTO>> GetPartnerServicesWithBookingCountAsync(string email)
         {
             try
             {
-                return await _unitOfWork.PartnerRepo.GetPartnerServicesWithBookingCountAsync(partnerId);
+                Partner partner = await _unitOfWork.PartnerRepo.GetPartnerByEmailAsync(email);
+                if (partner == null)
+                    throw new Exception();
+                return await _unitOfWork.PartnerRepo.GetPartnerServicesWithBookingCountAsync(partner.PartnerId);
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error in GetPartnerServicesWithBookingCountAsync: {ex.Message}", ex);
+                throw;
+            }
+        }
+        public async Task<StatPartnerServiceDTO> CalculateServicesAndRevenueAsync(string? email)
+        {
+            try
+            {
+                if (email == null)
+                    throw new ArgumentNullException(nameof(email), "Partner email is null");
+
+                return await _unitOfWork.PartnerRepo.CalculateServicesAndRevenueAsync(email);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in CalculateServicesAndRevenueAsync: {ex.Message}");
                 throw;
             }
         }
