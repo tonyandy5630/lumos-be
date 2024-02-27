@@ -140,25 +140,6 @@ namespace DataAccessLayer
                             };
 
                             dbContext.ServiceBookings.Add(serviceBooking);
-
-                            var categoryId = await dbContext.ServiceDetails
-                            .Where(s => s.ServiceId == service.ServiceId)
-                            .Select(s => s.CategoryId)
-                            .FirstOrDefaultAsync();
-
-                            if (categoryId != null)
-                            {
-                                var serviceDetail = new ServiceDetail
-                                {
-                                    ServiceId = service.ServiceId,
-                                    CategoryId = categoryId,
-                                    CreatedDate = (DateTime)booking.CreatedDate,
-                                    LastUpdate = (DateTime)booking.CreatedDate,
-                                    CreatedBy = email,
-                                    UpdatedBy = email
-                                };
-                                dbContext.ServiceDetails.Add(serviceDetail);
-                            }
                         }
                     }
 
@@ -272,13 +253,16 @@ namespace DataAccessLayer
                 throw;
             }
         }
-      
-        /*public async Task<List<TopBookedServiceDTO>> GetAllTopBookedServicesAsync()
+
+        public async Task<TopBookingSummaryDTO> GetAllBookedServicesByPartnerEmailAsync(string partnerEmail)
         {
             try
             {
-                var topServices = await dbContext.ServiceBookings
+                var allServices = await dbContext.ServiceBookings
                     .Include(sb => sb.Service)
+                    .Where(sb => sb.Detail != null
+                                 && sb.Detail.Booking != null
+                                 && sb.Service.Partner.Email == partnerEmail)
                     .GroupBy(sb => new { sb.ServiceId, sb.Service.Name, sb.Service.PartnerId })
                     .Select(g => new TopBookedServiceDTO
                     {
@@ -287,21 +271,56 @@ namespace DataAccessLayer
                         ServiceName = g.Key.Name,
                         PartnerName = g.Select(sb => sb.Service.Partner.PartnerName).FirstOrDefault(),
                         Rating = g.Select(sb => sb.Service.Rating).FirstOrDefault(),
-                        NumberOfBooking = g.Count()
+                        NumberOfBooking = g.Count(),
+                        Price = g.Select(sb => sb.Service.Price).FirstOrDefault()
                     })
                     .OrderByDescending(g => g.NumberOfBooking)
                     .ToListAsync();
 
-                return topServices;
+                int totalBookings = await dbContext.ServiceBookings
+                    .Include(sb => sb.Service)
+                    .Where(sb => sb.Service.Partner.Email == partnerEmail)
+                    .GroupBy(sb => sb.DetailId)
+                    .Select(group => group.Select(sb => sb.ServiceId).Distinct().Count())
+                    .CountAsync();
+
+
+                int returnPatients = allServices.Count(s => s.NumberOfBooking > 2);
+
+                decimal earning = await dbContext.ServiceBookings
+                    .Include(sb => sb.Service)
+                    .Where(sb => sb.Detail != null
+                                 && sb.Detail.Booking != null
+                                 && sb.Service.Partner.Email == partnerEmail
+                                 && sb.Detail.Booking.BookingLogs.Any(bl => bl.Status == 4))
+                    .SumAsync(sb => sb.Service.Price);
+
+                int operations = await dbContext.ServiceBookings
+                            .Include(sb => sb.Detail)
+                            .Where(sb => sb.Detail != null
+                                         && sb.Detail.Booking != null
+                                         && sb.Service.Partner.Email == partnerEmail)
+                            .GroupBy(sb => sb.Detail.BookingId)
+                            .Where(g => g.OrderByDescending(sb => sb.Detail.Booking.BookingLogs.Max(bl => bl.CreatedDate)).FirstOrDefault().Detail.Booking.BookingLogs.Max(bl => bl.Status) == 2)
+                            .CountAsync();
+
+                return new TopBookingSummaryDTO
+                {
+                    TopBookedServices = allServices,
+                    TotalBookings = totalBookings,
+                    ReturnPatients = returnPatients,
+                    Operations = operations,
+                    Earning = earning
+                };
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error in GetAllTopBookedServicesAsync: {ex.Message}", ex);
+                Console.WriteLine($"Error in GetAllBookedServicesByPartnerEmailAsync: {ex.Message}", ex);
                 throw;
             }
-        }*/
+        }
 
-       public async Task<List<TotalBookingMonthlyStat>> GetAllBookingsForYearAsync(int year)
+        public async Task<List<TotalBookingMonthlyStat>> GetAllBookingsForYearAsync(int year)
         {
             try
             {
@@ -324,5 +343,68 @@ namespace DataAccessLayer
                 throw new Exception(ex.Message);
             }
         }
+        public async Task<BookingDTO> GetBookingDetailInforByBookingIdAsync(int id)
+        {
+            try
+            {
+                var bookingDetail = await dbContext.BookingDetails
+                    .Include(bd => bd.ServiceBookings)
+                    .ThenInclude(sb => sb.Service)
+                    .Include(bd => bd.ServiceBookings)
+                        .ThenInclude(sb => sb.Service.ServiceDetails) 
+                            .ThenInclude(sd => sd.Category) 
+                    .Include(bd => bd.Booking)
+                    .SingleOrDefaultAsync(u => u.BookingId == id);
+
+                if (bookingDetail == null)
+                {
+                    throw new Exception($"Booking detail with ID {id} not found");
+                }
+
+                // Retrieve the latest booking log status
+                var latestBookingLogStatus = await dbContext.BookingLogs
+                    .Where(bl => bl.BookingId == id)
+                    .OrderByDescending(bl => bl.CreatedDate)
+                    .Select(bl => bl.Status)
+                    .FirstOrDefaultAsync();
+
+                var partnerServiceDTOs = bookingDetail.ServiceBookings.Select(serviceBooking => new PartnerServiceDTO
+                {
+                    ServiceId = (int)serviceBooking.ServiceId,
+                    Name = serviceBooking.Service.Name,
+                    Code = serviceBooking.Service.Code,
+                    Duration = serviceBooking.Service.Duration,
+                    Status = serviceBooking.Service.Status,
+                    Description = serviceBooking.Service.Description,
+                    Price = serviceBooking.Service.Price,
+                    BookedQuantity = serviceBooking.Service.ServiceBookings.Count,
+                    Rating = serviceBooking.Service.Rating,
+                    Categories = serviceBooking.Service.ServiceDetails
+                                    .Where(sd => sd.Category != null) // Ensure Category is not null
+                                    .Select(sd => new ServiceCategoryDTO
+                                    {
+                                        CategoryId = sd.Category.CategoryId,
+                                        Category = sd.Category.Category,
+                                        Code = sd.Category.Code
+                                    }).Distinct()
+                                    .ToList()
+                }).ToList();
+
+                var bookingDTO = new BookingDTO
+                {
+                    bookingId = (int)bookingDetail.BookingId,
+                    services = partnerServiceDTOs,
+                    status = (int)latestBookingLogStatus // Set the status to the latest booking log status
+                };
+
+                return bookingDTO;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetBookingDetailByBookingIdAsync: {ex.Message}", ex);
+                throw new Exception(ex.Message);
+            }
+        }
+
     }
 }
