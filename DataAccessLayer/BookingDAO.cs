@@ -64,98 +64,114 @@ namespace DataAccessLayer
         }
         public async Task<bool> CreateBookingAsync(Booking booking, CreateBookingDTO createBookingDTO, string email)
         {
-            try
+            using (var transaction = dbContext.Database.BeginTransaction())
             {
-                if (booking == null)
+                try
                 {
-                    throw new ArgumentNullException(nameof(booking), "Booking object cannot be null");
-                }
-
-                if (booking.PaymentId.HasValue)
-                {
-                    var paymentMethod = await dbContext.PaymentMethods.FindAsync(booking.PaymentId);
-                    if (paymentMethod == null)
+                    if (booking == null)
                     {
-                        throw new ArgumentException($"Payment method with ID {booking.PaymentId} not found");
+                        throw new ArgumentNullException(nameof(booking), "Booking object cannot be null");
                     }
-                    booking.Payment = paymentMethod;
-                }
 
-                booking.Code = GenerateCode.GenerateTableCode("booking");
-                booking.CreatedDate = DateTime.Now;
+                    var partnerSchedules = await dbContext.Schedules
+                            .Where(s => s.PartnerId == createBookingDTO.PartnerId)
+                            .ToListAsync();
 
-                dbContext.Bookings.Add(booking);
-                await dbContext.SaveChangesAsync();
+                    // Kiểm tra xem giá trị nhập vào có trùng với bất kỳ lịch trình nào của đối tác không
+                    var isScheduleMatched = partnerSchedules.Any(s =>
+                        s.DayOfWeek == createBookingDTO.DayOfWeek &&
+                        s.WorkShift == createBookingDTO.WorkShift);
 
-                foreach (var cartItem in createBookingDTO.CartModel)
-                {
-                    // Tạo booking detail cho mỗi reportId
-                    var bookingDetail = new BookingDetail
+                    if (!isScheduleMatched)
                     {
-                        BookingId = booking.BookingId,
-                        Note = createBookingDTO.Note,
-                        ReportId = cartItem.ReportId,
-                        CreatedDate = booking.CreatedDate,
-                        CreatedBy = email
-                    };
-                    dbContext.BookingDetails.Add(bookingDetail);
-                    await dbContext.SaveChangesAsync();
-                    // Tạo booking log cho mỗi booking detail
-                    var bookingLog = new BookingLog
+                        throw new Exception("DayOfWeek or WorkShift is not available for the partner");
+                    }
+
+                    if (booking.PaymentId.HasValue)
                     {
-                        BookingId = booking.BookingId,
-                        Status = 1, // Status mặc định khi tạo booking detail
-                        CreatedDate = booking.CreatedDate,
-                        Note = createBookingDTO.Note,
-                        CreatedBy = email
-                    };
-                    dbContext.BookingLogs.Add(bookingLog);
-                    await dbContext.SaveChangesAsync();
-                    foreach (var service in cartItem.Services)
-                    {
-                        var serviceBooking = new ServiceBooking
+                        var paymentMethod = await dbContext.PaymentMethods.FindAsync(booking.PaymentId);
+                        if (paymentMethod == null)
                         {
-                            ServiceId = service.ServiceId,
-                            DetailId = bookingDetail.DetailId, // Sử dụng DetailId từ BookingDetail mới tạo
-                            Price = (int?)service.Price,
-                            Description = service.Description,
+                            throw new ArgumentException($"Payment method with ID {booking.PaymentId} not found");
+                        }
+                        booking.Payment = paymentMethod;
+                    }
+
+                    booking.Code = GenerateCode.GenerateTableCode("booking");
+                    booking.CreatedDate = DateTime.Now;
+
+                    dbContext.Bookings.Add(booking);
+                    await dbContext.SaveChangesAsync();
+
+                    foreach (var cartItem in createBookingDTO.CartModel)
+                    {
+                        var bookingDetail = new BookingDetail
+                        {
+                            BookingId = booking.BookingId,
+                            Note = createBookingDTO.Note,
+                            ReportId = cartItem.ReportId,
                             CreatedDate = booking.CreatedDate,
-                            LastUpdate = (DateTime)booking.CreatedDate,
-                            UpdatedBy = email
+                            CreatedBy = email
                         };
-
-                        dbContext.ServiceBookings.Add(serviceBooking);
-
-                        var categoryId = await dbContext.ServiceDetails
-                        .Where(s => s.ServiceId == service.ServiceId)
-                        .Select(s => s.CategoryId)
-                        .FirstOrDefaultAsync();
-
-                        if (categoryId != null)
+                        dbContext.BookingDetails.Add(bookingDetail);
+                        await dbContext.SaveChangesAsync();
+                        var bookingLog = new BookingLog
                         {
-                            var serviceDetail = new ServiceDetail
+                            BookingId = booking.BookingId,
+                            Status = 1, // Status mặc định khi tạo booking detail
+                            CreatedDate = booking.CreatedDate,
+                            Note = createBookingDTO.Note,
+                            CreatedBy = email
+                        };
+                        dbContext.BookingLogs.Add(bookingLog);
+                        await dbContext.SaveChangesAsync();
+                        foreach (var service in cartItem.Services)
+                        {
+                            var serviceBooking = new ServiceBooking
                             {
                                 ServiceId = service.ServiceId,
-                                CategoryId = categoryId, // Gán CategoryId từ cơ sở dữ liệu
-                                CreatedDate = (DateTime)booking.CreatedDate,
+                                DetailId = bookingDetail.DetailId,
+                                Price = (int?)service.Price,
+                                Description = null,
+                                CreatedDate = booking.CreatedDate,
                                 LastUpdate = (DateTime)booking.CreatedDate,
-                                CreatedBy = email,
                                 UpdatedBy = email
                             };
-                            dbContext.ServiceDetails.Add(serviceDetail);
+
+                            dbContext.ServiceBookings.Add(serviceBooking);
+
+                            var categoryId = await dbContext.ServiceDetails
+                            .Where(s => s.ServiceId == service.ServiceId)
+                            .Select(s => s.CategoryId)
+                            .FirstOrDefaultAsync();
+
+                            if (categoryId != null)
+                            {
+                                var serviceDetail = new ServiceDetail
+                                {
+                                    ServiceId = service.ServiceId,
+                                    CategoryId = categoryId,
+                                    CreatedDate = (DateTime)booking.CreatedDate,
+                                    LastUpdate = (DateTime)booking.CreatedDate,
+                                    CreatedBy = email,
+                                    UpdatedBy = email
+                                };
+                                dbContext.ServiceDetails.Add(serviceDetail);
+                            }
                         }
                     }
+
+                    await dbContext.SaveChangesAsync();
+
+                    transaction.Commit();
+                    return true;
                 }
-
-                // Lưu thay đổi vào database
-                await dbContext.SaveChangesAsync();
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error in CreateBookingAsync: {ex.Message}", ex);
-                return false;
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error in CreateBookingAsync: {ex.Message}", ex);
+                    transaction.Rollback();
+                    return false;
+                }
             }
         }
 
