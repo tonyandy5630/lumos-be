@@ -17,10 +17,11 @@ namespace DataTransferObject.DTO
         public string From { get; set; }
         [JsonIgnore]
         public string To { get; set; }
+        [JsonIgnore]
         public int WorkShift { get; set; }
         public string Address { get; set; }
         public string PaymentMethod { get; set; }
-        public string MedicalName { get; set; }
+        public List<string> MedicalNames { get; set; }
         public int bookingTime { get; set; }
         public List<PartnerServiceDTO> Services { get; set; }
     }

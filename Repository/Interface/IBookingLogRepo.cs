@@ -14,9 +14,9 @@ namespace Repository.Interface
         Task<bool> UpdateBookingLogStatusForCustomerAsync(int bookingLogId, int newStatus);
         Task<BookingLog> GetLatestBookingLogAsync(int bookingId);
         Task<bool> CreateBookingLogAsync(BookingLog bookingLog);
-        Task<List<PendingBookingDTO>> GetPendingBookingsByEmailAsync(string email);
-        Task<List<PendingBookingDTO>> GetPendingBookingsByCustomerIdAsync(int customerId);
-        Task<List<PendingBookingDTO>> GetBookingsByCustomerIdAsync(string email);
+        Task<List<IncomingBookingDTO>> GetIncomingBookingsByEmailAsync(string email);
+        Task<List<IncomingBookingDTO>> GetIncomingBookingsByCustomerIdAsync(int customerId);
+        Task<List<IncomingBookingDTO>> GetBookingsByCustomerIdAsync(string email);
         Task<List<PendingBookingDTO>> GetBookingsHaveStatus1ByEmailAsync(string email);
     }
 }

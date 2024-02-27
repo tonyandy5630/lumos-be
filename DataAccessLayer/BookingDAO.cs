@@ -121,7 +121,7 @@ namespace DataAccessLayer
                             BookingId = booking.BookingId,
                             Status = 1, // Status mặc định khi tạo booking detail
                             CreatedDate = booking.CreatedDate,
-                            Note = createBookingDTO.Note,
+                            Note = null,
                             CreatedBy = email
                         };
                         dbContext.BookingLogs.Add(bookingLog);
