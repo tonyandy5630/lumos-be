@@ -136,14 +136,15 @@ namespace Service.Service
                 PartnerType? partnerType = await _unitOfWork.PartnerTypeRepo.GetPartnerTypeByIdAsync(partner.TypeId);
                 if(partnerType == null)
                     throw new NullReferenceException("Partner Type is not existed");
+
+                Partner addPartner = _mapper.Map<Partner>(partner);
                 // Hash password
                 IUserManagerRepo<AddPartnerRequest> userManager = new UserManagerRepo<AddPartnerRequest>();
-                partner.Password = userManager.HashPassword(partner, partner.Password);
+                addPartner.Password = userManager.HashPassword(partner, partner.Email);
                 
-                Partner addPartner = _mapper.Map<Partner>(partner);
                 Partner? part = await _unitOfWork.PartnerRepo.AddPartnereAsync(addPartner);
 
-                if(partner == null)
+                if(part == null)
                 {
                     Console.WriteLine("Failed to add partner!");
                     throw new Exception("Something went wrong when adding partner");

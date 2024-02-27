@@ -12,24 +12,24 @@ namespace RequestEntity
 {
     public class AddPartnerRequest
     {
-        [Required]
+        [Required(ErrorMessage = "PartnerName is required")]
         [MaxLength(50, ErrorMessage ="Partner Name is too long")]
         public string PartnerName { get; set; }
-        [Required]
+        [Required(ErrorMessage = "DisplayName is required")]
         [MaxLength(50, ErrorMessage = "Display Name is too long")]
         public string DisplayName { get; set; }
-        [Required]
+        [Required(ErrorMessage = "Type is required")]
         public int TypeId { get; set; }
-        [Required]
+
+        [Required(ErrorMessage = "The email address is required")]
         [EmailAddress(ErrorMessage = "Not a valid Email Address")]
         public string Email { get; set; }
-        [Required]
-        [PasswordPropertyText]
-        public string Password { get; set; }
-        [Required]
+
+        [Required(ErrorMessage = "Phone is required")]
         [Phone(ErrorMessage = "Not a valid Phone number")]
         public string? Phone { get; set; }
-        [Required]
+
+        [Required(ErrorMessage ="Address is required")]
         [MaxLength(100, ErrorMessage = "Address is too long")]
         public string Address { get; set; }
         public string? Description { get; set; }
