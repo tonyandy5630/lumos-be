@@ -75,11 +75,11 @@ namespace Service.Service
             }
         }
 
-        public async Task<List<PendingBookingDTO>> GetPendingBookingsByEmailAsync(string email)
+        public async Task<List<IncomingBookingDTO>> GetIncomingBookingsByEmailAsync(string email)
         {
             try
             {
-                var pendingBookings = await _unitOfWork.BookingLogRepo.GetPendingBookingsByEmailAsync(email);
+                var pendingBookings = await _unitOfWork.BookingLogRepo.GetIncomingBookingsByEmailAsync(email);
                 return pendingBookings;
             }
             catch (Exception ex)
@@ -89,20 +89,20 @@ namespace Service.Service
             }
         }
 
-        public async Task<List<PendingBookingDTO>> GetPendingBookingsByCustomerIdAsync(int customerId)
+        public async Task<List<IncomingBookingDTO>> GetIncomingBookingsByCustomerIdAsync(int customerId)
         {
             try
             {
-                var pendingBookings = await _unitOfWork.BookingLogRepo.GetPendingBookingsByCustomerIdAsync(customerId);
+                var pendingBookings = await _unitOfWork.BookingLogRepo.GetIncomingBookingsByCustomerIdAsync(customerId);
                 return pendingBookings;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error in GetPendingBookingsByCustomerIdAsync: {ex.Message}", ex);
+                Console.WriteLine($"Error in GetIncomingBookingsByCustomerIdAsync: {ex.Message}", ex);
                 throw;
             }
         }
-        public async Task<List<PendingBookingDTO>> GetBookingsByCustomerIdAsync(string email)
+        public async Task<List<IncomingBookingDTO>> GetBookingsByCustomerIdAsync(string email)
         {
             try
             {
@@ -112,6 +112,20 @@ namespace Service.Service
             catch (Exception ex)
             {
                 Console.WriteLine($"Error in GetBookingsByCustomerIdAsync: {ex.Message}", ex);
+                throw;
+            }
+        }
+
+        public async Task<List<PendingBookingDTO>> GetBookingsHaveStatus1ByEmailAsync(string email)
+        {
+            try
+            {
+                var pendingBookings = await _unitOfWork.BookingLogRepo.GetBookingsHaveStatus1ByEmailAsync(email);
+                return pendingBookings;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetBookingsHaveStatus1ByEmailAsync: {ex.Message}", ex);
                 throw;
             }
         }

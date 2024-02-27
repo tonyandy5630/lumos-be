@@ -33,6 +33,7 @@ namespace Service.InterfaceService
         Task<List<MonthlyRevenueDTO>> CalculateMonthlyRevenueAsync(int year);
         Task<List<PartnerServiceDTO>> GetPartnerServicesWithBookingCountAsync(string email);
         Task<StatPartnerServiceDTO> GetStatPartnerServiceAsync (string email);
+        Task<StatPartnerServiceDTO> CalculateServicesAndRevenueAsync(string? email);
 
     }
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace DataTransferObject.DTO
@@ -12,13 +13,16 @@ namespace DataTransferObject.DTO
         public int Status { get; set; }
         public DateTime BookingDate { get; set; }
         public string DisplayName { get; set; }
+        [JsonIgnore]
         public string From { get; set; }
+        [JsonIgnore]
         public string To { get; set; }
-        public int DayOfWeek { get; set; }
+        [JsonIgnore]
         public int WorkShift { get; set; }
         public string Address { get; set; }
         public string PaymentMethod { get; set; }
-        public string MedicalName { get; set; } 
+        public List<string> MedicalNames { get; set; }
+        public int bookingTime { get; set; }
         public List<PartnerServiceDTO> Services { get; set; }
     }
 }

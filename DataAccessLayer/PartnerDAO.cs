@@ -79,7 +79,7 @@ namespace DataAccessLayer
         {
             using var _context = new LumosDBContext();
             var result = _context.Partners
-                        .Where(p => p.PartnerName.Contains(keyword) || p.PartnerServices.Any(s => s.Name.Contains(keyword)))
+                        .Where(p => p.Status == 1 && (p.PartnerName.Contains(keyword) || p.PartnerServices.Any(s => s.Name.Contains(keyword))))
                         .Include(s => s.PartnerServices
                         .Where(s => s.Name.Contains(keyword)))
                         .AsNoTracking()
@@ -324,14 +324,18 @@ namespace DataAccessLayer
                 DateTime startDate = new DateTime(year, month, 1);
                 DateTime endDate = startDate.AddMonths(1).AddDays(-1);
 
-                var revenuePerWeek = await _context.ServiceBookings
-                    .Where(sb => sb.CreatedDate >= startDate && sb.CreatedDate <= endDate)
-                    .GroupBy(sb => ((sb.CreatedDate.Value.Day - 1) / 7) + 1)
+                var revenuePerWeek = await _context.BookingLogs
+                    .Where(bl => bl.Status == 4 && bl.CreatedDate >= startDate && bl.CreatedDate <= endDate)
+                    .Join(_context.ServiceBookings,
+                        bl => bl.BookingId,
+                        sb => sb.Detail.BookingId,
+                        (bl, sb) => new { sb.Price, bl.CreatedDate })
+                    .GroupBy(x => ((x.CreatedDate.Value.Day - 1) / 7) + 1)
                     .OrderBy(g => g.Key)
                     .Select(g => new RevenuePerWeekDTO
                     {
                         WeekNumber = g.Key,
-                        Revenue = g.Sum(sb => sb.Price ?? 0),
+                        Revenue = (decimal)g.Sum(x => x.Price),
                         StartDate = startDate.AddDays((g.Key - 1) * 7), // Ngày bắt đầu của tuần
                         EndDate = startDate.AddDays(g.Key * 7).AddDays(-1) // Ngày kết thúc của tuần
                     })
@@ -438,6 +442,41 @@ namespace DataAccessLayer
                 throw;
             }
         }
+        public async Task<StatPartnerServiceDTO> CalculateServicesAndRevenueAsync(string? email)
+        {
+            if (email == null)
+                throw new ArgumentNullException(nameof(email), "Partner email is null");
 
+            var partner = await _context.Partners.Include(p => p.PartnerServices).SingleOrDefaultAsync(p => p.Email == email);
+            if (partner == null)
+                throw new Exception("Partner not found");
+
+            int totalServices = partner.PartnerServices.Count;
+
+            var completedBookings = await _context.Bookings
+                .Where(b => b.BookingLogs.Any(bl => bl.Status == 4))
+                .ToListAsync();
+
+            int revenue = 0;
+            foreach (var booking in completedBookings)
+            {
+                var serviceBookings = await _context.ServiceBookings
+                    .Where(sb => sb.Detail.BookingId == booking.BookingId)
+                    .ToListAsync();
+
+                foreach (var sb in serviceBookings)
+                {
+                    revenue += sb.Price ?? 0;
+                }
+            }
+
+            var statDTO = new StatPartnerServiceDTO
+            {
+                totalServices = totalServices,
+                revenue = revenue
+            };
+
+            return statDTO;
+        }
     }
 }

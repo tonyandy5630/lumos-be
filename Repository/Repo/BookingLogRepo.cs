@@ -18,12 +18,14 @@ namespace Repository.Repo
 
         public Task<BookingLog> GetLatestBookingLogAsync(int bookingId) => BookingLogDAO.Instance.GetLatestBookingLogAsync(bookingId);
 
-        public Task<List<PendingBookingDTO>> GetPendingBookingsByCustomerIdAsync(int customerId) => BookingLogDAO.Instance.GetPendingBookingsByCustomerIdAsync(customerId);
-        public Task<List<PendingBookingDTO>> GetBookingsByCustomerIdAsync(string email) => BookingLogDAO.Instance.GetBookingsByCustomerIdAsync(email);
-        public Task<List<PendingBookingDTO>> GetPendingBookingsByEmailAsync(string email) => BookingLogDAO.Instance.GetPendingBookingsByEmailAsync(email);
+        public Task<List<IncomingBookingDTO>> GetIncomingBookingsByCustomerIdAsync(int customerId) => BookingLogDAO.Instance.GetIncomingBookingsByCustomerIdAsync(customerId);
+        public Task<List<IncomingBookingDTO>> GetBookingsByCustomerIdAsync(string email) => BookingLogDAO.Instance.GetBookingsByCustomerIdAsync(email);
+        public Task<List<IncomingBookingDTO>> GetIncomingBookingsByEmailAsync(string email) => BookingLogDAO.Instance.GetIncomingBookingsByEmailAsync(email);
 
         public Task<bool> UpdateBookingLogStatusForCustomerAsync(int bookingLogId, int newStatus) => BookingLogDAO.Instance.UpdateBookingLogStatusForCustomerAsync(bookingLogId, newStatus);
 
         public Task<bool> UpdateBookingLogStatusForPartnerAsync(int bookingLogId, int newStatus) => BookingLogDAO.Instance.UpdateBookingLogStatusForPartnerAsync(bookingLogId, newStatus);
+
+        public Task<List<PendingBookingDTO>> GetBookingsHaveStatus1ByEmailAsync(string email) => BookingLogDAO.Instance.GetBookingsHaveStatus1ByEmailAsync(email);
     }
 }

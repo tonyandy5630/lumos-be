@@ -180,7 +180,7 @@ namespace BussinessObject
                 entity.Property(e => e.FeedbackLumos).HasMaxLength(200);
 
                 entity.Property(e => e.FeedbackPartner).HasMaxLength(200);
-
+                entity.Property(e => e.bookingTime).HasColumnType("int").IsRequired();
                 entity.HasOne(d => d.Payment)
                     .WithMany(p => p.Bookings)
                     .HasForeignKey(d => d.PaymentId)

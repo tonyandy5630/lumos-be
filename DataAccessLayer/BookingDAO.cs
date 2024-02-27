@@ -64,98 +64,96 @@ namespace DataAccessLayer
         }
         public async Task<bool> CreateBookingAsync(Booking booking, CreateBookingDTO createBookingDTO, string email)
         {
-            try
+            using (var transaction = dbContext.Database.BeginTransaction())
             {
-                if (booking == null)
+                try
                 {
-                    throw new ArgumentNullException(nameof(booking), "Booking object cannot be null");
-                }
-
-                if (booking.PaymentId.HasValue)
-                {
-                    var paymentMethod = await dbContext.PaymentMethods.FindAsync(booking.PaymentId);
-                    if (paymentMethod == null)
+                    if (booking == null)
                     {
-                        throw new ArgumentException($"Payment method with ID {booking.PaymentId} not found");
+                        throw new ArgumentNullException(nameof(booking), "Booking object cannot be null");
                     }
-                    booking.Payment = paymentMethod;
-                }
 
-                booking.Code = GenerateCode.GenerateTableCode("booking");
-                booking.CreatedDate = DateTime.Now;
+                    var partnerSchedules = await dbContext.Schedules
+                            .Where(s => s.PartnerId == createBookingDTO.PartnerId)
+                            .ToListAsync();
 
-                dbContext.Bookings.Add(booking);
-                await dbContext.SaveChangesAsync();
+                    // Kiểm tra xem giá trị nhập vào có trùng với bất kỳ lịch trình nào của đối tác không
+                    var isScheduleMatched = partnerSchedules.Any(s =>
+                        s.DayOfWeek == createBookingDTO.DayOfWeek &&
+                        s.WorkShift == createBookingDTO.bookingTime);
 
-                foreach (var cartItem in createBookingDTO.CartModel)
-                {
-                    // Tạo booking detail cho mỗi reportId
-                    var bookingDetail = new BookingDetail
+                    if (!isScheduleMatched)
                     {
-                        BookingId = booking.BookingId,
-                        Note = createBookingDTO.Note,
-                        ReportId = cartItem.ReportId,
-                        CreatedDate = booking.CreatedDate,
-                        CreatedBy = email
-                    };
-                    dbContext.BookingDetails.Add(bookingDetail);
-                    await dbContext.SaveChangesAsync();
-                    // Tạo booking log cho mỗi booking detail
-                    var bookingLog = new BookingLog
+                        throw new Exception("DayOfWeek or WorkShift is not available for the partner");
+                    }
+
+                    if (booking.PaymentId.HasValue)
                     {
-                        BookingId = booking.BookingId,
-                        Status = 1, // Status mặc định khi tạo booking detail
-                        CreatedDate = booking.CreatedDate,
-                        Note = createBookingDTO.Note,
-                        CreatedBy = email
-                    };
-                    dbContext.BookingLogs.Add(bookingLog);
-                    await dbContext.SaveChangesAsync();
-                    foreach (var service in cartItem.Services)
-                    {
-                        var serviceBooking = new ServiceBooking
+                        var paymentMethod = await dbContext.PaymentMethods.FindAsync(booking.PaymentId);
+                        if (paymentMethod == null)
                         {
-                            ServiceId = service.ServiceId,
-                            DetailId = bookingDetail.DetailId, // Sử dụng DetailId từ BookingDetail mới tạo
-                            Price = (int?)service.Price,
-                            Description = service.Description,
+                            throw new ArgumentException($"Payment method with ID {booking.PaymentId} not found");
+                        }
+                        booking.Payment = paymentMethod;
+                    }
+
+                    booking.Code = GenerateCode.GenerateTableCode("booking");
+                    booking.CreatedDate = DateTime.Now;
+                    booking.bookingTime = createBookingDTO.bookingTime;
+                    booking.From = DateTime.Now;
+                    dbContext.Bookings.Add(booking);
+                    await dbContext.SaveChangesAsync();
+
+                    foreach (var cartItem in createBookingDTO.CartModel)
+                    {
+                        var bookingDetail = new BookingDetail
+                        {
+                            BookingId = booking.BookingId,
+                            Note = createBookingDTO.Note,
+                            ReportId = cartItem.ReportId,
                             CreatedDate = booking.CreatedDate,
-                            LastUpdate = (DateTime)booking.CreatedDate,
-                            UpdatedBy = email
+                            CreatedBy = email
                         };
-
-                        dbContext.ServiceBookings.Add(serviceBooking);
-
-                        var categoryId = await dbContext.ServiceDetails
-                        .Where(s => s.ServiceId == service.ServiceId)
-                        .Select(s => s.CategoryId)
-                        .FirstOrDefaultAsync();
-
-                        if (categoryId != null)
+                        dbContext.BookingDetails.Add(bookingDetail);
+                        await dbContext.SaveChangesAsync();
+                        var bookingLog = new BookingLog
                         {
-                            var serviceDetail = new ServiceDetail
+                            BookingId = booking.BookingId,
+                            Status = 1, // Status mặc định khi tạo booking detail
+                            CreatedDate = booking.CreatedDate,
+                            Note = null,
+                            CreatedBy = email
+                        };
+                        dbContext.BookingLogs.Add(bookingLog);
+                        await dbContext.SaveChangesAsync();
+                        foreach (var service in cartItem.Services)
+                        {
+                            var serviceBooking = new ServiceBooking
                             {
                                 ServiceId = service.ServiceId,
-                                CategoryId = categoryId, // Gán CategoryId từ cơ sở dữ liệu
-                                CreatedDate = (DateTime)booking.CreatedDate,
+                                DetailId = bookingDetail.DetailId,
+                                Price = (int?)service.Price,
+                                Description = null,
+                                CreatedDate = booking.CreatedDate,
                                 LastUpdate = (DateTime)booking.CreatedDate,
-                                CreatedBy = email,
                                 UpdatedBy = email
                             };
-                            dbContext.ServiceDetails.Add(serviceDetail);
+
+                            dbContext.ServiceBookings.Add(serviceBooking);
                         }
                     }
+
+                    await dbContext.SaveChangesAsync();
+
+                    transaction.Commit();
+                    return true;
                 }
-
-                // Lưu thay đổi vào database
-                await dbContext.SaveChangesAsync();
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error in CreateBookingAsync: {ex.Message}", ex);
-                return false;
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error in CreateBookingAsync: {ex.Message}", ex);
+                    transaction.Rollback();
+                    return false;
+                }
             }
         }
 
@@ -255,13 +253,16 @@ namespace DataAccessLayer
                 throw;
             }
         }
-      
-        /*public async Task<List<TopBookedServiceDTO>> GetAllTopBookedServicesAsync()
+
+        public async Task<TopBookingSummaryDTO> GetAllBookedServicesByPartnerEmailAsync(string partnerEmail)
         {
             try
             {
-                var topServices = await dbContext.ServiceBookings
+                var allServices = await dbContext.ServiceBookings
                     .Include(sb => sb.Service)
+                    .Where(sb => sb.Detail != null
+                                 && sb.Detail.Booking != null
+                                 && sb.Service.Partner.Email == partnerEmail)
                     .GroupBy(sb => new { sb.ServiceId, sb.Service.Name, sb.Service.PartnerId })
                     .Select(g => new TopBookedServiceDTO
                     {
@@ -270,21 +271,56 @@ namespace DataAccessLayer
                         ServiceName = g.Key.Name,
                         PartnerName = g.Select(sb => sb.Service.Partner.PartnerName).FirstOrDefault(),
                         Rating = g.Select(sb => sb.Service.Rating).FirstOrDefault(),
-                        NumberOfBooking = g.Count()
+                        NumberOfBooking = g.Count(),
+                        Price = g.Select(sb => sb.Service.Price).FirstOrDefault()
                     })
                     .OrderByDescending(g => g.NumberOfBooking)
                     .ToListAsync();
 
-                return topServices;
+                int totalBookings = await dbContext.ServiceBookings
+                    .Include(sb => sb.Service)
+                    .Where(sb => sb.Service.Partner.Email == partnerEmail)
+                    .GroupBy(sb => sb.DetailId)
+                    .Select(group => group.Select(sb => sb.ServiceId).Distinct().Count())
+                    .CountAsync();
+
+
+                int returnPatients = allServices.Count(s => s.NumberOfBooking > 2);
+
+                decimal earning = await dbContext.ServiceBookings
+                    .Include(sb => sb.Service)
+                    .Where(sb => sb.Detail != null
+                                 && sb.Detail.Booking != null
+                                 && sb.Service.Partner.Email == partnerEmail
+                                 && sb.Detail.Booking.BookingLogs.Any(bl => bl.Status == 4))
+                    .SumAsync(sb => sb.Service.Price);
+
+                int operations = await dbContext.ServiceBookings
+                            .Include(sb => sb.Detail)
+                            .Where(sb => sb.Detail != null
+                                         && sb.Detail.Booking != null
+                                         && sb.Service.Partner.Email == partnerEmail)
+                            .GroupBy(sb => sb.Detail.BookingId)
+                            .Where(g => g.OrderByDescending(sb => sb.Detail.Booking.BookingLogs.Max(bl => bl.CreatedDate)).FirstOrDefault().Detail.Booking.BookingLogs.Max(bl => bl.Status) == 2)
+                            .CountAsync();
+
+                return new TopBookingSummaryDTO
+                {
+                    TopBookedServices = allServices,
+                    TotalBookings = totalBookings,
+                    ReturnPatients = returnPatients,
+                    Operations = operations,
+                    Earning = earning
+                };
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error in GetAllTopBookedServicesAsync: {ex.Message}", ex);
+                Console.WriteLine($"Error in GetAllBookedServicesByPartnerEmailAsync: {ex.Message}", ex);
                 throw;
             }
-        }*/
+        }
 
-       public async Task<List<TotalBookingMonthlyStat>> GetAllBookingsForYearAsync(int year)
+        public async Task<List<TotalBookingMonthlyStat>> GetAllBookingsForYearAsync(int year)
         {
             try
             {
@@ -307,5 +343,68 @@ namespace DataAccessLayer
                 throw new Exception(ex.Message);
             }
         }
+        public async Task<BookingDTO> GetBookingDetailInforByBookingIdAsync(int id)
+        {
+            try
+            {
+                var bookingDetail = await dbContext.BookingDetails
+                    .Include(bd => bd.ServiceBookings)
+                    .ThenInclude(sb => sb.Service)
+                    .Include(bd => bd.ServiceBookings)
+                        .ThenInclude(sb => sb.Service.ServiceDetails) 
+                            .ThenInclude(sd => sd.Category) 
+                    .Include(bd => bd.Booking)
+                    .SingleOrDefaultAsync(u => u.BookingId == id);
+
+                if (bookingDetail == null)
+                {
+                    throw new Exception($"Booking detail with ID {id} not found");
+                }
+
+                // Retrieve the latest booking log status
+                var latestBookingLogStatus = await dbContext.BookingLogs
+                    .Where(bl => bl.BookingId == id)
+                    .OrderByDescending(bl => bl.CreatedDate)
+                    .Select(bl => bl.Status)
+                    .FirstOrDefaultAsync();
+
+                var partnerServiceDTOs = bookingDetail.ServiceBookings.Select(serviceBooking => new PartnerServiceDTO
+                {
+                    ServiceId = (int)serviceBooking.ServiceId,
+                    Name = serviceBooking.Service.Name,
+                    Code = serviceBooking.Service.Code,
+                    Duration = serviceBooking.Service.Duration,
+                    Status = serviceBooking.Service.Status,
+                    Description = serviceBooking.Service.Description,
+                    Price = serviceBooking.Service.Price,
+                    BookedQuantity = serviceBooking.Service.ServiceBookings.Count,
+                    Rating = serviceBooking.Service.Rating,
+                    Categories = serviceBooking.Service.ServiceDetails
+                                    .Where(sd => sd.Category != null) // Ensure Category is not null
+                                    .Select(sd => new ServiceCategoryDTO
+                                    {
+                                        CategoryId = sd.Category.CategoryId,
+                                        Category = sd.Category.Category,
+                                        Code = sd.Category.Code
+                                    }).Distinct()
+                                    .ToList()
+                }).ToList();
+
+                var bookingDTO = new BookingDTO
+                {
+                    bookingId = (int)bookingDetail.BookingId,
+                    services = partnerServiceDTOs,
+                    status = (int)latestBookingLogStatus // Set the status to the latest booking log status
+                };
+
+                return bookingDTO;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetBookingDetailByBookingIdAsync: {ex.Message}", ex);
+                throw new Exception(ex.Message);
+            }
+        }
+
     }
 }
