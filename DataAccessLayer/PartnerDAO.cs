@@ -280,14 +280,18 @@ namespace DataAccessLayer
                 DateTime startDate = new DateTime(year, month, 1);
                 DateTime endDate = startDate.AddMonths(1).AddDays(-1);
 
-                var revenuePerWeek = await _context.ServiceBookings
-                    .Where(sb => sb.CreatedDate >= startDate && sb.CreatedDate <= endDate)
-                    .GroupBy(sb => ((sb.CreatedDate.Value.Day - 1) / 7) + 1)
+                var revenuePerWeek = await _context.BookingLogs
+                    .Where(bl => bl.Status == 4 && bl.CreatedDate >= startDate && bl.CreatedDate <= endDate)
+                    .Join(_context.ServiceBookings,
+                        bl => bl.BookingId,
+                        sb => sb.Detail.BookingId,
+                        (bl, sb) => new { sb.Price, bl.CreatedDate })
+                    .GroupBy(x => ((x.CreatedDate.Value.Day - 1) / 7) + 1)
                     .OrderBy(g => g.Key)
                     .Select(g => new RevenuePerWeekDTO
                     {
                         WeekNumber = g.Key,
-                        Revenue = g.Sum(sb => sb.Price ?? 0),
+                        Revenue = (decimal)g.Sum(x => x.Price),
                         StartDate = startDate.AddDays((g.Key - 1) * 7), // Ngày bắt đầu của tuần
                         EndDate = startDate.AddDays(g.Key * 7).AddDays(-1) // Ngày kết thúc của tuần
                     })
@@ -411,10 +415,13 @@ namespace DataAccessLayer
             foreach (var booking in completedBookings)
             {
                 var serviceBookings = await _context.ServiceBookings
-                    .FirstOrDefaultAsync(sb => sb.Detail != null && sb.Detail.BookingId == booking.BookingId);
+                    .Where(sb => sb.Detail.BookingId == booking.BookingId)
+                    .ToListAsync();
 
-                if (serviceBookings != null)
-                    revenue += serviceBookings.Price ?? 0;
+                foreach (var sb in serviceBookings)
+                {
+                    revenue += sb.Price ?? 0;
+                }
             }
 
             var statDTO = new StatPartnerServiceDTO
