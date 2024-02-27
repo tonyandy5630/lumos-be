@@ -99,7 +99,7 @@ namespace DataAccessLayer
 
                     booking.Code = GenerateCode.GenerateTableCode("booking");
                     booking.CreatedDate = DateTime.Now;
-
+                    booking.bookingTime = createBookingDTO.WorkShift;
                     dbContext.Bookings.Add(booking);
                     await dbContext.SaveChangesAsync();
 

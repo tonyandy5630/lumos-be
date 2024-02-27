@@ -23,7 +23,7 @@ namespace BussinessObject
         public DateTime? CreatedDate { get; set; }
         public string? CreatedBy { get; set; }
         public string? Address { get; set; }
-
+        public int bookingTime { get; set; }
         public virtual PaymentMethod? Payment { get; set; }
         public virtual ICollection<BookingDetail> BookingDetails { get; set; }
         public virtual ICollection<BookingLog> BookingLogs { get; set; }
