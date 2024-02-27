@@ -92,11 +92,6 @@ namespace DataTransferObject
                 .ForMember(dto => dto.Price, act => act.MapFrom(src => src.Price));
             CreateMap<ServiceBooking, ServiceDTO>()
                 .ForMember(dto => dto.ServiceId, opt => opt.MapFrom(src => src.ServiceId))
-                .ForMember(dto => dto.Code, opt => opt.MapFrom(src => src.Service.Code))
-                .ForMember(dto => dto.Name, opt => opt.MapFrom(src => src.Service.Name))
-                .ForMember(dto => dto.Duration, opt => opt.MapFrom(src => src.Service.Duration))
-                .ForMember(dto => dto.Status, opt => opt.MapFrom(src => src.Service.Status))
-                .ForMember(dto => dto.Description, opt => opt.MapFrom(src => src.Service.Description))
                 .ForMember(dto => dto.Price, opt => opt.MapFrom(src => src.Price));
 
 /*            CreateMap<TopBookedServiceDTO, ServiceDTO>()

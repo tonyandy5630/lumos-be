@@ -14,7 +14,8 @@ namespace DataTransferObject.DTO
         public int TotalPrice { get; set; }
         public DateTime BookingDate { get; set; }
         public DateTime From { get; set; }
-
+        public int DayOfWeek { get; set; }
+        public int WorkShift { get; set; }
         public string Address { get; set; }
         public string Note { get; set; }
         public List<CartModelDTO> CartModel { get; set; }
