@@ -80,7 +80,7 @@ namespace DataAccessLayer
                     // Kiểm tra xem giá trị nhập vào có trùng với bất kỳ lịch trình nào của đối tác không
                     var isScheduleMatched = partnerSchedules.Any(s =>
                         s.DayOfWeek == createBookingDTO.DayOfWeek &&
-                        s.WorkShift == createBookingDTO.WorkShift);
+                        s.WorkShift == createBookingDTO.bookingTime);
 
                     if (!isScheduleMatched)
                     {
@@ -99,7 +99,8 @@ namespace DataAccessLayer
 
                     booking.Code = GenerateCode.GenerateTableCode("booking");
                     booking.CreatedDate = DateTime.Now;
-                    booking.bookingTime = createBookingDTO.WorkShift;
+                    booking.bookingTime = createBookingDTO.bookingTime;
+                    booking.From = DateTime.Now;
                     dbContext.Bookings.Add(booking);
                     await dbContext.SaveChangesAsync();
 
