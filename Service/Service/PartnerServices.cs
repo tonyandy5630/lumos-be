@@ -128,23 +128,23 @@ namespace Service.Service
             }
         }
 
-        public async Task<(Partner?, PartnerError?)> AddPartnereAsync(AddPartnerRequest partner)
+        public async Task<(Partner?, PartnerError?)> AddPartnerAsync(AddPartnerRequest partner)
         {
             try
             {
                 PartnerError? errorPartner = null;
 
-                Task<Partner?> existedPartnerName =  _unitOfWork.PartnerRepo.GetPartnerByPartnerNameAsync(partner.PartnerName);
-                Task<Partner?> existedLicense =  _unitOfWork.PartnerRepo.GetPartnerByBussinessLicenseAsync(partner.BusinessLicenseNumber);
-                Task<Partner?> existedDisplayName =  _unitOfWork.PartnerRepo.GetPartnerByDisplayNameAsync(partner.DisplayName);
-                Task<Partner?> existedEmail =  _unitOfWork.PartnerRepo.GetPartnerByEmailAsync(partner.Email);
+                Task<Partner?> existedPartnerName =  _unitOfWork.PartnerRepo.GetPartnerByPartnerNameAsync(partner.PartnerName.Trim());
+                Task<Partner?> existedLicense =  _unitOfWork.PartnerRepo.GetPartnerByBussinessLicenseAsync(partner.BusinessLicenseNumber.Trim());
+                Task<Partner?> existedDisplayName =  _unitOfWork.PartnerRepo.GetPartnerByDisplayNameAsync(partner.DisplayName.Trim());
+                Task<Partner?> existedEmail =  _unitOfWork.PartnerRepo.GetPartnerByEmailAsync(partner.Email.Trim());
 
-                await Task.WhenAll(existedPartnerName, existedLicense, existedDisplayName, existedEmail);
+                Task.WhenAll(existedPartnerName, existedLicense, existedDisplayName, existedEmail).Wait();
 
-                bool partnerNameError = await existedPartnerName != null;
-                bool licenseError = await existedLicense != null;
-                bool displayNameError = await existedDisplayName != null;
-                bool emailError = await existedEmail != null;
+                bool partnerNameError =  existedPartnerName.Result != null;
+                bool licenseError = existedLicense.Result != null;
+                bool displayNameError = existedDisplayName.Result != null;
+                bool emailError = existedEmail.Result != null;
 
                 bool hasError = partnerNameError|| licenseError|| displayNameError|| emailError;
                 if (hasError)
@@ -176,7 +176,7 @@ namespace Service.Service
                 addPartner.LastUpdate = DateTime.Now;
                 // Hash password
                 IUserManagerRepo<AddPartnerRequest> userManager = new UserManagerRepo<AddPartnerRequest>();
-                addPartner.Password = userManager.HashPassword(partner, partner.Email);
+                addPartner.Password = userManager.HashPassword(partner, partner.Email.Trim());
                 
                 Partner? part = await _unitOfWork.PartnerRepo.AddPartnereAsync(addPartner);
 
