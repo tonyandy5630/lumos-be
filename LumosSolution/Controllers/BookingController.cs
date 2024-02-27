@@ -133,7 +133,7 @@ namespace LumosSolution.Controllers
             ApiResponse<object> response = new ApiResponse<object>();
             try
             {
-                var pendingBookingDTOs = await _bookingLogService.GetPendingBookingsByCustomerIdAsync(id);
+                var pendingBookingDTOs = await _bookingLogService.GetIncomingBookingsByCustomerIdAsync(id);
 
                 if (pendingBookingDTOs == null || !pendingBookingDTOs.Any())
                 {
@@ -171,7 +171,7 @@ namespace LumosSolution.Controllers
             {
                 var userEmail = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
 
-                var pendingBookingDTOs = await _bookingLogService.GetPendingBookingsByEmailAsync(userEmail);
+                var pendingBookingDTOs = await _bookingLogService.GetIncomingBookingsByEmailAsync(userEmail);
 
                 if (pendingBookingDTOs == null || !pendingBookingDTOs.Any())
                 {

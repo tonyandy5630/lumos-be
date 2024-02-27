@@ -102,29 +102,27 @@ namespace DataAccessLayer
                 return false;
             }
         }
-        public async Task<List<PendingBookingDTO>> GetPendingBookingsByEmailAsync(string email)
+        public async Task<List<IncomingBookingDTO>> GetIncomingBookingsByEmailAsync(string email)
         {
             try
             {
                 var customer = await dbContext.Customers.FirstOrDefaultAsync(c => c.Email == email);
                 if (customer == null)
                 {
-                    return new List<PendingBookingDTO>();
+                    return new List<IncomingBookingDTO>();
                 }
 
-                // Lấy tất cả các BookingLogs có trạng thái 1 hoặc 2
                 var allBookingLogs = await dbContext.BookingLogs
                     .Where(bl => bl.Status == 1 || bl.Status == 2)
                     .GroupBy(bl => bl.BookingId)
                     .Select(g => g.OrderByDescending(bl => bl.CreatedDate).FirstOrDefault())
                     .ToListAsync();
 
-                // Lọc BookingLogs theo BookingId và nhóm chúng lại
                 var pendingBookings = allBookingLogs
                     .GroupBy(bl => bl.BookingId)
                     .ToList();
 
-                var result = new List<PendingBookingDTO>();
+                var result = new List<IncomingBookingDTO>();
 
                 foreach (var group in pendingBookings)
                 {
@@ -133,22 +131,23 @@ namespace DataAccessLayer
 
                     foreach (var status in statuses)
                     {
-                        // Kiểm tra xem có bất kỳ trạng thái nào lớn hơn 2 không
                         var hasStatusGreaterThan2 = await dbContext.BookingLogs.AnyAsync(bl => bl.BookingId == bookingId && bl.Status > 2);
                         if (!hasStatusGreaterThan2)
                         {
-                            // Tìm ReportId từ BookingDetail dựa trên BookingId
                             var bookingDetail = await dbContext.BookingDetails.FirstOrDefaultAsync(bd => bd.BookingId == bookingId);
                             if (bookingDetail != null)
                             {
-                                // Tìm CustomerId từ MedicalReport dựa trên ReportId
+                                var medicalReports = await dbContext.BookingDetails
+                                    .Where(detail => detail.BookingId == bookingId)
+                                    .Select(detail => detail.ReportId)
+                                    .ToListAsync();
+
                                 var medicalReport = await dbContext.MedicalReports.FirstOrDefaultAsync(mr => mr.ReportId == bookingDetail.ReportId && mr.CustomerId == customer.CustomerId);
                                 if (medicalReport != null)
                                 {
                                     var booking = await dbContext.Bookings.FirstOrDefaultAsync(b => b.BookingId == bookingId);
                                     if (booking != null)
                                     {
-                                        // Kiểm tra status của dịch vụ, đối tác, hoặc khách hàng
                                         var serviceBooking = await dbContext.ServiceBookings.FirstOrDefaultAsync(sb => sb.DetailId == bookingDetail.DetailId);
                                         if (serviceBooking != null)
                                         {
@@ -162,63 +161,51 @@ namespace DataAccessLayer
                                                     var partnerStatus = partner.Status;
                                                     var customerStatus = customer.Status;
 
-                                                    // Kiểm tra status của dịch vụ, đối tác, hoặc khách hàng
                                                     if (serviceStatus == 1 && partnerStatus == 1 && customerStatus == 1)
                                                     {
-                                                        // Tiếp tục thêm thông tin vào danh sách kết quả
-                                                        var pendingBooking = new PendingBookingDTO
+                                                        var medicalServiceDTOs = new List<MedicalServiceDTO>();
+
+                                                        foreach (var reportId in medicalReports)
+                                                        {
+                                                            var medicalName = await dbContext.MedicalReports
+                                                                .Where(mr => mr.ReportId == reportId && mr.CustomerId == customer.CustomerId)
+                                                                .Select(mr => mr.Fullname)
+                                                                .FirstOrDefaultAsync();
+
+                                                            var serviceDTOs = await dbContext.BookingDetails
+                                                                .Where(detail => detail.BookingId == bookingId && detail.ReportId == reportId) // Filter by ReportId
+                                                                .SelectMany(detail => detail.ServiceBookings)
+                                                                .Select(serviceBooking => new PartnerServiceDTO
+                                                                {
+                                                                    ServiceId = serviceBooking.Service.ServiceId,
+                                                                    Name = serviceBooking.Service.Name,
+                                                                    Code = serviceBooking.Service.Code,
+                                                                    Duration = serviceBooking.Service.Duration,
+                                                                    Status = serviceBooking.Service.Status,
+                                                                    Description = serviceBooking.Service.Description,
+                                                                    Price = serviceBooking.Service.Price,
+                                                                    BookedQuantity = serviceBooking.Service.ServiceBookings.Count,
+                                                                    Rating = serviceBooking.Service.Rating,
+                                                                }).ToListAsync();
+
+                                                            medicalServiceDTOs.Add(new MedicalServiceDTO
+                                                            {
+                                                                MedicalName = medicalName,
+                                                                Services = serviceDTOs
+                                                            });
+                                                        }
+
+                                                        result.Add(new IncomingBookingDTO
                                                         {
                                                             BookingId = booking.BookingId,
                                                             Status = (int)status,
+                                                            Partner = partner.DisplayName,
                                                             BookingDate = (DateTime)booking.CreatedDate,
-                                                            Services = await dbContext.BookingDetails
-                                                                    .Where(detail => detail.BookingId == bookingId)
-                                                                    .SelectMany(detail => detail.ServiceBookings)
-                                                                    .Select(serviceBooking => new PartnerServiceDTO
-                                                                    {
-                                                                        ServiceId = serviceBooking.Service.ServiceId,
-                                                                        Name = serviceBooking.Service.Name,
-                                                                        Code = serviceBooking.Service.Code,
-                                                                        Duration = serviceBooking.Service.Duration,
-                                                                        Status = serviceBooking.Service.Status,
-                                                                        Description = serviceBooking.Service.Description,
-                                                                        Price = serviceBooking.Service.Price,
-                                                                        BookedQuantity = serviceBooking.Service.ServiceBookings.Count,
-                                                                        Rating = serviceBooking.Service.Rating,
-                                                                        Categories = serviceBooking.Service.ServiceDetails
-                                                                .Select(detail => new ServiceCategoryDTO
-                                                                {
-                                                                    CategoryId = detail.Category.CategoryId,
-                                                                    Category = detail.Category.Category,
-                                                                    Code = detail.Category.Code
-                                                                }).Distinct()
-                                                                .ToList()
-                                                                    }).GroupBy(service => service.ServiceId)
-                                                    .Select(group => group.First())
-                                                    .ToListAsync(),
+                                                            bookingTime = booking.bookingTime,
                                                             Address = booking.Address,
-                                                            PaymentMethod = await dbContext.PaymentMethods
-                                                            .Where(payment => payment.PaymentId == booking.PaymentId)
-                                                            .Select(payment => payment.Name)
-                                                            .FirstOrDefaultAsync(),
-                                                            MedicalName = medicalReport.Fullname,
-                                                            bookingTime = booking.bookingTime
-                                                        };
-
-                                                        if (serviceBooking != null)
-                                                        {
-                                                            pendingBooking.DisplayName = partner.DisplayName;
-
-                                                            var schedule = await dbContext.Schedules.FirstOrDefaultAsync(s => s.PartnerId == partner.PartnerId);
-                                                            if (schedule != null)
-                                                            {
-                                                                pendingBooking.From = schedule.From.ToString();
-                                                                pendingBooking.To = schedule.To.ToString();
-                                                                pendingBooking.WorkShift = schedule.WorkShift;
-                                                            }
-                                                        }
-
-                                                        result.Add(pendingBooking);
+                                                            PaymentMethod = (int)booking.PaymentId,
+                                                            MedicalService = medicalServiceDTOs
+                                                        });
                                                     }
                                                     else
                                                     {
@@ -234,7 +221,7 @@ namespace DataAccessLayer
                     }
                 }
                 return result;
-                }
+            }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error in GetPendingBookingsByEmailAsync: {ex.Message}", ex);
@@ -243,18 +230,16 @@ namespace DataAccessLayer
         }
 
 
-
-
-        public async Task<List<PendingBookingDTO>> GetPendingBookingsByCustomerIdAsync(int customerId)
+        public async Task<List<IncomingBookingDTO>> GetIncomingBookingsByCustomerIdAsync(int customerId)
         {
             try
             {
-                // Tìm CustomerId dựa trên email từ bảng Customer
+                // Tìm Customer dựa trên CustomerId từ bảng Customers
                 var customer = await dbContext.Customers.FirstOrDefaultAsync(c => c.CustomerId == customerId);
                 if (customer == null)
                 {
-                    // Nếu không tìm thấy khách hàng với id đã cung cấp, trả về danh sách trống
-                    return new List<PendingBookingDTO>();
+                    // Nếu không tìm thấy khách hàng với CustomerId đã cung cấp, trả về danh sách trống
+                    return new List<IncomingBookingDTO>();
                 }
 
                 // Lấy tất cả các BookingLogs có trạng thái 1 hoặc 2 và lấy logs mới nhất cho mỗi booking
@@ -269,7 +254,7 @@ namespace DataAccessLayer
                     .GroupBy(bl => bl.BookingId)
                     .ToList();
 
-                var result = new List<PendingBookingDTO>();
+                var result = new List<IncomingBookingDTO>();
 
                 foreach (var group in pendingBookings)
                 {
@@ -278,22 +263,23 @@ namespace DataAccessLayer
 
                     foreach (var status in statuses)
                     {
-                        // Kiểm tra xem có bất kỳ trạng thái nào lớn hơn 2 không
                         var hasStatusGreaterThan2 = await dbContext.BookingLogs.AnyAsync(bl => bl.BookingId == bookingId && bl.Status > 2);
                         if (!hasStatusGreaterThan2)
                         {
-                            // Tìm ReportId từ BookingDetail dựa trên BookingId
                             var bookingDetail = await dbContext.BookingDetails.FirstOrDefaultAsync(bd => bd.BookingId == bookingId);
                             if (bookingDetail != null)
                             {
-                                // Tìm CustomerId từ MedicalReport dựa trên ReportId
+                                var medicalReports = await dbContext.BookingDetails
+                                    .Where(detail => detail.BookingId == bookingId)
+                                    .Select(detail => detail.ReportId)
+                                    .ToListAsync();
+
                                 var medicalReport = await dbContext.MedicalReports.FirstOrDefaultAsync(mr => mr.ReportId == bookingDetail.ReportId && mr.CustomerId == customer.CustomerId);
                                 if (medicalReport != null)
                                 {
                                     var booking = await dbContext.Bookings.FirstOrDefaultAsync(b => b.BookingId == bookingId);
                                     if (booking != null)
                                     {
-                                        // Kiểm tra status của dịch vụ, đối tác, và khách hàng
                                         var serviceBooking = await dbContext.ServiceBookings.FirstOrDefaultAsync(sb => sb.DetailId == bookingDetail.DetailId);
                                         if (serviceBooking != null)
                                         {
@@ -303,156 +289,23 @@ namespace DataAccessLayer
                                                 var partner = await dbContext.Partners.FirstOrDefaultAsync(p => p.PartnerId == partnerService.PartnerId);
                                                 if (partner != null)
                                                 {
-                                                    // Kiểm tra status của dịch vụ, đối tác, và khách hàng
-                                                    var serviceStatus = serviceBooking.Service.Status;
+                                                    var serviceStatus = partnerService.Status;
                                                     var partnerStatus = partner.Status;
                                                     var customerStatus = customer.Status;
 
                                                     if (serviceStatus == 1 && partnerStatus == 1 && customerStatus == 1)
                                                     {
-                                                        var pendingBooking = new PendingBookingDTO
+                                                        var medicalServiceDTOs = new List<MedicalServiceDTO>();
+
+                                                        foreach (var reportId in medicalReports)
                                                         {
-                                                            BookingId = booking.BookingId,
-                                                            Status = (int)status,
-                                                            BookingDate = (DateTime)booking.CreatedDate,
-                                                            Services = await dbContext.BookingDetails
-                                                                    .Where(detail => detail.BookingId == bookingId)
-                                                                    .SelectMany(detail => detail.ServiceBookings)
-                                                                    .Select(serviceBooking => new PartnerServiceDTO
-                                                                    {
-                                                                        ServiceId = serviceBooking.Service.ServiceId,
-                                                                        Name = serviceBooking.Service.Name,
-                                                                        Code = serviceBooking.Service.Code,
-                                                                        Duration = serviceBooking.Service.Duration,
-                                                                        Status = serviceBooking.Service.Status,
-                                                                        Description = serviceBooking.Service.Description,
-                                                                        Price = serviceBooking.Service.Price,
-                                                                        BookedQuantity = serviceBooking.Service.ServiceBookings.Count,
-                                                                        Rating = serviceBooking.Service.Rating,
-                                                                        Categories = serviceBooking.Service.ServiceDetails
-                                                                                .Select(detail => new ServiceCategoryDTO
-                                                                                {
-                                                                                    CategoryId = detail.Category.CategoryId,
-                                                                                    Category = detail.Category.Category,
-                                                                                    Code = detail.Category.Code
-                                                                                }).Distinct()
-                                                                                .ToList()
-                                                                    }).GroupBy(service => service.ServiceId)
-                                                        .Select(group => group.First())
-                                                        .ToListAsync(),
-                                                            Address = booking.Address,
-                                                            PaymentMethod = await dbContext.PaymentMethods
-                                                        .Where(payment => payment.PaymentId == booking.PaymentId)
-                                                        .Select(payment => payment.Name)
-                                                        .FirstOrDefaultAsync(),
-                                                            MedicalName = medicalReport.Fullname,
-                                                            bookingTime = booking.bookingTime
-                                                        };
+                                                            var medicalName = await dbContext.MedicalReports
+                                                                .Where(mr => mr.ReportId == reportId && mr.CustomerId == customer.CustomerId)
+                                                                .Select(mr => mr.Fullname)
+                                                                .FirstOrDefaultAsync();
 
-                                                        // Lấy thông tin về dịch vụ và thêm vào danh sách services của pendingBooking
-                                                        if (serviceBooking != null)
-                                                        {
-                                                            pendingBooking.DisplayName = partner.DisplayName;
-
-                                                            // Tìm thông tin lịch trình từ Schedule
-                                                            var schedule = await dbContext.Schedules.FirstOrDefaultAsync(s => s.PartnerId == partner.PartnerId);
-                                                            if (schedule != null)
-                                                            {
-                                                                pendingBooking.From = schedule.From.ToString();
-                                                                pendingBooking.To = schedule.To.ToString();
-                                                                pendingBooking.WorkShift = schedule.WorkShift;
-                                                            }
-                                                        }
-
-                                                        result.Add(pendingBooking);
-                                                    }
-                                                    else
-                                                    {
-                                                        throw new Exception("Invalid status for service, partner, or customer.");
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                return result;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error in GetPendingBookingsByCustomerIdAsync: {ex.Message}", ex);
-                throw;
-            }
-        }
-
-        public async Task<List<PendingBookingDTO>> GetBookingsByCustomerIdAsync(string email)
-        {
-            try
-            {
-                // Tìm CustomerId dựa trên customerId từ bảng Customer
-                var customer = await dbContext.Customers.FirstOrDefaultAsync(c => c.Email == email);
-                if (customer == null)
-                {
-                    // Nếu không tìm thấy khách hàng với customerId đã cung cấp, trả về danh sách trống
-                    return new List<PendingBookingDTO>();
-                }
-
-                // Lấy tất cả các BookingLogs
-                var allBookingLogs = await dbContext.BookingLogs.ToListAsync();
-
-                // Lọc BookingLogs theo BookingId và nhóm chúng lại
-                var pendingBookings = allBookingLogs
-                    .GroupBy(bl => bl.BookingId)
-                    .ToList();
-
-                var result = new List<PendingBookingDTO>();
-
-                foreach (var group in pendingBookings)
-                {
-                    var bookingId = group.Key;
-                    var statuses = group.Select(bl => bl.Status).Distinct().ToList();
-
-                    foreach (var status in statuses)
-                    {
-                        // Tìm ReportId từ BookingDetail dựa trên BookingId
-                        var bookingDetail = await dbContext.BookingDetails.FirstOrDefaultAsync(bd => bd.BookingId == bookingId);
-                        if (bookingDetail != null)
-                        {
-                            // Tìm CustomerId từ MedicalReport dựa trên ReportId
-                            var medicalReport = await dbContext.MedicalReports.FirstOrDefaultAsync(mr => mr.ReportId == bookingDetail.ReportId && mr.CustomerId == customer.CustomerId);
-                            if (medicalReport != null)
-                            {
-                                var booking = await dbContext.Bookings.FirstOrDefaultAsync(b => b.BookingId == bookingId);
-                                if (booking != null)
-                                {
-                                    // Kiểm tra status của dịch vụ, đối tác, hoặc khách hàng
-                                    var serviceBooking = await dbContext.ServiceBookings.FirstOrDefaultAsync(sb => sb.DetailId == bookingDetail.DetailId);
-                                    if (serviceBooking != null)
-                                    {
-                                        var partnerService = await dbContext.PartnerServices.FirstOrDefaultAsync(ps => ps.ServiceId == serviceBooking.ServiceId);
-                                        if (partnerService != null)
-                                        {
-                                            var partner = await dbContext.Partners.FirstOrDefaultAsync(p => p.PartnerId == partnerService.PartnerId);
-                                            if (partner != null)
-                                            {
-                                                var serviceStatus = partnerService.Status;
-                                                var partnerStatus = partner.Status;
-                                                var customerStatus = customer.Status;
-
-                                                // Kiểm tra status của dịch vụ, đối tác, hoặc khách hàng
-                                                if (serviceStatus == 1 && partnerStatus == 1 && customerStatus == 1)
-                                                {
-                                                    // Tiếp tục thêm thông tin vào danh sách kết quả
-                                                    var pendingBooking = new PendingBookingDTO
-                                                    {
-                                                        BookingId = booking.BookingId,
-                                                        Status = (int)status,
-                                                        BookingDate = (DateTime)booking.CreatedDate,
-                                                        Services = await dbContext.BookingDetails
-                                                                .Where(detail => detail.BookingId == bookingId)
+                                                            var serviceDTOs = await dbContext.BookingDetails
+                                                                .Where(detail => detail.BookingId == bookingId && detail.ReportId == reportId) // Filter by ReportId
                                                                 .SelectMany(detail => detail.ServiceBookings)
                                                                 .Select(serviceBooking => new PartnerServiceDTO
                                                                 {
@@ -465,46 +318,31 @@ namespace DataAccessLayer
                                                                     Price = serviceBooking.Service.Price,
                                                                     BookedQuantity = serviceBooking.Service.ServiceBookings.Count,
                                                                     Rating = serviceBooking.Service.Rating,
-                                                                    Categories = serviceBooking.Service.ServiceDetails
-                                                            .Select(detail => new ServiceCategoryDTO
+                                                                }).ToListAsync();
+
+                                                            medicalServiceDTOs.Add(new MedicalServiceDTO
                                                             {
-                                                                CategoryId = detail.Category.CategoryId,
-                                                                Category = detail.Category.Category,
-                                                                Code = detail.Category.Code
-                                                            }).Distinct()
-                                                            .ToList()
-                                                                }).GroupBy(service => service.ServiceId)
-                                                    .Select(group => group.First())
-                                                    .ToListAsync(),
-                                                        Address = booking.Address,
-                                                        PaymentMethod = await dbContext.PaymentMethods
-                                                            .Where(payment => payment.PaymentId == booking.PaymentId)
-                                                            .Select(payment => payment.Name)
-                                                            .FirstOrDefaultAsync(),
-                                                        MedicalName = medicalReport.Fullname,
-                                                        bookingTime = booking.bookingTime // Lấy bookingTime từ Booking
-                                                    };
-
-                                                    // Lấy thông tin về dịch vụ và thêm vào danh sách services của pendingBooking
-                                                    if (serviceBooking != null)
-                                                    {
-                                                        pendingBooking.DisplayName = partner.DisplayName;
-
-                                                        // Tìm thông tin lịch trình từ Schedule
-                                                        var schedule = await dbContext.Schedules.FirstOrDefaultAsync(s => s.PartnerId == partner.PartnerId);
-                                                        if (schedule != null)
-                                                        {
-                                                            pendingBooking.From = schedule.From.ToString();
-                                                            pendingBooking.To = schedule.To.ToString();
-                                                            pendingBooking.WorkShift = schedule.WorkShift;
+                                                                MedicalName = medicalName,
+                                                                Services = serviceDTOs
+                                                            });
                                                         }
-                                                    }
 
-                                                    result.Add(pendingBooking);
-                                                }
-                                                else
-                                                {
-                                                    throw new Exception("Invalid status for service, partner, or customer.");
+                                                        result.Add(new IncomingBookingDTO
+                                                        {
+                                                            BookingId = booking.BookingId,
+                                                            Status = (int)status,
+                                                            Partner = partner.DisplayName,
+                                                            BookingDate = (DateTime)booking.CreatedDate,
+                                                            bookingTime = booking.bookingTime,
+                                                            Address = booking.Address,
+                                                            PaymentMethod = (int)booking.PaymentId,
+                                                            MedicalService = medicalServiceDTOs
+                                                        });
+                                                    }
+                                                    else
+                                                    {
+                                                        throw new Exception("Invalid status for partner.");
+                                                    }
                                                 }
                                             }
                                         }
@@ -512,6 +350,134 @@ namespace DataAccessLayer
                                 }
                             }
                         }
+                    }
+                }
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetPendingBookingsByCustomerIdAsync: {ex.Message}", ex);
+                throw;
+            }
+        }
+
+
+        public async Task<List<IncomingBookingDTO>> GetBookingsByCustomerIdAsync(string email)
+        {
+            try
+            {
+                // Tìm CustomerId dựa trên customerId từ bảng Customer
+                var customer = await dbContext.Customers.FirstOrDefaultAsync(c => c.Email == email);
+                if (customer == null)
+                {
+                    // Nếu không tìm thấy khách hàng với customerId đã cung cấp, trả về danh sách trống
+                    return new List<IncomingBookingDTO>();
+                }
+
+                // Lấy tất cả các BookingLogs
+                var allBookingLogs = await dbContext.BookingLogs
+                    .GroupBy(bl => bl.BookingId)
+                    .Select(g => g.OrderByDescending(bl => bl.CreatedDate).FirstOrDefault())
+                    .ToListAsync();;
+
+                // Lọc BookingLogs theo BookingId và nhóm chúng lại
+                var pendingBookings = allBookingLogs
+                    .GroupBy(bl => bl.BookingId)
+                    .ToList();
+
+                var result = new List<IncomingBookingDTO>();
+
+                foreach (var group in pendingBookings)
+                {
+                    var bookingId = group.Key;
+                    var statuses = group.Select(bl => bl.Status).Distinct().ToList();
+
+                    foreach (var status in statuses)
+                    {
+                            var bookingDetail = await dbContext.BookingDetails.FirstOrDefaultAsync(bd => bd.BookingId == bookingId);
+                            if (bookingDetail != null)
+                            {
+                                var medicalReports = await dbContext.BookingDetails
+                                    .Where(detail => detail.BookingId == bookingId)
+                                    .Select(detail => detail.ReportId)
+                                    .ToListAsync();
+
+                                var medicalReport = await dbContext.MedicalReports.FirstOrDefaultAsync(mr => mr.ReportId == bookingDetail.ReportId && mr.CustomerId == customer.CustomerId);
+                                if (medicalReport != null)
+                                {
+                                    var booking = await dbContext.Bookings.FirstOrDefaultAsync(b => b.BookingId == bookingId);
+                                    if (booking != null)
+                                    {
+                                        var serviceBooking = await dbContext.ServiceBookings.FirstOrDefaultAsync(sb => sb.DetailId == bookingDetail.DetailId);
+                                        if (serviceBooking != null)
+                                        {
+                                            var partnerService = await dbContext.PartnerServices.FirstOrDefaultAsync(ps => ps.ServiceId == serviceBooking.ServiceId);
+                                            if (partnerService != null)
+                                            {
+                                                var partner = await dbContext.Partners.FirstOrDefaultAsync(p => p.PartnerId == partnerService.PartnerId);
+                                                if (partner != null)
+                                                {
+                                                    var serviceStatus = partnerService.Status;
+                                                    var partnerStatus = partner.Status;
+                                                    var customerStatus = customer.Status;
+
+                                                    if (serviceStatus == 1 && partnerStatus == 1 && customerStatus == 1)
+                                                    {
+                                                        var medicalServiceDTOs = new List<MedicalServiceDTO>();
+
+                                                        foreach (var reportId in medicalReports)
+                                                        {
+                                                            var medicalName = await dbContext.MedicalReports
+                                                                .Where(mr => mr.ReportId == reportId && mr.CustomerId == customer.CustomerId)
+                                                                .Select(mr => mr.Fullname)
+                                                                .FirstOrDefaultAsync();
+
+                                                            var serviceDTOs = await dbContext.BookingDetails
+                                                                .Where(detail => detail.BookingId == bookingId && detail.ReportId == reportId) // Filter by ReportId
+                                                                .SelectMany(detail => detail.ServiceBookings)
+                                                                .Select(serviceBooking => new PartnerServiceDTO
+                                                                {
+                                                                    ServiceId = serviceBooking.Service.ServiceId,
+                                                                    Name = serviceBooking.Service.Name,
+                                                                    Code = serviceBooking.Service.Code,
+                                                                    Duration = serviceBooking.Service.Duration,
+                                                                    Status = serviceBooking.Service.Status,
+                                                                    Description = serviceBooking.Service.Description,
+                                                                    Price = serviceBooking.Service.Price,
+                                                                    BookedQuantity = serviceBooking.Service.ServiceBookings.Count,
+                                                                    Rating = serviceBooking.Service.Rating,
+                                                                }).ToListAsync();
+
+                                                            medicalServiceDTOs.Add(new MedicalServiceDTO
+                                                            {
+                                                                MedicalName = medicalName,
+                                                                Services = serviceDTOs
+                                                            });
+                                                        }
+
+                                                        result.Add(new IncomingBookingDTO
+                                                        {
+                                                            BookingId = booking.BookingId,
+                                                            Status = (int)status,
+                                                            Partner = partner.DisplayName,
+                                                            BookingDate = (DateTime)booking.CreatedDate,
+                                                            bookingTime = booking.bookingTime,
+                                                            Address = booking.Address,
+                                                            PaymentMethod = (int)booking.PaymentId,
+                                                            MedicalService = medicalServiceDTOs
+                                                        });
+                                                    }
+                                                    else
+                                                    {
+                                                        throw new Exception("Invalid status for partner.");
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                     }
                 }
                 return result;
@@ -575,6 +541,10 @@ namespace DataAccessLayer
 
                                                 if (serviceStatus == 1 && partnerStatus == 1 && customerStatus == 1)
                                                 {
+                                                    var medicalReports = await dbContext.MedicalReports
+                                                        .Where(mr => mr.ReportId == bookingDetail.ReportId && mr.CustomerId == customer.CustomerId)
+                                                        .Select(mr => mr.Fullname)
+                                                        .ToListAsync();
                                                     var pendingBooking = new PendingBookingDTO
                                                     {
                                                         BookingId = booking.BookingId,
@@ -594,14 +564,14 @@ namespace DataAccessLayer
                                                                 Price = serviceBooking.Service.Price,
                                                                 BookedQuantity = serviceBooking.Service.ServiceBookings.Count,
                                                                 Rating = serviceBooking.Service.Rating,
-                                                                Categories = serviceBooking.Service.ServiceDetails
+/*                                                                Categories = serviceBooking.Service.ServiceDetails
                                                                     .Select(detail => new ServiceCategoryDTO
                                                                     {
                                                                         CategoryId = detail.Category.CategoryId,
                                                                         Category = detail.Category.Category,
                                                                         Code = detail.Category.Code
                                                                     }).Distinct()
-                                                                    .ToList()
+                                                                    .ToList()*/
                                                             })
                                                             .GroupBy(service => service.ServiceId)
                                                             .Select(group => group.First())
@@ -611,7 +581,7 @@ namespace DataAccessLayer
                                                             .Where(payment => payment.PaymentId == booking.PaymentId)
                                                             .Select(payment => payment.Name)
                                                             .FirstOrDefaultAsync(),
-                                                        MedicalName = medicalReport.Fullname, // Lấy tên từ MedicalReport
+                                                        MedicalNames = medicalReports, // Lấy tên từ MedicalReport
                                                         DisplayName = partner.DisplayName,
                                                         From = "N/A", // Không có lịch làm việc cho đối tác
                                                         To = "N/A",
