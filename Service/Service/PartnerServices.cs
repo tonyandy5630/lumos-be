@@ -135,15 +135,17 @@ namespace Service.Service
             {
                 PartnerError? errorPartner = null;
 
-                Partner? existedPartnerName = await _unitOfWork.PartnerRepo.GetPartnerByPartnerNameAsync(partner.PartnerName);
-                Partner? existedLicense = await _unitOfWork.PartnerRepo.GetPartnerByBussinessLicenseAsync(partner.BusinessLicenseNumber);
-                Partner? existedDisplayName = await _unitOfWork.PartnerRepo.GetPartnerByDisplayNameAsync(partner.DisplayName);
-                Partner? existedEmail = await _unitOfWork.PartnerRepo.GetPartnerByEmailAsync(partner.Email);
+                Task<Partner?> existedPartnerName =  _unitOfWork.PartnerRepo.GetPartnerByPartnerNameAsync(partner.PartnerName);
+                Task<Partner?> existedLicense =  _unitOfWork.PartnerRepo.GetPartnerByBussinessLicenseAsync(partner.BusinessLicenseNumber);
+                Task<Partner?> existedDisplayName =  _unitOfWork.PartnerRepo.GetPartnerByDisplayNameAsync(partner.DisplayName);
+                Task<Partner?> existedEmail =  _unitOfWork.PartnerRepo.GetPartnerByEmailAsync(partner.Email);
 
-                bool partnerNameError = existedPartnerName != null;
-                bool licenseError = existedLicense != null;
-                bool displayNameError = existedDisplayName != null;
-                bool emailError = existedEmail != null;
+                await Task.WhenAll(existedPartnerName, existedLicense, existedDisplayName, existedEmail);
+
+                bool partnerNameError =  existedPartnerName != null;
+                bool licenseError =  existedLicense != null;
+                bool displayNameError =  existedDisplayName != null;
+                bool emailError =  existedEmail != null;
 
                 bool hasError = partnerNameError|| licenseError|| displayNameError|| emailError;
                 if (hasError)
