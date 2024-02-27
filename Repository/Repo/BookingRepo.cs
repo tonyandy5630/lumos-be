@@ -32,7 +32,10 @@ namespace Repository.Repo
 
         public Task<List<Booking>> GetAllIncompleteBookingsAsync() => BookingDAO.Instance.GetAllIncompleteBookingsAsync();
         public Task<List<TopBookedServiceDTO>> GetTopBookedServicesAsync(int top) => BookingDAO.Instance.GetTopBookedServicesAsync(top);
+        public Task<TopBookingSummaryDTO> GetAllBookedServicesByPartnerEmailAsync(string email) => BookingDAO.Instance.GetAllBookedServicesByPartnerEmailAsync(email);
 
         public Task<List<TotalBookingMonthlyStat>> GetAllBookingsForYearAsync(int year) => BookingDAO.Instance.GetAllBookingsForYearAsync(year);
+
+        public Task<BookingDTO> GetBookingDetailInforByBookingIdAsync(int id) => BookingDAO.Instance.GetBookingDetailInforByBookingIdAsync((int)id);
     }
 }

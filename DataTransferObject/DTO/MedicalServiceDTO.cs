@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace DataTransferObject.DTO
 {
-    public class ServiceDTO
+    public class MedicalServiceDTO
     {
-        public int ServiceId { get; set; }
-        public decimal Price { get; set; }
+        public string MedicalName { get; set; }
+        public List<PartnerServiceDTO> Services { get; set; }
     }
 }

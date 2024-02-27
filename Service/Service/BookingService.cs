@@ -113,6 +113,20 @@ namespace Service.Service
                 throw new Exception(ex.Message);
             }
         }
+        public async Task<TopBookingSummaryDTO> GetAllBookedServicesByPartnerEmailAsync(string email)
+        {
+            try
+            {
+                var topServices = await _unitOfWork.BookingRepo.GetAllBookedServicesByPartnerEmailAsync(email);
+
+                return topServices;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetAllBookedServicesAsync: {ex.Message}", ex);
+                throw new Exception(ex.Message);
+            }
+        }
 
         public async Task<List<int?>> GetAllBookingsForYearAsync(int year)
         {
@@ -146,6 +160,21 @@ namespace Service.Service
             catch (Exception ex)
             {
                 Console.WriteLine($"Error in GetAllBookingsForYearAsync: {ex.Message}", ex);
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<BookingDTO> GetBookingDetailInforByBookingIdAsync(int id)
+        {
+            try
+            {
+                var bookinginfor = await _unitOfWork.BookingRepo.GetBookingDetailInforByBookingIdAsync(id);
+
+                return bookinginfor;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetAllBookedServicesAsync: {ex.Message}", ex);
                 throw new Exception(ex.Message);
             }
         }

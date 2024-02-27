@@ -30,6 +30,66 @@ namespace LumosSolution.Controllers
             _mapper = mapper;
             _bookingLogService = bookingLogService;
         }
+        [HttpGet("detail/{id}")]
+        [Authorize(Roles = "Partner,Admin")]
+        public async Task<ActionResult<ApiResponse<BookingDTO>>> GetBookingDetailInforById(int id)
+        {
+            ApiResponse<BookingDTO> response = new ApiResponse<BookingDTO>();
+            try
+            {
+                BookingDTO bookingDetail = await _bookingService.GetBookingDetailInforByBookingIdAsync(id);
+
+                if (bookingDetail == null)
+                {
+                    response.message = MessagesResponse.Error.NotFound;
+                    response.StatusCode = ApiStatusCode.NotFound;
+                    return NotFound(response);
+                }
+
+                response.data = bookingDetail;
+                response.message = MessagesResponse.Success.Completed;
+                response.StatusCode = ApiStatusCode.OK;
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                response.message = MessagesResponse.Error.OperationFailed;
+                response.StatusCode = ApiStatusCode.BadRequest;
+                return BadRequest(response);
+            }
+        }
+
+        [HttpGet("pending")]
+        [Authorize(Roles = "Partner")]
+        public async Task<ActionResult<ApiResponse<object>>> GetPendingBookings()
+        {
+            ApiResponse<object> response = new ApiResponse<object>();
+            try
+            {
+                var userEmail = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+                var pendingBookingDTOs = await _bookingLogService.GetBookingsHaveStatus1ByEmailAsync(userEmail);
+
+                if (pendingBookingDTOs == null || !pendingBookingDTOs.Any())
+                {
+                    response.message = "No pending bookings found.";
+                    response.StatusCode = ApiStatusCode.NotFound;
+                    return NotFound(response);
+                }
+
+                response.data = pendingBookingDTOs;
+                response.message = "Success";
+                response.StatusCode = ApiStatusCode.OK;
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                response.message = "Internal Server Error";
+                response.StatusCode = ApiStatusCode.BadRequest;
+                return BadRequest(response);
+            }
+        }
         [HttpGet]
         [Authorize(Roles = "Customer")]
         public async Task<ActionResult<ApiResponse<object>>> GetAllBookingsByCustomerID()
@@ -73,7 +133,7 @@ namespace LumosSolution.Controllers
             ApiResponse<object> response = new ApiResponse<object>();
             try
             {
-                var pendingBookingDTOs = await _bookingLogService.GetPendingBookingsByCustomerIdAsync(id);
+                var pendingBookingDTOs = await _bookingLogService.GetIncomingBookingsByCustomerIdAsync(id);
 
                 if (pendingBookingDTOs == null || !pendingBookingDTOs.Any())
                 {
@@ -104,14 +164,14 @@ namespace LumosSolution.Controllers
 
         [HttpGet("comming")]
         [Authorize(Roles = "Customer")]
-        public async Task<ActionResult<ApiResponse<object>>> GetPendingBookings()
+        public async Task<ActionResult<ApiResponse<object>>> GetIncomingBookings()
         {
             ApiResponse<object> response = new ApiResponse<object>();
             try
             {
                 var userEmail = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
 
-                var pendingBookingDTOs = await _bookingLogService.GetPendingBookingsByEmailAsync(userEmail);
+                var pendingBookingDTOs = await _bookingLogService.GetIncomingBookingsByEmailAsync(userEmail);
 
                 if (pendingBookingDTOs == null || !pendingBookingDTOs.Any())
                 {
@@ -148,14 +208,14 @@ namespace LumosSolution.Controllers
             {
                 var latestBookingLog = await _bookingLogService.GetLatestBookingLogAsync(updateBookingStatusDTO.BookingId);
 
-                if (latestBookingLog.Status < 0 || latestBookingLog.Status > 2)
+                if (latestBookingLog.Status < 0 || latestBookingLog.Status > 4)
                 {
                     response.message = "The status of the latest booking log is invalid or not allowed.";
                     response.StatusCode = ApiStatusCode.BadRequest;
                     return BadRequest(response);
                 }
 
-                if (latestBookingLog.Status == 3)
+                if (latestBookingLog.Status == 4)
                 {
                     response.message = "The status of the latest booking log is already Completed. Cannot create a new one.";
                     response.StatusCode = ApiStatusCode.BadRequest;
@@ -192,43 +252,38 @@ namespace LumosSolution.Controllers
             }
         }
 
-        [HttpGet("/api/stat/sub")]
-        [Authorize(Roles = "Admin")]
-        public async Task<ActionResult<ApiResponse<object>>> GetTopBookedServicesInAllTime([FromQuery] int top =5)
+        [HttpGet("/api/stat/sub/partner")]
+        [Authorize(Roles = "Partner")]
+        public async Task<ActionResult<ApiResponse<object>>> GetTopBookedServicesInAllTime()
         {
             ApiResponse<object> response = new ApiResponse<object>();
             try
             {
-                if(top <= 0)
+                var userEmail = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+                if (userEmail == null)
                 {
-                    response.message = "Invalid top parameter.";
+                    response.message = "không tìm thấy email";
                     response.StatusCode = ApiStatusCode.BadRequest;
                     return BadRequest(response);
                 }
 
                 // Get top booked services
-                var topServices = await _bookingService.GetTopBookedServicesAsync(top);
+                var topServices = await _bookingService.GetAllBookedServicesByPartnerEmailAsync(userEmail);
 
-                if (topServices == null || !topServices.Any())
+                if (topServices == null)
                 {
                     response.message = "No data found.";
                     response.StatusCode = ApiStatusCode.NotFound;
                     return NotFound(response);
                 }
 
-                // Calculate total bookings, return patients, operations, and earnings
-                int totalBookings = topServices.Sum(s => s.NumberOfBooking);
-                int returnPatients = topServices.Count(s => s.NumberOfBooking > 2);
-                int operations = topServices.Sum(s => s.NumberOfBooking); // Assuming operation count is the same as total bookings
-                int earning = totalBookings * 1000; // Placeholder earning calculation
-
                 // Prepare output data
                 var responseData = new
                 {
-                    TotalBookings = totalBookings,
-                    ReturnPatients = returnPatients,
-                    Operations = operations,
-                    Earning = earning
+                    TotalBookings = topServices.TotalBookings,
+                    ReturnPatients = topServices.ReturnPatients,
+                    Operations = topServices.Operations,
+                    Earning = topServices.Earning
                 };
 
                 response.data = responseData;
