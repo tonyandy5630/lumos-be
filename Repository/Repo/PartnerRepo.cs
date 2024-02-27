@@ -17,7 +17,7 @@ namespace Repository.Repo
 
         public Task<PartnerService?> AddPartnerServiceAsync(PartnerService service) => PartnerDAO.Instance.AddPartnerServiceAsync(service);
         
-        public Task<Partner> AddPartnereAsync(Partner partner) => PartnerDAO.Instance.AddPartnereAsync(partner);
+        public Task<Partner?> AddPartnereAsync(Partner partner) => PartnerDAO.Instance.AddPartnereAsync(partner);
 
         public Task<bool> BanPartnerAsync(int partnerId) => PartnerDAO.Instance.BanPartnerAsync(partnerId);
 
@@ -25,7 +25,7 @@ namespace Repository.Repo
 
         public Task<Partner> GetPartnerByCodeAsync(string code) => PartnerDAO.Instance.GetPartnerByCodeAsync(code);
 
-        public Task<Partner> GetPartnerByEmailAsync(string email) => PartnerDAO.Instance.GetPartnerByEmailAsync(email);
+        public Task<Partner?> GetPartnerByEmailAsync(string email) => PartnerDAO.Instance.GetPartnerByEmailAsync(email);
 
         public Task<Partner> GetPartnerByIDAsync(int id) => PartnerDAO.Instance.GetPartnerByIDAsync(id);
 
@@ -44,6 +44,13 @@ namespace Repository.Repo
         public Task<List<MonthlyRevenueDTO>> CalculateMonthlyRevenueAsync(int year) => PartnerDAO.Instance.CalculateMonthlyRevenueAsync(year);
 
         public Task<List<PartnerServiceDTO>> GetPartnerServicesWithBookingCountAsync(int partnerId) => PartnerDAO.Instance.GetPartnerServicesWithBookingCountAsync(partnerId);
+
+        public Task<Partner?> GetPartnerByBussinessLicenseAsync(string license) => PartnerDAO.Instance.GetPartnerByBussinessLicenseAsync(license);
+
+        public Task<Partner?> GetPartnerByDisplayNameAsync(string displayName) => PartnerDAO.Instance.GetPartnerByDisplayNameAsync(displayName);
+
+        public Task<Partner?> GetPartnerByPartnerNameAsync(string name) => PartnerDAO.Instance.GetPartnerByPartnerNameAsync(name);
+
         public Task<StatPartnerServiceDTO> CalculateServicesAndRevenueAsync(string? email) => PartnerDAO.Instance.CalculateServicesAndRevenueAsync(email);
     }
 }

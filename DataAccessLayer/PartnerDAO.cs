@@ -14,13 +14,6 @@ namespace DataAccessLayer
     public class PartnerDAO
     {
         private static PartnerDAO instance = null;
-        private readonly LumosDBContext _context = null;
-
-        public PartnerDAO()
-        {
-            if (_context == null)
-                _context = new LumosDBContext();
-        }
 
         public static PartnerDAO Instance
         {
@@ -38,7 +31,7 @@ namespace DataAccessLayer
         {
             try
             {
-
+                using var _context = new LumosDBContext();
                 var result = from ps in _context.PartnerServices
                              join sb in _context.ServiceBookings
                              on ps.ServiceId equals sb.ServiceId into serviceBookings
@@ -46,7 +39,7 @@ namespace DataAccessLayer
                              where ps.ServiceId == serviceId
                              group new { ps, sb } by
                              new { ps.ServiceId, ps.Name, ps.Description, ps.Price, ps.Code, ps.Status, ps.CreatedDate, ps.Rating, ps.UpdatedBy, ps.Duration, ps.LastUpdate }
-                into grouped
+                              into grouped
                              select new PartnerServiceDTO
                              {
                                  ServiceId = grouped.Key.ServiceId,
@@ -74,6 +67,7 @@ namespace DataAccessLayer
 
         public async Task<PartnerService?> AddPartnerServiceAsync(PartnerService service)
         {
+            using var _context = new LumosDBContext();
             await _context.PartnerServices.AddAsync(service);
 
             if (await _context.SaveChangesAsync() == 1)
@@ -83,6 +77,7 @@ namespace DataAccessLayer
 
         public async Task<IEnumerable<Partner>> SearchPartnerByServiceOrPartnerNameAsync(string keyword)
         {
+            using var _context = new LumosDBContext();
             var result = _context.Partners
                         .Where(p => p.Status == 1 && (p.PartnerName.Contains(keyword) || p.PartnerServices.Any(s => s.Name.Contains(keyword))))
                         .Include(s => s.PartnerServices
@@ -94,6 +89,7 @@ namespace DataAccessLayer
 
         public async Task<IEnumerable<PartnerService>> GetServiceOfPartnerByServiceName(string keyword, int partnerId)
         {
+            using var _context = new LumosDBContext();
             return await _context.PartnerServices.Where(s => s.PartnerId == partnerId && s.Name.Contains(keyword)).ToListAsync();
         }
         public async Task<List<Partner>> GetAllPartnersAsync()
@@ -101,6 +97,7 @@ namespace DataAccessLayer
             List<Partner> partners = new List<Partner>();
             try
             {
+                using var _context = new LumosDBContext();
                 partners = await _context.Partners.ToListAsync();
                 if (partners == null || partners.Count == 0)
                 {
@@ -119,6 +116,7 @@ namespace DataAccessLayer
         {
             try
             {
+                using var _context = new LumosDBContext();
                 Partner partner = await _context.Partners.SingleOrDefaultAsync(u => u.PartnerId == id);
                 if (partner != null)
                 {
@@ -136,6 +134,7 @@ namespace DataAccessLayer
         {
             try
             {
+                using var _context = new LumosDBContext();
                 return await _context.Partners.SingleOrDefaultAsync(u => u.RefreshToken.Equals(token));
             }
             catch (Exception ex)
@@ -148,7 +147,7 @@ namespace DataAccessLayer
         {
             try
             {
-
+                using var _context = new LumosDBContext();
                 Partner? partner = await _context.Partners.SingleOrDefaultAsync(u => u.Code.ToLower().Equals(code.ToLower()));
 
                 if (partner != null)
@@ -167,7 +166,8 @@ namespace DataAccessLayer
         {
             try
             {
-               Partner partner = await _context.Partners.SingleOrDefaultAsync(u => u.Email.ToLower().Equals(email.ToLower()));
+                using var _context = new LumosDBContext();
+                Partner partner = await _context.Partners.SingleOrDefaultAsync(u => u.Email.ToLower().Equals(email.ToLower()));
                 if (partner != null)
                 {
                     partner.PartnerServices = await _context.PartnerServices.Where(ps => ps.PartnerId == partner.PartnerId).ToListAsync();
@@ -180,28 +180,16 @@ namespace DataAccessLayer
                 throw new Exception(ex.Message);
             }
         }
-        public async Task<Partner> AddPartnereAsync(Partner partner)
+        public async Task<Partner?> AddPartnereAsync(Partner partner)
         {
             try
             {
-                bool existing = (await GetAllPartnersAsync())
-                    .Any(p => p.PartnerName.ToLower().Equals(partner.PartnerName.ToLower())
-                        || p.DisplayName.ToLower().Equals(partner.DisplayName.ToLower())
-                        || p.Email.ToLower().Equals(partner.Email.ToLower())
-                        || p.BusinessLicenseNumber.ToLower().Equals(partner.BusinessLicenseNumber.ToLower()));
-
-                if (!existing)
-                {
-                    partner.Code = GenerateCode.GenerateRoleCode("partner");
-                    partner.CreatedDate = DateTime.Now;
-                    partner.LastUpdate = DateTime.Now;
-                    _context.Partners.Add(partner);
-                    await _context.SaveChangesAsync();
-
-                    return await _context.Partners.SingleOrDefaultAsync(p => p.Code.Equals(partner.Code));
-                }
-
-                return null;
+                using var _context = new LumosDBContext();
+                await _context.Partners.AddAsync(partner);
+                int success = await _context.SaveChangesAsync();
+                if (success != 1)
+                    return null;
+                return partner;
             }
             catch (Exception ex)
             {
@@ -210,10 +198,63 @@ namespace DataAccessLayer
             }
         }
 
+        public async Task<Partner?> GetPartnerByDisplayNameAsync(string displayName)
+        {
+            try
+            {
+                using var _context = new LumosDBContext();
+                return await _context.Partners.FirstOrDefaultAsync(p => p.DisplayName.Equals(displayName));
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<Partner?> GetPartnerByBussinessLicenseAsync(string bussinessLisence)
+        {
+            try
+            {
+                using var _context = new LumosDBContext();
+                return await _context.Partners.FirstOrDefaultAsync(p => p.BusinessLicenseNumber.Equals(bussinessLisence));
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<Partner?> GetPartnerByPartnerNameAsync(string name)
+        {
+            try
+            {
+                using var _context = new LumosDBContext();
+                return await _context.Partners.FirstOrDefaultAsync(p => p.PartnerName.Equals(name));
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<Partner?> GetPartnerByPartnerEmailAsync(string email)
+        {
+            try
+            {
+                using var _context = new LumosDBContext();
+                return await _context.Partners.FirstOrDefaultAsync(p => p.Email.Equals(email));
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
         public async Task<bool> UpdatePartnerAsync(Partner partner)
         {
             try
             {
+                using var _context = new LumosDBContext();
                 var existing = await _context.Partners.SingleOrDefaultAsync(s => s.PartnerId == partner.PartnerId);
                 if (existing != null)
                 {
@@ -238,6 +279,7 @@ namespace DataAccessLayer
         {
             try
             {
+                using var _context = new LumosDBContext();
                 Partner partner = await _context.Partners.SingleOrDefaultAsync(s => s.PartnerId == partnerId);
 
                 if (partner != null)
@@ -261,6 +303,7 @@ namespace DataAccessLayer
         {
             try
             {
+                using var _context = new LumosDBContext();
                 var result = _context.Partners
                 .Where(p => p.TypeId == categoryId)
                 .AsNoTracking()
@@ -277,6 +320,7 @@ namespace DataAccessLayer
         {
             try
             {
+                using var _context = new LumosDBContext();
                 DateTime startDate = new DateTime(year, month, 1);
                 DateTime endDate = startDate.AddMonths(1).AddDays(-1);
 
@@ -311,6 +355,7 @@ namespace DataAccessLayer
         {
             try
             {
+                using var _context = new LumosDBContext();
                 List<MonthlyRevenueDTO> monthlyRevenueList = new List<MonthlyRevenueDTO>();
 
                 for (int month = 1; month <= 12; month++)
@@ -350,6 +395,7 @@ namespace DataAccessLayer
         {
             try
             {
+                using var _context = new LumosDBContext();
                 var result = await (from ps in _context.PartnerServices
                                     join sd in _context.ServiceDetails on ps.ServiceId equals sd.ServiceId
                                     join sc in _context.ServiceCategories on sd.CategoryId equals sc.CategoryId
@@ -357,7 +403,7 @@ namespace DataAccessLayer
                                     select new
                                     {
                                         PartnerService = ps,
-                                        ServiceBookings =  _context.ServiceBookings.Where(sb => sb.ServiceId == ps.ServiceId).ToList(), // Convert to List
+                                        ServiceBookings = _context.ServiceBookings.Where(sb => sb.ServiceId == ps.ServiceId).ToList(), // Convert to List
                                         Category = sc // Select category
                                     })
                                     .GroupBy(x => x.PartnerService.ServiceId) // Group by ServiceId

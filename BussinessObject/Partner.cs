@@ -20,7 +20,7 @@ namespace BussinessObject
         [Required]
         public string Email { get; set; }
         public string PartnerName { get; set; }
-        public string? DisplayName { get; set; }
+        public string DisplayName { get; set; }
         [JsonIgnore]
         public string Password { get; set; }
         public string? Phone { get; set; }
@@ -36,7 +36,7 @@ namespace BussinessObject
         public string? ImgUrl { get; set; }
         [JsonIgnore]
         public string? RefreshToken { get; set; }
-        public string? BusinessLicenseNumber { get; set; }
+        public string BusinessLicenseNumber { get; set; }
         public int? Role { get; set; }
 
         public virtual PartnerType? Type { get; set; }
@@ -45,5 +45,6 @@ namespace BussinessObject
         public virtual ICollection<PartnerService> PartnerServices { get; set; }
         [JsonIgnore]
         public virtual ICollection<Schedule> Schedules { get; set; }
+
     }
 }
