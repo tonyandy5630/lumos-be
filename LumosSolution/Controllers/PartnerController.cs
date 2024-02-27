@@ -397,6 +397,7 @@ namespace LumosSolution.Controllers
                 {
                     return UnprocessableEntity(response);
                 }
+                
                 (Partner? data, PartnerError? error) =  await _partnerService.AddPartnerAsync(partner);
 
                 if (data == null)
