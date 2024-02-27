@@ -6,11 +6,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.DotNet.Scaffolding.Shared.Messaging;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using RequestEntity;
+using Service.ErrorObject;
 using Service.InterfaceService;
 using Service.Service;
 using System.Collections.Generic;
 using System.Security.Claims;
 using Utils;
+using static Utils.MessagesResponse;
 
 namespace LumosSolution.Controllers
 {
@@ -189,7 +191,7 @@ namespace LumosSolution.Controllers
 
                 string? email = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
 
-               StatPartnerServiceDTO res = await _partnerService.GetStatPartnerServiceAsync(email);
+                StatPartnerServiceDTO res = await _partnerService.GetStatPartnerServiceAsync(email);
 
 
                 response.message = MessagesResponse.Success.Completed;
@@ -243,7 +245,7 @@ namespace LumosSolution.Controllers
 
         [HttpGet]
         [Authorize(Roles = "Admin,Customer")]
-        public async Task<ActionResult<IEnumerable<SearchPartnerDTO>>> GetPartnerByPartnerOrServiceName([FromQuery]string? keyword = "")
+        public async Task<ActionResult<IEnumerable<SearchPartnerDTO>>> GetPartnerByPartnerOrServiceName([FromQuery] string? keyword = "")
         {
             ApiResponse<IEnumerable<SearchPartnerDTO>> res = new ApiResponse<IEnumerable<SearchPartnerDTO>>
             {
@@ -319,7 +321,7 @@ namespace LumosSolution.Controllers
 
         [HttpPost("service")]
         [Authorize(Roles = "Partner")]
-        public async Task<ActionResult<PartnerService>> AddPartnerService([FromBody]AddPartnerServiceResquest service)
+        public async Task<ActionResult<PartnerService>> AddPartnerService([FromBody] AddPartnerServiceResquest service)
         {
             ApiResponse<PartnerService> response = new ApiResponse<PartnerService>
             {
@@ -327,7 +329,7 @@ namespace LumosSolution.Controllers
             };
             try
             {
-                if(!ModelState.IsValid)
+                if (!ModelState.IsValid)
                 {
                     response.message = MessagesResponse.Error.InvalidInput;
                     response.StatusCode = 422;
@@ -344,7 +346,8 @@ namespace LumosSolution.Controllers
                 response.StatusCode = 200;
                 response.data = newService;
                 return Ok(response);
-            }catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
                 response.message = ex.Message;
@@ -419,34 +422,47 @@ namespace LumosSolution.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult<ApiResponse<Partner>>> AddPartnerAsync([FromBody] Partner partner)
+        public async Task<ActionResult<ApiResponse<object>>> AddPartnerAsync([FromBody] AddPartnerRequest partner)
         {
-            ApiResponse<Partner> response = new ApiResponse<Partner>();
+            ApiResponse<object> response = new ApiResponse<object>
+            {
+                message = MessagesResponse.Error.OperationFailed,
+                StatusCode = ApiStatusCode.BadRequest,
+            };
+
             try
             {
-                response.data = await _partnerService.AddPartnereAsync(partner);
-                if (response.data == null)
+                if (!ModelState.IsValid)
                 {
-                    response.message = MessagesResponse.Error.OperationFailed;
-                    response.StatusCode = ApiStatusCode.BadRequest;
+                    return UnprocessableEntity(response);
                 }
-                else
+                
+                (Partner? data, PartnerError? error) =  await _partnerService.AddPartnerAsync(partner);
+
+                if (data == null)
                 {
-                    response.StatusCode = ApiStatusCode.OK;
-                    response.message = MessagesResponse.Success.Completed;
+                    response.StatusCode = 409;
+                    response.data = error;
+                    return Conflict(response);
                 }
 
+                response.StatusCode = ApiStatusCode.OK;
+                response.message = MessagesResponse.Success.Completed;
+                response.data = data;
                 return Ok(response);
             }
-            catch
+            catch(Exception ex)
             {
-                response.message = MessagesResponse.Error.OperationFailed;
-                response.StatusCode = ApiStatusCode.BadRequest;
-
+                if(ex is NullReferenceException)
+                {
+                    response.message = ex.Message;
+                    response.StatusCode = 422;
+                    return UnprocessableEntity(response);
+                }
                 return BadRequest(response);
             }
         }
-        
+
         [HttpPost("schedule")]
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult<ApiResponse<Schedule>>> AddPartnerSchedule([FromBody] Schedule schedule)

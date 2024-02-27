@@ -16,6 +16,8 @@ using System.Threading.Tasks;
 using RequestEntity;
 using Utils;
 using Microsoft.Extensions.DependencyInjection;
+using Repository.Interface;
+using Service.ErrorObject;
 
 namespace Service.Service
 {
@@ -54,12 +56,11 @@ namespace Service.Service
 
                 PartnerService partnerService = _mapper.Map<PartnerService>(service);
                 partnerService.PartnerId = partner.PartnerId;
-                partnerService.Partner = partner;
                 partnerService.Status = 1;
                 partnerService.CreatedDate = DateTime.Now;
                 partnerService.LastUpdate = DateTime.Now;
                 partnerService.Rating = 0;
-                partner.UpdatedBy = partner.PartnerName;
+                partnerService.UpdatedBy = partner.PartnerName;
                 // Validate categories
                 // better if can do concurrently
                 foreach (int cateId in service.Categories)
@@ -127,24 +128,70 @@ namespace Service.Service
             }
         }
 
-        public async Task<Partner> AddPartnereAsync(Partner partner)
+        public async Task<(Partner?, PartnerError?)> AddPartnerAsync(AddPartnerRequest partner)
         {
             try
             {
-                Partner part = await _unitOfWork.PartnerRepo.AddPartnereAsync(partner);
-                if(partner == null)
+                PartnerError? errorPartner = null;
+
+                Task<Partner?> existedPartnerName =  _unitOfWork.PartnerRepo.GetPartnerByPartnerNameAsync(partner.PartnerName.Trim());
+                Task<Partner?> existedLicense =  _unitOfWork.PartnerRepo.GetPartnerByBussinessLicenseAsync(partner.BusinessLicenseNumber.Trim());
+                Task<Partner?> existedDisplayName =  _unitOfWork.PartnerRepo.GetPartnerByDisplayNameAsync(partner.DisplayName.Trim());
+                Task<Partner?> existedEmail =  _unitOfWork.PartnerRepo.GetPartnerByEmailAsync(partner.Email.Trim());
+
+                Task.WhenAll(existedPartnerName, existedLicense, existedDisplayName, existedEmail).Wait();
+
+                bool partnerNameError =  existedPartnerName.Result != null;
+                bool licenseError = existedLicense.Result != null;
+                bool displayNameError = existedDisplayName.Result != null;
+                bool emailError = existedEmail.Result != null;
+
+                bool hasError = partnerNameError|| licenseError|| displayNameError|| emailError;
+                if (hasError)
+                {
+                    errorPartner = new PartnerError();
+                    if (partnerNameError)
+                        errorPartner.PartnerName = "Existed Partner Name";
+
+                    if (licenseError)
+                        errorPartner.BusinessLicenseNumber = "Existed License";
+
+                    if (displayNameError)
+                        errorPartner.DisplayName = "Existed Display Name";
+
+                    if (emailError)
+                        errorPartner.Email = "Existed Email";
+
+                    return  (null,  errorPartner);
+                }
+
+                PartnerType? partnerType = await _unitOfWork.PartnerTypeRepo.GetPartnerTypeByIdAsync(partner.TypeId);
+
+                if(partnerType == null)
+                    throw new NullReferenceException("Partner Type is not existed");
+
+                Partner addPartner = _mapper.Map<Partner>(partner);
+                addPartner.Code = GenerateCode.GenerateRoleCode("partner");
+                addPartner.CreatedDate = DateTime.Now;
+                addPartner.LastUpdate = DateTime.Now;
+                // Hash password
+                IUserManagerRepo<AddPartnerRequest> userManager = new UserManagerRepo<AddPartnerRequest>();
+                addPartner.Password = userManager.HashPassword(partner, partner.Email.Trim());
+                
+                Partner? part = await _unitOfWork.PartnerRepo.AddPartnereAsync(addPartner);
+
+                if(part == null)
                 {
                     Console.WriteLine("Failed to add partner!");
+                    throw new Exception("Something went wrong when adding partner");
                 } 
-                else
-                {
-                    Console.WriteLine("Partner added successfully!");
-                }
-                return part;
+                return (part,null);
             }
             catch (Exception ex)
             {
-                Console.WriteLine(MessagesResponse.Error.OperationFailed);
+                Console.WriteLine(ex.Message);
+                if (ex is NullReferenceException)
+                    throw new NullReferenceException(ex.Message);
                 throw new Exception(ex.Message);
             }
         }
@@ -313,6 +360,10 @@ namespace Service.Service
             try
             {
                 IEnumerable<Partner> searchedPartner = await _unitOfWork.PartnerRepo.SearchPartnerByPartnerOrServiceNameAsync(keyword.Trim());
+                if (searchedPartner == null)
+                {
+                    throw new Exception("Partner not found.");
+                }
                 IEnumerable<SearchPartnerDTO> results = _mapper.Map<IEnumerable<SearchPartnerDTO>>(searchedPartner);
                 List<PartnerServiceDTO?> serviceDetails = new List<PartnerServiceDTO?>();
                 foreach (var partner in results)

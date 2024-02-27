@@ -10,5 +10,7 @@ namespace Repository.Interface
     public interface IPartnerTypeRepo
     {
         Task<List<PartnerType>> GetPartnerTypesAsync(string? keyword);
+
+        Task<PartnerType?> GetPartnerTypeByIdAsync(int id);
     }
 }

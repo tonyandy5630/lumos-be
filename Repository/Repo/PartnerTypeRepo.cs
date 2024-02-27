@@ -12,6 +12,8 @@ namespace Repository.Repo
     {
         public PartnerTypeRepo(LumosDBContext context) { }
 
+        public Task<PartnerType?> GetPartnerTypeByIdAsync(int id) => PartnerTypeDAO.Instance.GetPartnertypeByIdAsync(id);
+
         public Task<List<PartnerType>> GetPartnerTypesAsync(string? keyword) => PartnerTypeDAO.Instance.GetPartnerTypesAsync(keyword);
     }
 }
