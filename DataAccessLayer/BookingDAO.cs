@@ -362,5 +362,68 @@ namespace DataAccessLayer
                 throw new Exception(ex.Message);
             }
         }
+        public async Task<BookingDTO> GetBookingDetailInforByBookingIdAsync(int id)
+        {
+            try
+            {
+                var bookingDetail = await dbContext.BookingDetails
+                    .Include(bd => bd.ServiceBookings)
+                    .ThenInclude(sb => sb.Service)
+                    .Include(bd => bd.ServiceBookings)
+                        .ThenInclude(sb => sb.Service.ServiceDetails) 
+                            .ThenInclude(sd => sd.Category) 
+                    .Include(bd => bd.Booking)
+                    .SingleOrDefaultAsync(u => u.BookingId == id);
+
+                if (bookingDetail == null)
+                {
+                    throw new Exception($"Booking detail with ID {id} not found");
+                }
+
+                // Retrieve the latest booking log status
+                var latestBookingLogStatus = await dbContext.BookingLogs
+                    .Where(bl => bl.BookingId == id)
+                    .OrderByDescending(bl => bl.CreatedDate)
+                    .Select(bl => bl.Status)
+                    .FirstOrDefaultAsync();
+
+                var partnerServiceDTOs = bookingDetail.ServiceBookings.Select(serviceBooking => new PartnerServiceDTO
+                {
+                    ServiceId = (int)serviceBooking.ServiceId,
+                    Name = serviceBooking.Service.Name,
+                    Code = serviceBooking.Service.Code,
+                    Duration = serviceBooking.Service.Duration,
+                    Status = serviceBooking.Service.Status,
+                    Description = serviceBooking.Service.Description,
+                    Price = serviceBooking.Service.Price,
+                    BookedQuantity = serviceBooking.Service.ServiceBookings.Count,
+                    Rating = serviceBooking.Service.Rating,
+                    Categories = serviceBooking.Service.ServiceDetails
+                                    .Where(sd => sd.Category != null) // Ensure Category is not null
+                                    .Select(sd => new ServiceCategoryDTO
+                                    {
+                                        CategoryId = sd.Category.CategoryId,
+                                        Category = sd.Category.Category,
+                                        Code = sd.Category.Code
+                                    }).Distinct()
+                                    .ToList()
+                }).ToList();
+
+                var bookingDTO = new BookingDTO
+                {
+                    bookingId = (int)bookingDetail.BookingId,
+                    services = partnerServiceDTOs,
+                    status = (int)latestBookingLogStatus // Set the status to the latest booking log status
+                };
+
+                return bookingDTO;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetBookingDetailByBookingIdAsync: {ex.Message}", ex);
+                throw new Exception(ex.Message);
+            }
+        }
+
     }
 }

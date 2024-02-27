@@ -30,6 +30,35 @@ namespace LumosSolution.Controllers
             _mapper = mapper;
             _bookingLogService = bookingLogService;
         }
+        [HttpGet("detail/{id}")]
+        public async Task<ActionResult<ApiResponse<BookingDTO>>> GetBookingDetailInforById(int id)
+        {
+            ApiResponse<BookingDTO> response = new ApiResponse<BookingDTO>();
+            try
+            {
+                BookingDTO bookingDetail = await _bookingService.GetBookingDetailInforByBookingIdAsync(id);
+
+                if (bookingDetail == null)
+                {
+                    response.message = MessagesResponse.Error.NotFound;
+                    response.StatusCode = ApiStatusCode.NotFound;
+                    return NotFound(response);
+                }
+
+                response.data = bookingDetail;
+                response.message = MessagesResponse.Success.Completed;
+                response.StatusCode = ApiStatusCode.OK;
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                response.message = MessagesResponse.Error.OperationFailed;
+                response.StatusCode = ApiStatusCode.BadRequest;
+                return BadRequest(response);
+            }
+        }
+
         [HttpGet("pending")]
         [Authorize(Roles = "Partner")]
         public async Task<ActionResult<ApiResponse<object>>> GetPendingBookings()

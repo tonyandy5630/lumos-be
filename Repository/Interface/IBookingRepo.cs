@@ -19,5 +19,6 @@ namespace Repository.Interface
         Task<List<TopBookedServiceDTO>> GetTopBookedServicesAsync(int top);
         Task<TopBookingSummaryDTO> GetAllBookedServicesByPartnerEmailAsync(string email);
         Task<List<TotalBookingMonthlyStat>> GetAllBookingsForYearAsync(int year);
+        Task<BookingDTO> GetBookingDetailInforByBookingIdAsync(int id);
     }
 }
