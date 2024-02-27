@@ -418,20 +418,7 @@ namespace Service.Service
             if (email == null)
 
                 throw new Exception("Partner not found");
-            Partner partner = await _unitOfWork.PartnerRepo.GetPartnerByEmailAsync(email);
-
-            if (partner == null)
-            {
-                throw new Exception("Partner not found");
-            }
-            int revenue = 0;
-
-            foreach (var service in partner.PartnerServices)
-            {
-                revenue += service.Price;
-            }
-            stat.totalServices = partner.PartnerServices.Count;
-            stat.revenue = revenue;
+            stat = await CalculateServicesAndRevenueAsync(email);
 
             return  await Task.FromResult(stat);
         }
@@ -475,6 +462,21 @@ namespace Service.Service
             catch (Exception ex)
             {
                 Console.WriteLine($"Error in GetPartnerServicesWithBookingCountAsync: {ex.Message}", ex);
+                throw;
+            }
+        }
+        public async Task<StatPartnerServiceDTO> CalculateServicesAndRevenueAsync(string? email)
+        {
+            try
+            {
+                if (email == null)
+                    throw new ArgumentNullException(nameof(email), "Partner email is null");
+
+                return await _unitOfWork.PartnerRepo.CalculateServicesAndRevenueAsync(email);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in CalculateServicesAndRevenueAsync: {ex.Message}");
                 throw;
             }
         }

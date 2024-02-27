@@ -392,6 +392,38 @@ namespace DataAccessLayer
                 throw;
             }
         }
+        public async Task<StatPartnerServiceDTO> CalculateServicesAndRevenueAsync(string? email)
+        {
+            if (email == null)
+                throw new ArgumentNullException(nameof(email), "Partner email is null");
 
+            var partner = await _context.Partners.Include(p => p.PartnerServices).SingleOrDefaultAsync(p => p.Email == email);
+            if (partner == null)
+                throw new Exception("Partner not found");
+
+            int totalServices = partner.PartnerServices.Count;
+
+            var completedBookings = await _context.Bookings
+                .Where(b => b.BookingLogs.Any(bl => bl.Status == 4))
+                .ToListAsync();
+
+            int revenue = 0;
+            foreach (var booking in completedBookings)
+            {
+                var serviceBookings = await _context.ServiceBookings
+                    .FirstOrDefaultAsync(sb => sb.Detail != null && sb.Detail.BookingId == booking.BookingId);
+
+                if (serviceBookings != null)
+                    revenue += serviceBookings.Price ?? 0;
+            }
+
+            var statDTO = new StatPartnerServiceDTO
+            {
+                totalServices = totalServices,
+                revenue = revenue
+            };
+
+            return statDTO;
+        }
     }
 }
