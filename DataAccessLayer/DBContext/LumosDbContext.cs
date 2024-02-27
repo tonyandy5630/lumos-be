@@ -363,13 +363,11 @@ namespace BussinessObject
 
                 entity.Property(e => e.PartnerId).ValueGeneratedOnAdd();
 
-                entity.Property(e => e.Address).HasMaxLength(255);
+                entity.Property(e => e.Address).HasMaxLength(255).IsRequired();
 
-                entity.Property(e => e.BusinessLicenseNumber).IsUnicode(true);
+                entity.Property(e => e.BusinessLicenseNumber).IsUnicode(true).IsRequired();
 
-                entity.Property(e => e.Code)
-                    .HasMaxLength(50)
-                    .IsUnicode(true);
+                entity.Property(e => e.Code).HasMaxLength(50).IsUnicode(true).IsRequired();
 
                 entity.Property(e => e.CreatedBy)
                     .HasMaxLength(50)
@@ -379,11 +377,9 @@ namespace BussinessObject
 
                 entity.Property(e => e.Description).HasColumnType("text");
 
-                entity.Property(e => e.DisplayName).HasMaxLength(100);
+                entity.Property(e => e.DisplayName).HasMaxLength(100).IsRequired();
 
-                entity.Property(e => e.Email)
-                    .HasMaxLength(50)
-                    .IsUnicode(true);
+                entity.Property(e => e.Email).HasMaxLength(50).IsUnicode(true).IsRequired();
 
                 entity.Property(e => e.ImgUrl).IsUnicode(true);
 
@@ -393,15 +389,14 @@ namespace BussinessObject
 
                 entity.Property(e => e.PartnerName).HasMaxLength(100).IsRequired();
 
-                entity.Property(e => e.Password)
-                    .HasMaxLength(100)
-                    .IsUnicode(true);
+                entity.Property(e => e.Password).HasMaxLength(100).IsUnicode(true).IsRequired();
 
                 entity.Property(e => e.Phone)
-                    .HasMaxLength(20)
-                    .IsUnicode(true);
+                    .HasMaxLength(13)
+                    .IsUnicode(true)
+                    .IsRequired();
 
-                entity.Property(e => e.RefreshToken).IsUnicode(true);
+                entity.Property(e => e.RefreshToken).IsUnicode(false);
 
                 entity.Property(e => e.UpdatedBy)
                     .HasMaxLength(50)
