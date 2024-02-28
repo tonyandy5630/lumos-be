@@ -34,6 +34,7 @@ namespace Service.InterfaceService
         Task<List<PartnerServiceDTO>> GetPartnerServicesWithBookingCountAsync(string email);
         Task<StatPartnerServiceDTO> GetStatPartnerServiceAsync (string email);
         Task<StatPartnerServiceDTO> CalculateServicesAndRevenueAsync(string? email);
+        Task<List<BookingDTO>> GetPartnerBookingsAsync(string partnerEmail, int page, int pageSize);
 
     }
 }

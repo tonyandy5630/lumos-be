@@ -479,5 +479,77 @@ namespace DataAccessLayer
 
             return statDTO;
         }
+        public async Task<List<BookingDTO>> GetPartnerBookingsAsync(string partnerEmail, int page, int pageSize)
+        {
+            try
+            {
+                using var _context = new LumosDBContext();
+                var skipAmount = (page - 1) * pageSize;
+
+                // Find the PartnerId corresponding to the provided email
+                var partnerId = await _context.Partners
+                    .Where(p => p.Email == partnerEmail)
+                    .Select(p => p.PartnerId)
+                    .FirstOrDefaultAsync();
+
+                if (partnerId == 0)
+                {
+                    // Partner with the provided email does not exist
+                    return new List<BookingDTO>();
+                }
+
+                // Retrieve partner bookings using PartnerId
+                var partnerBookings = await _context.Bookings
+                    .Include(b => b.BookingLogs)
+                    .Include(b => b.BookingDetails)
+                        .ThenInclude(bd => bd.ServiceBookings)
+                            .ThenInclude(sb => sb.Service)
+                                .ThenInclude(s => s.ServiceDetails)
+                                    .ThenInclude(sd => sd.Category)
+                    .Where(b => b.BookingDetails.Any(bd => bd.BookingId == b.BookingId &&
+                                                            bd.ServiceBookings.Any(sb => sb.DetailId == bd.DetailId &&
+                                                                                        sb.Service.PartnerId == partnerId)))
+                    .OrderByDescending(b => b.CreatedDate)
+                    .Skip(skipAmount)
+                    .Take(pageSize)
+                    .ToListAsync();
+
+                var bookingDTOs = partnerBookings.Select(b => new BookingDTO
+                {
+                    bookingId = b.BookingId,
+                    services = b.BookingDetails.SelectMany(bd => bd.ServiceBookings)
+                                    .Select(sb => new PartnerServiceDTO
+                                    {
+                                        ServiceId = (int)sb.ServiceId,
+                                        Name = sb.Service.Name,
+                                        Code = sb.Service.Code,
+                                        Duration = sb.Service.Duration,
+                                        Status = sb.Service.Status,
+                                        Description = sb.Service.Description,
+                                        Price = sb.Price ?? 0,
+                                        BookedQuantity = sb.Service.ServiceBookings.Count,
+                                        Rating = sb.Service.Rating,
+                                        Categories = sb.Service.ServiceDetails
+                                                        .Where(sd => sd.Category != null)
+                                                        .Select(sd => new ServiceCategoryDTO
+                                                        {
+                                                            CategoryId = sd.Category.CategoryId,
+                                                            Category = sd.Category.Category,
+                                                            Code = sd.Category.Code
+                                                        }).Distinct().ToList()
+                                    }).ToList(),
+                    status = (int)b.BookingLogs.OrderByDescending(bl => bl.CreatedDate)
+                                .Select(bl => bl.Status).FirstOrDefault()
+                }).ToList();
+
+                return bookingDTOs;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetPartnerBookingsAsync: {ex.Message}", ex);
+                throw new Exception(ex.Message);
+            }
+        }
+
     }
 }

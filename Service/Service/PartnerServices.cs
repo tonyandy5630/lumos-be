@@ -531,5 +531,18 @@ namespace Service.Service
                 throw;
             }
         }
+
+        public async Task<List<BookingDTO>> GetPartnerBookingsAsync(string partnerEmail, int page, int pageSize)
+        {
+            try
+            {
+                return await _unitOfWork.PartnerRepo.GetPartnerBookingsAsync(partnerEmail, page, pageSize);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetPartnerBookingsAsync: {ex.Message}", ex);
+                throw;
+            }
+        }
     }
 }
