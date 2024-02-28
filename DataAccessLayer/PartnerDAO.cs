@@ -483,6 +483,7 @@ namespace DataAccessLayer
         {
             try
             {
+                using var _context = new LumosDBContext();
                 var skipAmount = (page - 1) * pageSize;
 
                 // Find the PartnerId corresponding to the provided email
