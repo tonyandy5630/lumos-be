@@ -12,7 +12,7 @@ namespace BussinessObject
 
         public int PaymentId { get; set; }
         public string? Code { get; set; }
-        public string? Name { get; set; }
+        public string Name { get; set; }
         public int? Status { get; set; }
         public DateTime? CreateDate { get; set; }
         public string? CreatedBy { get; set; }
