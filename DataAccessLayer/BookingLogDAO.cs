@@ -1,9 +1,11 @@
 ﻿using BussinessObject;
 using DataTransferObject.DTO;
+using Enum;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Utils;
 
 namespace DataAccessLayer
 {
@@ -174,99 +176,7 @@ namespace DataAccessLayer
             return await dbContext.Customers.FirstOrDefaultAsync(c => c.Email == email);
         }
 
-        public async Task<List<IncomingBookingDTO>> GetBookingsHaveStatus1ByEmailAsync(string partnerEmail)
-        {
-            try
-            {
-                var partner = await FindPartnerByEmailAsync(partnerEmail);
-                if (partner == null)
-                {
-                    return new List<IncomingBookingDTO>();
-                }
-
-                var allPendingLogs = await GetAllPendingBookingLogsAsync();
-                var pendingBookings = GroupPendingBookings(allPendingLogs);
-                var result = await FilterAndMapPendingBookingsAsync(pendingBookings, partner);
-
-                return result;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error in GetBookingsHaveStatus1ByEmailAsync: {ex.Message}", ex);
-                throw;
-            }
-        }
-
-        /*function support to get booking*/
-        private async Task<Partner> FindPartnerByEmailAsync(string partnerEmail)
-        {
-            return await dbContext.Partners.FirstOrDefaultAsync(p => p.Email == partnerEmail);
-        }
-
-
-        private async Task<Schedule> GetPartnerScheduleAsync(int partnerId)
-        {
-            return await dbContext.Schedules.FirstOrDefaultAsync(s => s.PartnerId == partnerId);
-        }
-
-        private async Task<string> GetPaymentMethodNameAsync(int paymentMethodId)
-        {
-            var paymentMethod = await dbContext.PaymentMethods.FirstOrDefaultAsync(p => p.PaymentId == paymentMethodId);
-            return paymentMethod?.Name ?? "Unknown Payment Method";
-        }
-
-
-        private async Task<Booking> GetBookingByLogAsync(BookingLog log)
-        {
-            return await dbContext.Bookings.FirstOrDefaultAsync(b => b.BookingId == log.BookingId);
-        }
-
-        private async Task<bool> HasStatusGreaterThan1Async(Booking booking)
-        {
-            return await dbContext.BookingLogs.AnyAsync(bl => bl.BookingId == booking.BookingId && bl.Status > 1);
-        }
-
-        private async Task<BookingDetail> GetBookingDetailAsync(Booking booking)
-        {
-            return await dbContext.BookingDetails.FirstOrDefaultAsync(bd => bd.BookingId == booking.BookingId);
-        }
-
-        private async Task<Customer> GetCustomerByBookingDetailAsync(BookingDetail bookingDetail)
-        {
-            var medicalReport = await dbContext.MedicalReports.FirstOrDefaultAsync(mr => mr.ReportId == bookingDetail.ReportId);
-            if (medicalReport != null)
-            {
-                return await dbContext.Customers.FirstOrDefaultAsync(c => c.CustomerId == medicalReport.CustomerId);
-            }
-            return null;
-        }
-
-        private async Task<ServiceBooking> GetServiceBookingByDetailAsync(BookingDetail bookingDetail)
-        {
-            return await dbContext.ServiceBookings.FirstOrDefaultAsync(sb => sb.DetailId == bookingDetail.DetailId);
-        }
-
-        private async Task<PartnerService> GetPartnerServiceAsync(ServiceBooking serviceBooking, Partner partner)
-        {
-            return await dbContext.PartnerServices.FirstOrDefaultAsync(ps => ps.ServiceId == serviceBooking.ServiceId && ps.PartnerId == partner.PartnerId);
-        }
-
-        private async Task<bool> AreValidStatusesAsync(PartnerService partnerService, Partner partner, Customer customer)
-        {
-            var serviceStatus = partnerService.Status;
-            var customerStatus = customer.Status;
-
-            return serviceStatus == 1 && customerStatus == 1;
-        }
-
-        private async Task<List<BookingLog>> GetLatestPendingLogsAsync()
-        {
-            return await dbContext.BookingLogs
-                .Where(bl => bl.Status == 1)
-                .GroupBy(bl => bl.BookingId)
-                .Select(g => g.OrderByDescending(bl => bl.CreatedDate).FirstOrDefault())
-                .ToListAsync();
-        }
+        
         private async Task<bool> IsBookingStatusValidAsync(int bookingId, Customer customer)
         {
             var hasStatusGreaterThan2 = await dbContext.BookingLogs.AnyAsync(bl => bl.BookingId == bookingId && bl.Status > 2);
@@ -402,14 +312,14 @@ namespace DataAccessLayer
             return address ?? "Unknown Address";
         }
 
-        private async Task<int?> GetPaymentMethodAsync(int bookingId)
+        private async Task<string> GetPaymentMethodAsync(int bookingId)
         {
-            var paymentMethod = await dbContext.Bookings
-                .Where(b => b.BookingId == bookingId)
-                .Select(b => b.PaymentId)
-                .FirstOrDefaultAsync();
+            var paymentName = (from b in dbContext.Bookings
+                               join pay in dbContext.PaymentMethods on b.PaymentId equals pay.PaymentId
+                               where b.BookingId == 3
+                               select pay.Name).FirstOrDefaultAsync();
 
-            return paymentMethod;
+            return await paymentName;
         }
         private async Task<List<BookingLog>> GetAllPendingBookingLogsAsync()
         {
@@ -458,13 +368,13 @@ namespace DataAccessLayer
                         result.Add(new IncomingBookingDTO
                         {
                             BookingId = bookingId,
-                            Status = (int)status,
+                            Status = EnumUtils.GetBookingEnumByStatus(status),
                             Partner = await GetPartnerNameAsync(partnerId),
                             BookingDate = await GetBookingDateAsync(bookingId),
                             bookingTime = (int)await GetBookingTimeAsync(bookingId),
                             Address = await GetBookingAddressAsync(bookingId),
-                            PaymentMethod = (int)await GetPaymentMethodAsync(bookingId),
-                            MedicalService = medicalServiceDTOs
+                            PaymentMethod = await GetPaymentMethodAsync(bookingId),
+                            MedicalServices = medicalServiceDTOs
                         });
                     }
                 }
@@ -472,68 +382,5 @@ namespace DataAccessLayer
 
             return result;
         }
-        private async Task<List<IncomingBookingDTO>> FilterAndMapPendingBookingsAsync(List<IGrouping<int, BookingLog>> pendingBookings, Partner partner)
-        {
-            var result = new List<IncomingBookingDTO>();
-
-            foreach (var group in pendingBookings)
-            {
-                var bookingId = group.Key;
-                var statuses = group.Select(bl => bl.Status).Distinct().ToList();
-
-                foreach (var status in statuses)
-                {
-                    if (status == 1) // Filter only for status 1
-                    {
-                        var booking = await GetBookingByLogAsync(group.FirstOrDefault()); // Get booking from the first log
-                        if (booking != null)
-                        {
-                            var customer = await GetCustomerByBookingAsync(booking);
-                            if (customer != null)
-                            {
-                                var medicalServiceDTOs = await GetMedicalServiceDTOsAsync(booking.BookingId, customer);
-
-                                result.Add(new IncomingBookingDTO
-                                {
-                                    BookingId = booking.BookingId,
-                                    Status = (int)status,
-                                    Partner = partner.DisplayName,
-                                    BookingDate = await GetBookingDateAsync(booking.BookingId),
-                                    bookingTime = (int)await GetBookingTimeAsync(booking.BookingId),
-                                    Address = await GetBookingAddressAsync(booking.BookingId),
-                                    PaymentMethod = (int)await GetPaymentMethodAsync(bookingId),
-                                    MedicalService = medicalServiceDTOs
-                                });
-                            }
-                        }
-                    }
-                }
-            }
-
-            return result;
-        }
-        private async Task<Customer> GetCustomerByBookingAsync(Booking booking)
-        {
-            var bookingDetail = await GetBookingDetailAsync(booking);
-            if (bookingDetail != null)
-            {
-                var medicalReport = await GetMedicalReportByDetailAsync(bookingDetail);
-                if (medicalReport != null)
-                {
-                    return await GetCustomerByReportAsync(medicalReport);
-                }
-            }
-            return null;
-        }
-        private async Task<MedicalReport> GetMedicalReportByDetailAsync(BookingDetail bookingDetail)
-        {
-            return await dbContext.MedicalReports.FirstOrDefaultAsync(mr => mr.ReportId == bookingDetail.ReportId);
-        }
-
-        private async Task<Customer> GetCustomerByReportAsync(MedicalReport medicalReport)
-        {
-            return await dbContext.Customers.FirstOrDefaultAsync(c => c.CustomerId == medicalReport.CustomerId);
-        }
-        /*end function*/
     }
 }
