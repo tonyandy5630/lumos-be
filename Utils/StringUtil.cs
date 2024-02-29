@@ -23,22 +23,5 @@ namespace Utils
                 .Select(s => s[random.Next(s.Length)]).ToArray());
         }
 
-        public static bool ThrowErrorIfNotValidEnum(this string myenum, Type type, string message = "Invalid Enum")
-        {
-            bool check = false; // checking if enum is valid
-            foreach (string @enum in Enum.GetNames(type))
-            {
-                if (myenum.Equals(@enum, StringComparison.OrdinalIgnoreCase)) { check = true; break; }
-            }
-
-            if (!check)
-            {
-                //throw error with all the enum format 
-                throw new InvalidEnumArgumentException($"{message}.\nTry using {string.Join(", ", Enum.GetNames(type))}");
-
-            }
-            //return true if needed
-            return true;
-        }
     }
 }
