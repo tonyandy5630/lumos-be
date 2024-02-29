@@ -21,10 +21,50 @@ namespace LumosSolution.Controllers
     public class PartnerController : ControllerBase
     {
         private readonly IPartnerService _partnerService;
-        public PartnerController(IPartnerService partnerService)
+        private readonly IBookingService _bookingService;
+        public PartnerController(IPartnerService partnerService, IBookingService bookingService)
         {
             _partnerService = partnerService;
+            _bookingService = bookingService;
         }
+
+        [HttpGet("/bookings/pending")]
+        [Authorize(Roles = "Partner")]
+        public async Task<ActionResult<ApiResponse<List<IncomingBookingDTO>>>> GetPendingBookings()
+        {
+            ApiResponse<object> response = new ApiResponse<object>();
+            try
+            {
+                var userEmail = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+                List<IncomingBookingDTO> pendingBookingDTOs = await _bookingService.GetPartnerPendingBookingsDTOAsync(userEmail);
+
+                if (pendingBookingDTOs == null || !pendingBookingDTOs.Any())
+                {
+                    response.message = "No pending bookings found.";
+                    response.StatusCode = 200;
+                    return Ok(response);
+                }
+
+                response.data = pendingBookingDTOs;
+                response.message = "Success";
+                response.StatusCode = ApiStatusCode.OK;
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                if(ex is NullReferenceException)
+                {
+                    response.message = ex.Message;
+                    response.StatusCode = ApiStatusCode.NotFound;
+                    return NotFound(response);
+                }
+                response.message = "Internal Server Error";
+                response.StatusCode = ApiStatusCode.BadRequest;
+                return BadRequest(response);
+            }
+        }
+
         [HttpGet("bookings/{page}")]
         [Authorize(Roles = "Partner")]
         public async Task<ActionResult<ApiResponse<List<BookingDTO>>>> GetPartnerBookings(int page)
@@ -436,8 +476,8 @@ namespace LumosSolution.Controllers
                 {
                     return UnprocessableEntity(response);
                 }
-                
-                (Partner? data, PartnerError? error) =  await _partnerService.AddPartnerAsync(partner);
+
+                (Partner? data, PartnerError? error) = await _partnerService.AddPartnerAsync(partner);
 
                 if (data == null)
                 {
@@ -451,9 +491,9 @@ namespace LumosSolution.Controllers
                 response.data = data;
                 return Ok(response);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                if(ex is NullReferenceException)
+                if (ex is NullReferenceException)
                 {
                     response.message = ex.Message;
                     response.StatusCode = 422;

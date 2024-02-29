@@ -17,6 +17,5 @@ namespace Service.InterfaceService
         Task<List<IncomingBookingDTO>> GetIncomingBookingsByEmailAsync(string email);
         Task<List<IncomingBookingDTO>> GetIncomingBookingsByCustomerIdAsync(int customerId);
         Task<List<IncomingBookingDTO>> GetBookingsByCustomerIdAsync(string email);
-        Task<List<IncomingBookingDTO>> GetBookingsHaveStatus1ByEmailAsync(string email);
     }
 }
