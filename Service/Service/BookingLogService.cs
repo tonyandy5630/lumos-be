@@ -116,7 +116,7 @@ namespace Service.Service
             }
         }
 
-        public async Task<List<PendingBookingDTO>> GetBookingsHaveStatus1ByEmailAsync(string email)
+        public async Task<List<IncomingBookingDTO>> GetBookingsHaveStatus1ByEmailAsync(string email)
         {
             try
             {

@@ -174,24 +174,25 @@ namespace DataAccessLayer
             return await dbContext.Customers.FirstOrDefaultAsync(c => c.Email == email);
         }
 
-        public async Task<List<PendingBookingDTO>> GetBookingsHaveStatus1ByEmailAsync(string partnerEmail)
+        public async Task<List<IncomingBookingDTO>> GetBookingsHaveStatus1ByEmailAsync(string partnerEmail)
         {
             try
             {
                 var partner = await FindPartnerByEmailAsync(partnerEmail);
                 if (partner == null)
                 {
-                    return new List<PendingBookingDTO>();
+                    return new List<IncomingBookingDTO>();
                 }
 
-                var latestPendingLogs = await GetLatestPendingLogsAsync();
-                var result = await FilterAndMapPendingBookingsAsync(latestPendingLogs, partner);
+                var allPendingLogs = await GetAllPendingBookingLogsAsync();
+                var pendingBookings = GroupPendingBookings(allPendingLogs);
+                var result = await FilterAndMapPendingBookingsAsync(pendingBookings, partner);
 
                 return result;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error in GetBookingsHaveStatus1ByPartnerEmailAsync: {ex.Message}", ex);
+                Console.WriteLine($"Error in GetBookingsHaveStatus1ByEmailAsync: {ex.Message}", ex);
                 throw;
             }
         }
@@ -201,96 +202,7 @@ namespace DataAccessLayer
         {
             return await dbContext.Partners.FirstOrDefaultAsync(p => p.Email == partnerEmail);
         }
-        private async Task<List<PendingBookingDTO>> FilterAndMapPendingBookingsAsync(List<BookingLog> latestPendingLogs, Partner partner)
-        {
-            var result = new List<PendingBookingDTO>();
 
-            foreach (var log in latestPendingLogs)
-            {
-                var booking = await GetBookingByLogAsync(log);
-                if (booking != null && !await HasStatusGreaterThan1Async(booking))
-                {
-                    var bookingDetail = await GetBookingDetailAsync(booking);
-                    var customer = await GetCustomerByBookingDetailAsync(bookingDetail);
-                    if (customer != null)
-                    {
-                        var serviceBooking = await GetServiceBookingByDetailAsync(bookingDetail);
-                        if (serviceBooking != null)
-                        {
-                            var partnerService = await GetPartnerServiceAsync(serviceBooking, partner);
-                            if (partnerService != null && await AreValidStatusesAsync(partnerService, partner, customer))
-                            {
-                                var medicalReports = await GetMedicalReportsAsync(bookingDetail, customer);
-                                var services = await GetServicesForBookingAsync(booking.BookingId);
-
-                                var pendingBooking = new PendingBookingDTO
-                                {
-                                    BookingId = booking.BookingId,
-                                    Status = (int)log.Status,
-                                    BookingDate = (DateTime)booking.CreatedDate,
-                                    Address = booking.Address,
-                                    PaymentMethod = await GetPaymentMethodNameAsync(booking.BookingId),
-                                    MedicalNames = medicalReports.Select(mr => mr.Fullname).ToList(),
-                                    DisplayName = partner.DisplayName,
-                                    From = "N/A",
-                                    To = "N/A",
-                                    WorkShift = 0,
-                                    bookingTime = booking.bookingTime
-                                };
-                                var serviceDTOs = services.Select(service => new PartnerServiceDTO
-                                {
-                                    ServiceId = service.ServiceId,
-                                    Name = service.Name,
-                                    Code = service.Code,
-                                    Duration = service.Duration,
-                                    Status = service.Status,
-                                    Description = service.Description,
-                                    Price = service.Price,
-                                    BookedQuantity = service.ServiceBookings.Count, // Set a default value or calculate based on business logic
-                                    Rating = service.Rating,
-                                }).ToList();
-
-                                // Assign the list of PartnerServiceDTOs to the Services property
-                                pendingBooking.Services = serviceDTOs;
-
-                                var schedule = await GetPartnerScheduleAsync(partner.PartnerId);
-                                if (schedule != null)
-                                {
-                                    pendingBooking.From = schedule.From.ToString();
-                                    pendingBooking.To = schedule.To.ToString();
-                                    pendingBooking.WorkShift = schedule.WorkShift;
-                                }
-
-                                result.Add(pendingBooking);
-                            }
-                        }
-                    }
-                }
-            }
-
-            return result;
-        }
-        private async Task<List<MedicalReport>> GetMedicalReportsAsync(BookingDetail bookingDetail, Customer customer)
-        {
-            return await dbContext.MedicalReports
-                .Where(mr => mr.ReportId == bookingDetail.ReportId && mr.CustomerId == customer.CustomerId)
-                .ToListAsync();
-        }
-
-        private async Task<List<PartnerService>> GetServicesForBookingAsync(int bookingId)
-        {
-            var serviceIds = await dbContext.BookingDetails
-                .Where(bd => bd.BookingId == bookingId)
-                .SelectMany(bd => bd.ServiceBookings)
-                .Select(sb => sb.ServiceId)
-                .ToListAsync();
-
-            var services = await dbContext.PartnerServices
-                .Where(ps => serviceIds.Contains(ps.ServiceId))
-                .ToListAsync();
-
-            return services;
-        }
 
         private async Task<Schedule> GetPartnerScheduleAsync(int partnerId)
         {
@@ -559,6 +471,68 @@ namespace DataAccessLayer
             }
 
             return result;
+        }
+        private async Task<List<IncomingBookingDTO>> FilterAndMapPendingBookingsAsync(List<IGrouping<int, BookingLog>> pendingBookings, Partner partner)
+        {
+            var result = new List<IncomingBookingDTO>();
+
+            foreach (var group in pendingBookings)
+            {
+                var bookingId = group.Key;
+                var statuses = group.Select(bl => bl.Status).Distinct().ToList();
+
+                foreach (var status in statuses)
+                {
+                    if (status == 1) // Filter only for status 1
+                    {
+                        var booking = await GetBookingByLogAsync(group.FirstOrDefault()); // Get booking from the first log
+                        if (booking != null)
+                        {
+                            var customer = await GetCustomerByBookingAsync(booking);
+                            if (customer != null)
+                            {
+                                var medicalServiceDTOs = await GetMedicalServiceDTOsAsync(booking.BookingId, customer);
+
+                                result.Add(new IncomingBookingDTO
+                                {
+                                    BookingId = booking.BookingId,
+                                    Status = (int)status,
+                                    Partner = partner.DisplayName,
+                                    BookingDate = await GetBookingDateAsync(booking.BookingId),
+                                    bookingTime = (int)await GetBookingTimeAsync(booking.BookingId),
+                                    Address = await GetBookingAddressAsync(booking.BookingId),
+                                    PaymentMethod = (int)await GetPaymentMethodAsync(bookingId),
+                                    MedicalService = medicalServiceDTOs
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+
+            return result;
+        }
+        private async Task<Customer> GetCustomerByBookingAsync(Booking booking)
+        {
+            var bookingDetail = await GetBookingDetailAsync(booking);
+            if (bookingDetail != null)
+            {
+                var medicalReport = await GetMedicalReportByDetailAsync(bookingDetail);
+                if (medicalReport != null)
+                {
+                    return await GetCustomerByReportAsync(medicalReport);
+                }
+            }
+            return null;
+        }
+        private async Task<MedicalReport> GetMedicalReportByDetailAsync(BookingDetail bookingDetail)
+        {
+            return await dbContext.MedicalReports.FirstOrDefaultAsync(mr => mr.ReportId == bookingDetail.ReportId);
+        }
+
+        private async Task<Customer> GetCustomerByReportAsync(MedicalReport medicalReport)
+        {
+            return await dbContext.Customers.FirstOrDefaultAsync(c => c.CustomerId == medicalReport.CustomerId);
         }
         /*end function*/
     }

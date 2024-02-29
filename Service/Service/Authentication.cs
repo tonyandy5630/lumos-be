@@ -40,7 +40,7 @@ namespace Service.Service
                 bool passwordCorrect = false;
 
                 var adminResponse = await _unitOfWork.AdminRepo.GetAdminByEmailAsync(email);
-                if (adminResponse != null && adminResponse.Password == password)
+                if (adminResponse != null && adminResponse.Password == password && adminResponse.Status ==1 )
                 {
                     passwordCorrect = true;
                     authenticated = true;
@@ -65,7 +65,7 @@ namespace Service.Service
                 if (!authenticated)
                 {
                     var partnerResponse = await _unitOfWork.PartnerRepo.GetPartnerByEmailAsync(email);
-                    if (partnerResponse != null && partnerResponse.Password == password)
+                    if (partnerResponse != null && partnerResponse.Password == password && partnerResponse.Status == 1)
                     {
                         passwordCorrect = true;
                         authenticated = true;
@@ -97,7 +97,7 @@ namespace Service.Service
                 if (!authenticated)
                 {
                     var customerResponse = await _unitOfWork.CustomerRepo.GetCustomerByEmailAsync(email);
-                    if (customerResponse != null && customerResponse.Password == password)
+                    if (customerResponse != null && customerResponse.Password == password && customerResponse.Status == 1)
                     {
                         passwordCorrect = true;
                         authenticated = true;
@@ -255,7 +255,7 @@ namespace Service.Service
                 var customerResponse = await _unitOfWork.CustomerRepo.GetCustomerByEmailAsync(email);
                 var partnerResponse = await _unitOfWork.PartnerRepo.GetPartnerByEmailAsync(email);
 
-                if (adminResponse != null)
+                if (adminResponse != null && adminResponse.Status == 1)
                 {
                     userDetails = new
                     {
@@ -272,7 +272,7 @@ namespace Service.Service
                     };
                     return (true, nameof(RolesEnum.Admin), userDetails);
                 }
-                else if (customerResponse != null)
+                else if (customerResponse != null && customerResponse.Status == 1)
                 {
                     userDetails = new
                     {
@@ -290,7 +290,7 @@ namespace Service.Service
                     };
                     return (true, nameof(RolesEnum.Customer), userDetails);
                 }
-                else if (partnerResponse != null)
+                else if (partnerResponse != null && partnerResponse.Status == 1)
                 {
                     userDetails = new
                     {

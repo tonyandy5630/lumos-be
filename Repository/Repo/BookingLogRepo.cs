@@ -26,6 +26,6 @@ namespace Repository.Repo
 
         public Task<bool> UpdateBookingLogStatusForPartnerAsync(int bookingLogId, int newStatus) => BookingLogDAO.Instance.UpdateBookingLogStatusForPartnerAsync(bookingLogId, newStatus);
 
-        public Task<List<PendingBookingDTO>> GetBookingsHaveStatus1ByEmailAsync(string email) => BookingLogDAO.Instance.GetBookingsHaveStatus1ByEmailAsync(email);
+        public Task<List<IncomingBookingDTO>> GetBookingsHaveStatus1ByEmailAsync(string email) => BookingLogDAO.Instance.GetBookingsHaveStatus1ByEmailAsync(email);
     }
 }

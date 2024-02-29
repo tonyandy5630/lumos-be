@@ -304,7 +304,7 @@ namespace LumosSolution.Controllers
                         response.StatusCode = ApiStatusCode.Unauthorized;
                         response.data = new
                         {
-                            password = "Password không đúng",
+                            password = "Password không đúng hoặc tài khoản đã bị ban",
                         };
                     }
 
