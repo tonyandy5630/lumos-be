@@ -393,11 +393,11 @@ namespace DataAccessLayer
                 return false;
             }
 
-            /*            var partner = await dbContext.Partners.FirstOrDefaultAsync(p => p.PartnerId == partnerService.PartnerId);
-                        if (partner == null)
-                        {
-                            return false;
-                        }*/
+            var partner = await dbContext.Partners.FirstOrDefaultAsync(p => p.PartnerId == partnerService.PartnerId);
+            if (partner == null)
+            {
+                return false;
+            }
 
             var serviceStatus = partnerService.Status;
             /*            var partnerStatus = partner.Status;*/
@@ -515,6 +515,18 @@ namespace DataAccessLayer
                 .GroupBy(bl => bl.BookingId.Value)
                 .ToList();
         }
+        private async Task<int> GetPartnerIdFromBookingIdAsync(int bookingId)
+        {
+            var partnerService = await dbContext.ServiceBookings
+                .Include(sb => sb.Service)
+                    .ThenInclude(service => service.Partner)
+                .Where(sb => sb.Detail.BookingId == bookingId)
+                .Select(sb => sb.Service.PartnerId)
+                .FirstOrDefaultAsync();
+
+            return partnerService;
+        }
+
         private async Task<List<IncomingBookingDTO>> FilterAndMapIncomingBookingsAsync(List<IGrouping<int, BookingLog>> pendingBookings, Customer customer)
         {
             var result = new List<IncomingBookingDTO>();
@@ -528,13 +540,14 @@ namespace DataAccessLayer
                 {
                     if (await IsBookingStatusValidAsync(bookingId, customer))
                     {
+                        var partnerId = await GetPartnerIdFromBookingIdAsync(bookingId);
                         var medicalServiceDTOs = await GetMedicalServiceDTOsAsync(bookingId, customer);
 
                         result.Add(new IncomingBookingDTO
                         {
                             BookingId = bookingId,
                             Status = (int)status,
-                            Partner = await GetPartnerNameAsync(bookingId),
+                            Partner = await GetPartnerNameAsync(partnerId),
                             BookingDate = await GetBookingDateAsync(bookingId),
                             bookingTime = (int)await GetBookingTimeAsync(bookingId),
                             Address = await GetBookingAddressAsync(bookingId),
