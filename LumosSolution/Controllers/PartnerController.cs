@@ -28,7 +28,7 @@ namespace LumosSolution.Controllers
             _bookingService = bookingService;
         }
 
-        [HttpGet("/bookings/pending")]
+        [HttpGet("bookings/pending")]
         [Authorize(Roles = "Partner")]
         public async Task<ActionResult<ApiResponse<List<IncomingBookingDTO>>>> GetPendingBookings()
         {
