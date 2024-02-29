@@ -25,6 +25,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\BussinessObject\BussinessObject.csproj" />
+    <ProjectReference Include="..\Enums\Enum.csproj" />
   </ItemGroup>
 
 </Project>
