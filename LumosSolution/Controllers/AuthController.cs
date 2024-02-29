@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -190,7 +191,13 @@ namespace LumosSolution.Controllers
 
                 var userEmail = payload.Email;
                 var username = payload.Name;
-
+                var checkcustomer = await _customerService.GetCustomerByEmailAsync(userEmail);
+                if (checkcustomer == null)
+                {
+                    response.message = "Tài khoản đã bị cấm.";
+                    response.StatusCode = ApiStatusCode.BadRequest;
+                    return BadRequest(response);
+                }
                 var (roleValid, userRole, userDetails) = await _authentication.GetUserdetailsInLoginGooogle(userEmail);
 
                 if (!roleValid)
@@ -256,6 +263,15 @@ namespace LumosSolution.Controllers
                     response.StatusCode = ApiStatusCode.BadRequest;
                     return BadRequest(response);
                 }
+                var checkcustomer = await _customerService.GetCustomerByEmailAsync((model.Email));
+                var checkadmin = await _adminService.GetAdminByEmailAsync((model.Email));
+                var checkpartner = await _partnerService.GetPartnerByEmailAsync((model.Email));
+                if (checkcustomer == null || checkadmin == null || checkpartner == null)
+                {
+                    response.message = "Tài khoản đã bị cấm.";
+                    response.StatusCode = ApiStatusCode.BadRequest;
+                    return BadRequest(response);
+                }
                 var (authenticated, role, username, userdetails, emailExists, passwordCorrect) = await _authentication.IsUserAuthenticatedAsync(model.Email, model.Password);
 
                 if (authenticated && passwordCorrect)
@@ -304,7 +320,7 @@ namespace LumosSolution.Controllers
                         response.StatusCode = ApiStatusCode.Unauthorized;
                         response.data = new
                         {
-                            password = "Password không đúng hoặc tài khoản đã bị ban",
+                            password = "Password không đúng",
                         };
                     }
 

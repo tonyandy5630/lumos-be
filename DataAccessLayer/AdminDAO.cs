@@ -55,7 +55,7 @@ namespace DataAccessLayer
         {
             try
             {
-                return await dbContext.Admins.SingleOrDefaultAsync(u => u.Email.ToLower().Equals(email.ToLower()));
+                return await dbContext.Admins.SingleOrDefaultAsync(u => u.Email.ToLower().Equals(email.ToLower()) && u.Status == 1);
             }
             catch (Exception ex)
             {
