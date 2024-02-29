@@ -28,6 +28,8 @@ namespace Service.DI
 
 
             #region entity
+            //payment
+            services.AddTransient<IPaymentService, PaymentService>();
             //authentication
             services.AddTransient<IAuthentication, Authentication>();
             //unitofwork
