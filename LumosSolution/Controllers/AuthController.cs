@@ -266,7 +266,7 @@ namespace LumosSolution.Controllers
                 var checkcustomer = await _customerService.GetCustomerByEmailAsync((model.Email));
                 var checkadmin = await _adminService.GetAdminByEmailAsync((model.Email));
                 var checkpartner = await _partnerService.GetPartnerByEmailAsync((model.Email));
-                if (checkcustomer == null || checkadmin == null || checkpartner == null)
+                if (checkcustomer == null && checkadmin == null && checkpartner == null)
                 {
                     response.message = "Tài khoản đã bị cấm.";
                     response.StatusCode = ApiStatusCode.BadRequest;
