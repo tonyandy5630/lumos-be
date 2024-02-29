@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using BussinessObject;
 using DataTransferObject.DTO;
+using Enum;
 using Repository.Interface.IUnitOfWork;
 using Service.InterfaceService;
 using System;
@@ -18,6 +19,43 @@ namespace Service.Service
         public BookingService(IUnitOfWork unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
+        }
+
+        public async Task<List<IncomingBookingDTO>> GetPartnerPendingBookingsDTOAsync(string partnerEmail)
+        {
+            try
+            {
+                // validate partner
+                Partner? partner = await _unitOfWork.PartnerRepo.GetPartnerByEmailAsync(partnerEmail);
+                if (partner == null)
+                {
+                    throw new NullReferenceException("Partner is ban or not existed");
+                }
+
+                List<int> bookingDetails = await _unitOfWork.BookingDetailsRepo.GetDistinctBookingDetailsIdByPartnerId(partner.PartnerId);
+                List<IncomingBookingDTO> pendingBookings = new List<IncomingBookingDTO>();
+
+                foreach (int bookingDetailsId in bookingDetails)
+                {
+                    Booking? booking = await _unitOfWork.BookingRepo.GetBookingByDetailIdAsync(bookingDetailsId);
+                    if (booking == null)
+                    {
+                        continue;
+                    }
+                    IncomingBookingDTO? latestBooking = await _unitOfWork.BookingRepo.GetLatestBookingByBookingIdAsync(booking.BookingId);
+                    if ( latestBooking == null || latestBooking.Status != nameof(BookingStatusEnum.Pending))
+                    {
+                        continue;
+                    }
+                    pendingBookings.Add(latestBooking);
+                }
+                return pendingBookings;
+
+            }
+            catch (Exception ex)
+            {
+                throw new Exception();
+            }
         }
 
         public async Task<bool> CreateBookingAsync(Booking booking, CreateBookingDTO createBookingDTO, string email)
@@ -136,18 +174,18 @@ namespace Service.Service
                 List<int?> bookingsStat = new List<int?>();
 
                 // topServices does not have any stats return 12 0s
-                if(topServices == null)
+                if (topServices == null)
                 {
-                    bookingsStat = (List<int?>) Enumerable.Repeat(0, 12);
+                    bookingsStat = (List<int?>)Enumerable.Repeat(0, 12);
                     return bookingsStat;
                 }
 
                 for (int month = 1; month <= 12; month++)
                 {
-                   
+
                     int? bookingMonthInDB = topServices?.FirstOrDefault(t => t.Month == month)?.totalBooking;
                     int? totalBooking = 0;
-                    if(bookingMonthInDB != null)
+                    if (bookingMonthInDB != null)
                     {
                         totalBooking = bookingMonthInDB;
                     }

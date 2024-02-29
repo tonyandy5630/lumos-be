@@ -14,6 +14,7 @@ namespace Repository.Interface.IUnitOfWork
         IAddressRepo AddressRepo { get; }
         IAdminRepo AdminRepo { get; }
         IBookingRepo BookingRepo { get; }
+        IBookingDetailsRepo BookingDetailsRepo { get; }
         IBookingLogRepo BookingLogRepo { get; }
         ICustomerRepo CustomerRepo { get; }
         IHistoryLogRepo HistoryLogRepo { get; }
@@ -27,6 +28,7 @@ namespace Repository.Interface.IUnitOfWork
         IPartnerServiceRepo PartnerServiceRepo { get; }
         IMedicalReportRepo MedicalReportRepo { get; }
         IPartnerTypeRepo PartnerTypeRepo { get; }
+
         Task<int> SaveChangesAsync();
         Task<IDbContextTransaction> StartTransactionAsync(string name);
         Task CommitTransactionAsync(IDbContextTransaction commit);

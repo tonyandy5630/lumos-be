@@ -1,5 +1,6 @@
 ﻿using BussinessObject;
 using DataTransferObject.DTO;
+using Enum;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -14,11 +15,11 @@ namespace DataAccessLayer
     public class BookingDAO
     {
         private static BookingDAO instance = null;
-        private readonly LumosDBContext dbContext;
+        private readonly LumosDBContext _context;
 
-        public BookingDAO(LumosDBContext dbContext)
+        public BookingDAO(LumosDBContext _context)
         {
-            this.dbContext = dbContext;
+            this._context = _context;
         }
 
         public static BookingDAO Instance
@@ -32,11 +33,57 @@ namespace DataAccessLayer
                 return instance;
             }
         }
+
+        public async Task<Booking?> GetBookingsByDetailIdAsync(int detailId)
+        {
+            try
+            {
+                var bookings = (from bd in _context.BookingDetails
+                                join b in _context.Bookings on bd.BookingId equals b.BookingId
+                                where bd.DetailId == detailId
+                                select b).FirstOrDefaultAsync();
+
+
+                return await bookings;
+
+            }catch(Exception ex)
+            {
+                throw new Exception();
+            }
+
+        }
+
+        public async Task<IncomingBookingDTO?> GetLatestBookingByBookingIdAsync(int bookingId)
+        {
+            try
+            {
+                var booking = (from bl in _context.BookingLogs
+                                      join b in _context.Bookings on bl.BookingId equals b.BookingId
+                                      join pay in _context.PaymentMethods on b.PaymentId equals pay.PaymentId
+                                      where bl.BookingId == bookingId
+                                      orderby bl.CreatedDate descending
+                                      select new IncomingBookingDTO
+                                      {
+                                          Address = b.Address,
+                                          BookingDate = b.BookingDate,
+                                          BookingId = b.BookingId,
+                                          bookingTime = b.bookingTime,
+                                          PaymentMethod = pay.Name,
+                                          Status = EnumUtils.GetBookingEnumByStatus(bl.Status)
+                                      }).Take(1).FirstOrDefaultAsync();
+                return await booking;
+            }
+            catch
+            {
+                throw new Exception();
+            }
+        }
+
         public async Task<BookingDetail> GetBookingDetailByBookingIdAsync(int id)
         {
             try
             {
-                var bookingdetails = await dbContext.BookingDetails.SingleOrDefaultAsync(u => u.BookingId == id);
+                var bookingdetails = await _context.BookingDetails.SingleOrDefaultAsync(u => u.BookingId == id);
                 return bookingdetails;
             }
             catch (Exception ex)
@@ -49,7 +96,7 @@ namespace DataAccessLayer
         {
             try
             {
-                var bookings = await dbContext.BookingDetails
+                var bookings = await _context.BookingDetails
                 .Where(bd => bd.ReportId == medicalReportId)
                 .Select(bd => bd.Booking)
                 .ToListAsync();
@@ -64,7 +111,7 @@ namespace DataAccessLayer
         }
         public async Task<bool> CreateBookingAsync(Booking booking, CreateBookingDTO createBookingDTO, string email)
         {
-            using (var transaction = dbContext.Database.BeginTransaction())
+            using (var transaction = _context.Database.BeginTransaction())
             {
                 try
                 {
@@ -85,8 +132,8 @@ namespace DataAccessLayer
                     booking.CreatedDate = DateTime.Now;
                     booking.bookingTime = createBookingDTO.bookingTime;
                     booking.From = DateTime.Now;
-                    dbContext.Bookings.Add(booking);
-                    await dbContext.SaveChangesAsync();
+                    _context.Bookings.Add(booking);
+                    await _context.SaveChangesAsync();
 
                     foreach (var cartItem in createBookingDTO.CartModel)
                     {
@@ -97,7 +144,7 @@ namespace DataAccessLayer
                         await ProcessServiceBookingsAsync(cartItem.Services, booking, email);
                     }
 
-                    await dbContext.SaveChangesAsync();
+                    await _context.SaveChangesAsync();
 
                     transaction.Commit();
                     return true;
@@ -113,7 +160,7 @@ namespace DataAccessLayer
 
         private async Task ValidatePartnerScheduleAsync(int partnerId, int dayOfWeek, int bookingTime)
         {
-            var partnerSchedules = await dbContext.Schedules
+            var partnerSchedules = await _context.Schedules
                 .Where(s => s.PartnerId == partnerId)
                 .ToListAsync();
 
@@ -129,7 +176,7 @@ namespace DataAccessLayer
 
         private async Task ValidatePartnerStatusAsync(int partnerId)
         {
-            var partner = await dbContext.Partners.FirstOrDefaultAsync(p => p.PartnerId == partnerId);
+            var partner = await _context.Partners.FirstOrDefaultAsync(p => p.PartnerId == partnerId);
             if (partner == null || partner.Status != 1)
             {
                 throw new Exception("Partner is not available");
@@ -138,7 +185,7 @@ namespace DataAccessLayer
 
         private async Task ValidateCustomerStatusAsync(string email)
         {
-            var customer = await dbContext.Customers.FirstOrDefaultAsync(c => c.Email == email);
+            var customer = await _context.Customers.FirstOrDefaultAsync(c => c.Email == email);
             if (customer == null || customer.Status != 1)
             {
                 throw new Exception("Customer is not available");
@@ -149,7 +196,7 @@ namespace DataAccessLayer
         {
             if (booking.PaymentId.HasValue)
             {
-                var paymentMethod = await dbContext.PaymentMethods.FindAsync(booking.PaymentId);
+                var paymentMethod = await _context.PaymentMethods.FindAsync(booking.PaymentId);
                 if (paymentMethod == null)
                 {
                     throw new ArgumentException($"Payment method with ID {booking.PaymentId} not found");
@@ -168,8 +215,8 @@ namespace DataAccessLayer
                 CreatedDate = booking.CreatedDate,
                 CreatedBy = email
             };
-            dbContext.BookingDetails.Add(bookingDetail);
-            await dbContext.SaveChangesAsync();
+            _context.BookingDetails.Add(bookingDetail);
+            await _context.SaveChangesAsync();
         }
 
         private async Task ProcessBookingLogAsync(Booking booking, string email)
@@ -182,15 +229,15 @@ namespace DataAccessLayer
                 Note = null,
                 CreatedBy = email
             };
-            dbContext.BookingLogs.Add(bookingLog);
-            await dbContext.SaveChangesAsync();
+            _context.BookingLogs.Add(bookingLog);
+            await _context.SaveChangesAsync();
         }
 
         private async Task ProcessServiceBookingsAsync(IEnumerable<ServiceDTO> services, Booking booking, string email)
         {
             foreach (var service in services)
             {
-                var scheckervices = await dbContext.PartnerServices.FirstOrDefaultAsync(s => s.ServiceId == service.ServiceId);
+                var scheckervices = await _context.PartnerServices.FirstOrDefaultAsync(s => s.ServiceId == service.ServiceId);
                 if (scheckervices == null || scheckervices.Status != 1)
                 {
                     throw new Exception("Service is not available");
@@ -198,7 +245,7 @@ namespace DataAccessLayer
                 var serviceBooking = new ServiceBooking
                 {
                     ServiceId = service.ServiceId,
-                    DetailId = booking.BookingDetails.FirstOrDefault()?.DetailId, // You may need to adjust this based on your business logic
+                    DetailId = booking.BookingDetails.FirstOrDefault().DetailId, // You may need to adjust this based on your business logic
                     Price = (int?)service.Price,
                     Description = null,
                     CreatedDate = booking.CreatedDate,
@@ -206,7 +253,7 @@ namespace DataAccessLayer
                     UpdatedBy = email
                 };
 
-                dbContext.ServiceBookings.Add(serviceBooking);
+                _context.ServiceBookings.Add(serviceBooking);
             }
         }
 
@@ -215,12 +262,12 @@ namespace DataAccessLayer
         {
             try
             {
-                var incompleteBookingIds = await dbContext.BookingLogs
+                var incompleteBookingIds = await _context.BookingLogs
                    .Where(bl => bl.Status == 0)
                    .Select(bl => bl.BookingId)
                    .ToListAsync();
 
-                var incompleteBookings = await dbContext.Bookings
+                var incompleteBookings = await _context.Bookings
                     .Where(b => incompleteBookingIds.Contains(b.BookingId))
                     .ToListAsync();
 
@@ -237,12 +284,12 @@ namespace DataAccessLayer
         {
             try
             {
-                var incompleteBookingIds = await dbContext.BookingLogs
+                var incompleteBookingIds = await _context.BookingLogs
                    .Where(bl => bl.Status == 0)
                    .Select(bl => bl.BookingId)
                    .ToListAsync();
 
-                var incompleteBookings = await dbContext.BookingDetails
+                var incompleteBookings = await _context.BookingDetails
                     .Where(bd => incompleteBookingIds.Contains(bd.BookingId))
                     .Where(bd => bd.Report != null && bd.Report.CustomerId == customerId)
                     .Select(bd => bd.Booking)
@@ -261,12 +308,12 @@ namespace DataAccessLayer
         {
             try
             {
-                var incompleteBookingIds = await dbContext.BookingLogs
+                var incompleteBookingIds = await _context.BookingLogs
                    .Where(bl => bl.Status == 0)
                    .Select(bl => bl.BookingId)
                    .ToListAsync();
 
-                var incompleteBookings = await dbContext.BookingDetails
+                var incompleteBookings = await _context.BookingDetails
                     .Where(b => incompleteBookingIds.Contains(b.BookingId) && b.ReportId == reportId)
                     .Select(b => b.Booking)
                     .ToListAsync();
@@ -283,7 +330,7 @@ namespace DataAccessLayer
         {
             try
             {
-                var topServices = await dbContext.ServiceBookings
+                var topServices = await _context.ServiceBookings
                     .Include(sb => sb.Service)
                     .GroupBy(sb => new { sb.ServiceId, sb.Service.Name, sb.Service.PartnerId })
                     .Select(g => new TopBookedServiceDTO
@@ -312,7 +359,7 @@ namespace DataAccessLayer
         {
             try
             {
-                var allServices = await dbContext.ServiceBookings
+                var allServices = await _context.ServiceBookings
                     .Include(sb => sb.Service)
                     .Where(sb => sb.Detail != null
                                  && sb.Detail.Booking != null
@@ -331,7 +378,7 @@ namespace DataAccessLayer
                     .OrderByDescending(g => g.NumberOfBooking)
                     .ToListAsync();
 
-                int totalBookings = await dbContext.ServiceBookings
+                int totalBookings = await _context.ServiceBookings
                     .Include(sb => sb.Service)
                     .Where(sb => sb.Service.Partner.Email == partnerEmail)
                     .GroupBy(sb => sb.DetailId)
@@ -341,7 +388,7 @@ namespace DataAccessLayer
 
                 int returnPatients = allServices.Count(s => s.NumberOfBooking > 2);
 
-                decimal earning = await dbContext.ServiceBookings
+                decimal earning = await _context.ServiceBookings
                     .Include(sb => sb.Service)
                     .Where(sb => sb.Detail != null
                                  && sb.Detail.Booking != null
@@ -349,7 +396,7 @@ namespace DataAccessLayer
                                  && sb.Detail.Booking.BookingLogs.Any(bl => bl.Status == 4))
                     .SumAsync(sb => sb.Service.Price);
 
-                int operations = await dbContext.ServiceBookings
+                int operations = await _context.ServiceBookings
                             .Include(sb => sb.Detail)
                             .Where(sb => sb.Detail != null
                                          && sb.Detail.Booking != null
@@ -378,7 +425,7 @@ namespace DataAccessLayer
         {
             try
             {
-                var result = await dbContext.Bookings
+                var result = await _context.Bookings
                     .Where(r => r.BookingDate.Year == year)
                     .GroupBy(b => new { Month = b.BookingDate.Month, Year = b.BookingDate.Year })
                     .Select(g => new
@@ -401,7 +448,7 @@ namespace DataAccessLayer
         {
             try
             {
-                var bookingDetail = await dbContext.BookingDetails
+                var bookingDetail = await _context.BookingDetails
                     .Include(bd => bd.ServiceBookings)
                     .ThenInclude(sb => sb.Service)
                     .Include(bd => bd.ServiceBookings)
@@ -416,7 +463,7 @@ namespace DataAccessLayer
                 }
 
                 // Retrieve the latest booking log status
-                var latestBookingLogStatus = await dbContext.BookingLogs
+                var latestBookingLogStatus = await _context.BookingLogs
                     .Where(bl => bl.BookingId == id)
                     .OrderByDescending(bl => bl.CreatedDate)
                     .Select(bl => bl.Status)

@@ -12,15 +12,12 @@ namespace Repository.Repo
 {
     public class BookingRepo: IBookingRepo
     {
-        private readonly BookingDAO _bookingDAO;
 
-        public BookingRepo(BookingDAO bookingDAO)
+        public BookingRepo(LumosDBContext context)
         {
-            _bookingDAO = bookingDAO;
         }
 
-        public BookingRepo(LumosDBContext context) { }
-
+        public Task<Booking?> GetBookingByDetailIdAsync(int detailid) => BookingDAO.Instance.GetBookingsByDetailIdAsync(detailid);
         public Task<bool> CreateBookingAsync(Booking booking, CreateBookingDTO createBookingDTO, string email) => BookingDAO.Instance.CreateBookingAsync(booking, createBookingDTO,email);  
 
         public Task<BookingDetail> GetBookingDetailByBookingIdAsync(int id) =>BookingDAO.Instance.GetBookingDetailByBookingIdAsync(id);
@@ -37,5 +34,7 @@ namespace Repository.Repo
         public Task<List<TotalBookingMonthlyStat>> GetAllBookingsForYearAsync(int year) => BookingDAO.Instance.GetAllBookingsForYearAsync(year);
 
         public Task<BookingDTO> GetBookingDetailInforByBookingIdAsync(int id) => BookingDAO.Instance.GetBookingDetailInforByBookingIdAsync((int)id);
+
+        public Task<IncomingBookingDTO?> GetLatestBookingByBookingIdAsync(int bookingId) => BookingDAO.Instance.GetLatestBookingByBookingIdAsync(bookingId);
     }
 }

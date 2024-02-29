@@ -60,36 +60,7 @@ namespace LumosSolution.Controllers
             }
         }
 
-        [HttpGet("pending")]
-        [Authorize(Roles = "Partner")]
-        public async Task<ActionResult<ApiResponse<object>>> GetPendingBookings()
-        {
-            ApiResponse<object> response = new ApiResponse<object>();
-            try
-            {
-                var userEmail = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
-                var pendingBookingDTOs = await _bookingLogService.GetBookingsHaveStatus1ByEmailAsync(userEmail);
-
-                if (pendingBookingDTOs == null || !pendingBookingDTOs.Any())
-                {
-                    response.message = "No pending bookings found.";
-                    response.StatusCode = ApiStatusCode.NotFound;
-                    return NotFound(response);
-                }
-
-                response.data = pendingBookingDTOs;
-                response.message = "Success";
-                response.StatusCode = ApiStatusCode.OK;
-
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                response.message = "Internal Server Error";
-                response.StatusCode = ApiStatusCode.BadRequest;
-                return BadRequest(response);
-            }
-        }
+       
         [HttpGet]
         [Authorize(Roles = "Customer")]
         public async Task<ActionResult<ApiResponse<object>>> GetAllBookingsByCustomerID()

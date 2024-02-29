@@ -10,12 +10,12 @@ namespace DataTransferObject.DTO
     public class IncomingBookingDTO
     {
         public int BookingId { get; set; }
-        public int Status { get; set; }
-        public string Partner { get; set; }
+        public string Status { get; set; }
+        public string? Partner { get; set; }
         public DateTime BookingDate { get; set; }
         public int bookingTime { get; set; } // workshift
         public string Address { get; set; }
-        public int PaymentMethod { get; set; }
-        public List<MedicalServiceDTO> MedicalService { get; set; }
+        public string PaymentMethod { get; set; }
+        public List<MedicalServiceDTO> MedicalServices { get; set; }
     }
 }

@@ -25,6 +25,7 @@ namespace Repository
             AdminRepo = new AdminRepo(context);
             BookingRepo = new BookingRepo(context);
             BookingLogRepo = new BookingLogRepo(context);
+            BookingDetailsRepo = new BookingDetailsRepo(context);
             CustomerRepo = new CustomerRepo(context);
             HistoryLogRepo = new HistoryLogRepo(context);
             PartnerRepo = new PartnerRepo(context);
@@ -43,6 +44,7 @@ namespace Repository
         public IAddressRepo AddressRepo { get; }
         public IAdminRepo AdminRepo { get; }
         public IBookingRepo BookingRepo { get; }
+        public IBookingDetailsRepo BookingDetailsRepo { get; }
         public IBookingLogRepo BookingLogRepo { get; }
         public ICustomerRepo CustomerRepo { get; }
         public IHistoryLogRepo HistoryLogRepo { get; }
@@ -56,7 +58,8 @@ namespace Repository
         public IServiceDetailRepo ServiceDetailRepo { get; }
         public IMedicalReportRepo MedicalReportRepo { get; }
         public IPartnerTypeRepo PartnerTypeRepo { get; }
-        
+
+
         public Task AttachDbContext(LumosDBContext dbContext)
         {
             _Context = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
