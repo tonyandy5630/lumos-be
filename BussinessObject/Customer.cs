@@ -24,11 +24,13 @@ namespace BussinessObject
         public string? Password { get; set; }
         public string? Phone { get; set; }
         public int? Pronounce { get; set; }
+        [JsonIgnore]
         public int? Status { get; set; }
         public DateTime? LastLogin { get; set; }
         public DateTime? LastUpdate { get; set; }
         [JsonIgnore]
         public string? UpdateBy { get; set; }
+        [JsonIgnore]
         public DateTime? CreatedDate { get; set; }
         public string? ImgUrl { get; set; }
         [JsonIgnore]
@@ -38,7 +40,6 @@ namespace BussinessObject
         [JsonIgnore]
         public virtual ICollection<Address> Addresses { get; set; }
         [JsonIgnore]
-
         public virtual ICollection<FavoritePartner> FavoritePartners { get; set; }
         [JsonIgnore]
         public virtual ICollection<MedicalReport> MedicalReports { get; set; }
