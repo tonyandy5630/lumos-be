@@ -98,7 +98,7 @@ namespace LumosSolution.Controllers
             }
         }
         [HttpGet("customer/{id}")]
-        [Authorize(Roles = "Customer")]
+        [Authorize(Roles = "Customer,Partner")]
         public async Task<ActionResult<ApiResponse<object>>> GetIcomeBookingsByCustomerID(int id)
         {
             ApiResponse<object> response = new ApiResponse<object>();

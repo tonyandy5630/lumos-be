@@ -31,13 +31,13 @@ namespace LumosSolution.Controllers
 
         [HttpGet("bookings/pending")]
         [Authorize(Roles = "Partner")]
-        public async Task<ActionResult<ApiResponse<List<IncomingBookingDTO>>>> GetPendingBookings()
+        public async Task<ActionResult<ApiResponse<List<BookingDTO>>>> GetPendingBookings()
         {
             ApiResponse<object> response = new ApiResponse<object>();
             try
             {
                 var userEmail = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
-                List<IncomingBookingDTO> pendingBookingDTOs = await _bookingService.GetPartnerPendingBookingsDTOAsync(userEmail);
+                List<BookingDTO> pendingBookingDTOs = await _bookingService.GetPartnerPendingBookingsDTOAsync(userEmail);
 
                 if (pendingBookingDTOs == null || !pendingBookingDTOs.Any())
                 {

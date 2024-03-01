@@ -35,7 +35,7 @@ namespace Service.Service
                 List<Booking> bookings = await _unitOfWork.BookingRepo.GetAllAppBookingAsync();
                 foreach (Booking booking in bookings)
                 {
-                    IncomingBookingDTO? curBooking = await _unitOfWork.BookingRepo.GetLatestBookingByBookingIdAsync(booking.BookingId);
+                    BookingDTO? curBooking = await _unitOfWork.BookingRepo.GetLatestBookingByBookingIdAsync(booking.BookingId);
                     if (curBooking == null)
                         continue;
 

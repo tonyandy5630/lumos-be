@@ -21,6 +21,6 @@ namespace Service.InterfaceService
         Task<List<int?>> GetAllBookingsForYearAsync(int year);
         Task<BookingDTO> GetBookingDetailInforByBookingIdAsync(int id);
 
-        Task<List<IncomingBookingDTO>> GetPartnerPendingBookingsDTOAsync(string  partnerEmail);
+        Task<List<BookingDTO>> GetPartnerPendingBookingsDTOAsync(string  partnerEmail);
     }
 }

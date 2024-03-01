@@ -509,8 +509,8 @@ namespace DataAccessLayer
          *  ServiceBooking -> ParnterService -> Partner
          *  _____________  -> BookingDetail -> Booking
          * 
-         * **/
-
+         * *
+        */
         private IQueryable<Booking> QueryPartnerBookings(LumosDBContext context, int partnerId)
         {
             return context.Bookings
@@ -540,10 +540,10 @@ namespace DataAccessLayer
         {
             return partnerBookings.Select(b => new BookingDTO
             {
-                bookingId = b.BookingId,
+                BookingId = b.BookingId,
                 services = MapServiceBookingsToDTOs(b.BookingDetails.SelectMany(bd => bd.ServiceBookings)),
-                status = (int)b.BookingLogs.OrderByDescending(bl => bl.CreatedDate)
-                            .Select(bl => bl.Status).FirstOrDefault()
+                Status = EnumUtils.GetBookingEnumByStatus(b.BookingLogs.OrderByDescending(bl => bl.CreatedDate)
+                                            .Select(bl => bl.Status).FirstOrDefault())
             }).ToList();
         }
 

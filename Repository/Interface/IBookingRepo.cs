@@ -25,10 +25,10 @@ namespace Repository.Interface
 
         Task<Booking?> GetBookingByDetailIdAsync(int detailid);
 
-        Task<IncomingBookingDTO?> GetLatestBookingByBookingIdAsync(int bookingId);
+        Task<BookingDTO?> GetLatestBookingByBookingIdAsync(int bookingId);
         Task<List<int>> GetBookingIdsByPartnerIdAsync(int partnerId);
         
-        Task<List<IncomingBookingDTO>> GetBookingByStatusIdAndPartnerId(BookingStatusEnum status, int partnerId);
+        Task<List<BookingDTO>> GetBookingByStatusIdAndPartnerId(BookingStatusEnum status, int partnerId);
         Task<int> CountBookingInAppAsync();
     }
 }

@@ -75,7 +75,7 @@ namespace Service.Service
             }
         }
 
-        public async Task<List<IncomingBookingDTO>> GetIncomingBookingsByEmailAsync(string email)
+        public async Task<List<BookingDTO>> GetIncomingBookingsByEmailAsync(string email)
         {
             try
             {
@@ -89,7 +89,7 @@ namespace Service.Service
             }
         }
 
-        public async Task<List<IncomingBookingDTO>> GetIncomingBookingsByCustomerIdAsync(int customerId)
+        public async Task<List<BookingDTO>> GetIncomingBookingsByCustomerIdAsync(int customerId)
         {
             try
             {
@@ -102,7 +102,7 @@ namespace Service.Service
                 throw;
             }
         }
-        public async Task<List<IncomingBookingDTO>> GetBookingsByCustomerIdAsync(string email)
+        public async Task<List<BookingDTO>> GetBookingsByCustomerIdAsync(string email)
         {
             try
             {

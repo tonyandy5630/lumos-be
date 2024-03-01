@@ -97,7 +97,7 @@ namespace DataAccessLayer
 
         }
 
-        public async Task<IncomingBookingDTO?> GetLatestBookingByBookingIdAsync(int bookingId)
+        public async Task<BookingDTO?> GetLatestBookingByBookingIdAsync(int bookingId)
         {
             try
             {
@@ -106,7 +106,7 @@ namespace DataAccessLayer
                                       join pay in _context.PaymentMethods on b.PaymentId equals pay.PaymentId
                                       where bl.BookingId == bookingId
                                       orderby bl.CreatedDate descending
-                                      select new IncomingBookingDTO
+                                      select new BookingDTO
                                       {
                                           Address = b.Address,
                                           BookingDate = b.BookingDate,
@@ -177,6 +177,7 @@ namespace DataAccessLayer
                     booking.CreatedDate = DateTime.Now;
                     booking.bookingTime = createBookingDTO.bookingTime;
                     booking.From = DateTime.Now;
+                    booking.CreatedBy = email;
                     _context.Bookings.Add(booking);
                     await _context.SaveChangesAsync();
 
@@ -280,25 +281,29 @@ namespace DataAccessLayer
 
         private async Task ProcessServiceBookingsAsync(IEnumerable<ServiceDTO> services, Booking booking, string email)
         {
-            foreach (var service in services)
+            foreach (var serviceDTO in services)
             {
-                var scheckervices = await _context.PartnerServices.FirstOrDefaultAsync(s => s.ServiceId == service.ServiceId);
+                var scheckervices = await _context.PartnerServices.FirstOrDefaultAsync(s => s.ServiceId == serviceDTO.ServiceId);
                 if (scheckervices == null || scheckervices.Status != 1)
                 {
-                    throw new Exception("Service is not available");
+                    throw new Exception($"Service with Id {serviceDTO.ServiceId} is not available");
                 }
-                var serviceBooking = new ServiceBooking
-                {
-                    ServiceId = service.ServiceId,
-                    DetailId = booking.BookingDetails.FirstOrDefault().DetailId, // You may need to adjust this based on your business logic
-                    Price = (int?)service.Price,
-                    Description = null,
-                    CreatedDate = booking.CreatedDate,
-                    LastUpdate = (DateTime)booking.CreatedDate,
-                    UpdatedBy = email
-                };
 
-                _context.ServiceBookings.Add(serviceBooking);
+                foreach (var bookingDetail in booking.BookingDetails)
+                {
+                        var serviceBooking = new ServiceBooking
+                        {
+                            ServiceId = serviceDTO.ServiceId,
+                            DetailId = bookingDetail.DetailId,
+                            Price = (int?)serviceDTO.Price,
+                            Description = null,
+                            CreatedDate = booking.CreatedDate,
+                            LastUpdate = (DateTime)booking.CreatedDate,
+                            UpdatedBy = email
+                        };
+
+                        _context.ServiceBookings.Add(serviceBooking);
+                }
             }
         }
 
@@ -489,6 +494,23 @@ namespace DataAccessLayer
                 throw new Exception(ex.Message);
             }
         }
+        public async Task<string> GetMedicalNameByReportIdAsync(int? reportId)
+        {
+            try
+            {
+                var medicalName = await _context.MedicalReports
+                    .Where(mr => mr.ReportId == reportId)
+                    .Select(mr => mr.Fullname)
+                    .FirstOrDefaultAsync();
+
+                return medicalName ?? "Null";
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetMedicalNameByReportIdAsync: {ex.Message}", ex);
+                throw;
+            }
+        }
         public async Task<BookingDTO> GetBookingDetailInforByBookingIdAsync(int id)
         {
             try
@@ -507,41 +529,59 @@ namespace DataAccessLayer
                     throw new Exception($"Booking detail with ID {id} not found");
                 }
 
-                // Retrieve the latest booking log status
                 var latestBookingLogStatus = await _context.BookingLogs
                     .Where(bl => bl.BookingId == id)
                     .OrderByDescending(bl => bl.CreatedDate)
                     .Select(bl => bl.Status)
                     .FirstOrDefaultAsync();
-
-                var partnerServiceDTOs = bookingDetail.ServiceBookings.Select(serviceBooking => new PartnerServiceDTO
+                var medicalServiceDTOs = new List<MedicalServiceDTO>();
+                foreach (var serviceBooking in bookingDetail.ServiceBookings)
                 {
-                    ServiceId = (int)serviceBooking.ServiceId,
-                    Name = serviceBooking.Service.Name,
-                    Code = serviceBooking.Service.Code,
-                    Duration = serviceBooking.Service.Duration,
-                    Status = serviceBooking.Service.Status,
-                    Description = serviceBooking.Service.Description,
-                    Price = serviceBooking.Service.Price,
-                    BookedQuantity = serviceBooking.Service.ServiceBookings.Count,
-                    Rating = serviceBooking.Service.Rating,
-                    Categories = serviceBooking.Service.ServiceDetails
-                                    .Where(sd => sd.Category != null) // Ensure Category is not null
-                                    .Select(sd => new ServiceCategoryDTO
-                                    {
-                                        CategoryId = sd.Category.CategoryId,
-                                        Category = sd.Category.Category,
-                                        Code = sd.Category.Code
-                                    }).Distinct()
-                                    .ToList()
-                }).ToList();
+                    var medicalName = await GetMedicalNameByReportIdAsync(bookingDetail.ReportId);
 
+                    var partnerServiceDTO = new PartnerServiceDTO
+                    {
+                        ServiceId = (int)serviceBooking.ServiceId,
+                        Name = serviceBooking.Service.Name,
+                        Code = serviceBooking.Service.Code,
+                        Duration = serviceBooking.Service.Duration,
+                        Status = serviceBooking.Service.Status,
+                        Description = serviceBooking.Service.Description,
+                        Price = serviceBooking.Service.Price,
+                        BookedQuantity = serviceBooking.Service.ServiceBookings.Count,
+                        Rating = serviceBooking.Service.Rating,
+                        Categories = serviceBooking.Service.ServiceDetails
+                                        .Where(sd => sd.Category != null) // Ensure Category is not null
+                                        .Select(sd => new ServiceCategoryDTO
+                                        {
+                                            CategoryId = sd.Category.CategoryId,
+                                            Category = sd.Category.Category,
+                                            Code = sd.Category.Code
+                                        }).Distinct()
+                                        .ToList()
+                    };
+
+                    var medicalServiceDTO = new MedicalServiceDTO
+                    {
+                        MedicalName = medicalName,
+                        Services = new List<PartnerServiceDTO> { partnerServiceDTO }
+                    };
+
+                    medicalServiceDTOs.Add(medicalServiceDTO);
+                }
                 var bookingDTO = new BookingDTO
                 {
-                    bookingId = (int)bookingDetail.BookingId,
-                    services = partnerServiceDTOs,
-                    status = (int)latestBookingLogStatus // Set the status to the latest booking log status
+                    BookingId = (int)bookingDetail.BookingId,
+                    Status = EnumUtils.GetBookingEnumByStatus(latestBookingLogStatus),
+                    MedicalServices = medicalServiceDTOs,
+                    Partner = await BookingLogDAO.Instance.GetPartnerIdFromBookingIdAsync(bookingDetail.BookingId),
+                    BookingDate = await BookingLogDAO.Instance.GetBookingDateAsync((int)bookingDetail.BookingId),
+                    bookingTime = (int)await BookingLogDAO.Instance.GetBookingTimeAsync((int)bookingDetail.BookingId),
+                    Address = await BookingLogDAO.Instance.GetBookingAddressAsync((int)bookingDetail.BookingId), 
+                    PaymentMethod = await BookingLogDAO.Instance.GetPaymentMethodAsync((int)bookingDetail.BookingId),
+                    Customer = await GetCustomerByReportIdAsync(bookingDetail.ReportId)
                 };
+
 
                 return bookingDTO;
             }
@@ -551,6 +591,21 @@ namespace DataAccessLayer
                 throw new Exception(ex.Message);
             }
         }
+        public async Task<Customer?> GetCustomerByReportIdAsync(int? reportId)
+        {
+            try
+            {
+                var medicalReport = await _context.MedicalReports
+                    .Include(mr => mr.Customer)
+                    .FirstOrDefaultAsync(mr => mr.ReportId == reportId);
 
+                return medicalReport?.Customer;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetCustomerByReportIdAsync: {ex.Message}", ex);
+                throw;
+            }
+        }
     }
 }

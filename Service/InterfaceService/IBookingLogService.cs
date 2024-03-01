@@ -14,8 +14,8 @@ namespace Service.InterfaceService
         Task<bool> UpdateBookingLogStatusForCustomerAsync(int bookingLogId, int newStatus);
         Task<BookingLog> GetLatestBookingLogAsync(int bookingId);
         Task<bool> CreateBookingLogAsync(BookingLog bookingLog);
-        Task<List<IncomingBookingDTO>> GetIncomingBookingsByEmailAsync(string email);
-        Task<List<IncomingBookingDTO>> GetIncomingBookingsByCustomerIdAsync(int customerId);
-        Task<List<IncomingBookingDTO>> GetBookingsByCustomerIdAsync(string email);
+        Task<List<BookingDTO>> GetIncomingBookingsByEmailAsync(string email);
+        Task<List<BookingDTO>> GetIncomingBookingsByCustomerIdAsync(int customerId);
+        Task<List<BookingDTO>> GetBookingsByCustomerIdAsync(string email);
     }
 }
