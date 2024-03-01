@@ -17,6 +17,8 @@ namespace Repository.Repo
 
         public Task<PartnerService?> GetPartnerServiceByServiceNameAsync(string serviceName, int partnerId) => PartnerServiceDAO.Instance.GetServiceOfPartnerByServiceNameAsync(serviceName, partnerId);
 
+        public Task<List<PartnerServiceDTO>> GetServiceBookedByMedicalReportIdAndBookingId(int medicalReportId, int BookingId) => PartnerServiceDAO.Instance.GetServiceBookedByMedicalReportIdAndBookingId(medicalReportId, BookingId);
+
         public Task<IEnumerable<PartnerServiceDTO>> GetTopFiveBookedServicesAsync() => PartnerServiceDAO.Instance.GetTopFiveBookedServicesAsync();
     }
 }

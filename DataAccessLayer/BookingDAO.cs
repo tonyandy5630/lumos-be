@@ -95,7 +95,8 @@ namespace DataAccessLayer
                 throw new Exception();
             }
 
-        }
+        } 
+
 
         public async Task<BookingDTO?> GetLatestBookingByBookingIdAsync(int bookingId)
         {
@@ -124,19 +125,6 @@ namespace DataAccessLayer
             }
         }
 
-        public async Task<BookingDetail> GetBookingDetailByBookingIdAsync(int id)
-        {
-            try
-            {
-                var bookingdetails = await _context.BookingDetails.SingleOrDefaultAsync(u => u.BookingId == id);
-                return bookingdetails;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error in GetBookingDetailByBookingIdAsync: {ex.Message}", ex);
-                throw new Exception(ex.Message);
-            }
-        }
         public async Task<List<Booking>> GetBookingsByMedicalReportIdAsync(int medicalReportId)
         {
             try
@@ -511,86 +499,7 @@ namespace DataAccessLayer
                 throw;
             }
         }
-        public async Task<BookingDTO> GetBookingDetailInforByBookingIdAsync(int id)
-        {
-            try
-            {
-                var bookingDetail = await _context.BookingDetails
-                    .Include(bd => bd.ServiceBookings)
-                    .ThenInclude(sb => sb.Service)
-                    .Include(bd => bd.ServiceBookings)
-                        .ThenInclude(sb => sb.Service.ServiceDetails) 
-                            .ThenInclude(sd => sd.Category) 
-                    .Include(bd => bd.Booking)
-                    .SingleOrDefaultAsync(u => u.BookingId == id);
-
-                if (bookingDetail == null)
-                {
-                    throw new Exception($"Booking detail with ID {id} not found");
-                }
-
-                var latestBookingLogStatus = await _context.BookingLogs
-                    .Where(bl => bl.BookingId == id)
-                    .OrderByDescending(bl => bl.CreatedDate)
-                    .Select(bl => bl.Status)
-                    .FirstOrDefaultAsync();
-                var medicalServiceDTOs = new List<MedicalServiceDTO>();
-                foreach (var serviceBooking in bookingDetail.ServiceBookings)
-                {
-                    var medicalName = await GetMedicalNameByReportIdAsync(bookingDetail.ReportId);
-
-                    var partnerServiceDTO = new PartnerServiceDTO
-                    {
-                        ServiceId = (int)serviceBooking.ServiceId,
-                        Name = serviceBooking.Service.Name,
-                        Code = serviceBooking.Service.Code,
-                        Duration = serviceBooking.Service.Duration,
-                        Status = serviceBooking.Service.Status,
-                        Description = serviceBooking.Service.Description,
-                        Price = serviceBooking.Service.Price,
-                        BookedQuantity = serviceBooking.Service.ServiceBookings.Count,
-                        Rating = serviceBooking.Service.Rating,
-                        Categories = serviceBooking.Service.ServiceDetails
-                                        .Where(sd => sd.Category != null) // Ensure Category is not null
-                                        .Select(sd => new ServiceCategoryDTO
-                                        {
-                                            CategoryId = sd.Category.CategoryId,
-                                            Category = sd.Category.Category,
-                                            Code = sd.Category.Code
-                                        }).Distinct()
-                                        .ToList()
-                    };
-
-                    var medicalServiceDTO = new MedicalServiceDTO
-                    {
-                        MedicalName = medicalName,
-                        Services = new List<PartnerServiceDTO> { partnerServiceDTO }
-                    };
-
-                    medicalServiceDTOs.Add(medicalServiceDTO);
-                }
-                var bookingDTO = new BookingDTO
-                {
-                    BookingId = (int)bookingDetail.BookingId,
-                    Status = EnumUtils.GetBookingEnumByStatus(latestBookingLogStatus),
-                    MedicalServices = medicalServiceDTOs,
-                    Partner = await BookingLogDAO.Instance.GetPartnerIdFromBookingIdAsync(bookingDetail.BookingId),
-                    BookingDate = await BookingLogDAO.Instance.GetBookingDateAsync((int)bookingDetail.BookingId),
-                    bookingTime = (int)await BookingLogDAO.Instance.GetBookingTimeAsync((int)bookingDetail.BookingId),
-                    Address = await BookingLogDAO.Instance.GetBookingAddressAsync((int)bookingDetail.BookingId), 
-                    PaymentMethod = await BookingLogDAO.Instance.GetPaymentMethodAsync((int)bookingDetail.BookingId),
-                    Customer = await GetCustomerByReportIdAsync(bookingDetail.ReportId)
-                };
-
-
-                return bookingDTO;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error in GetBookingDetailByBookingIdAsync: {ex.Message}", ex);
-                throw new Exception(ex.Message);
-            }
-        }
+       
         public async Task<Customer?> GetCustomerByReportIdAsync(int? reportId)
         {
             try

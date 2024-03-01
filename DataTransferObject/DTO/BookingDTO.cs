@@ -17,6 +17,6 @@ namespace DataTransferObject.DTO
         public Customer? Customer { get; set; }
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public List<PartnerServiceDTO?> services { get; set; }
-        public List<MedicalServiceDTO?> MedicalServices { get; set; }
+        public List<MedicalServiceDTO?>? MedicalServices { get; set; }
     }
 }

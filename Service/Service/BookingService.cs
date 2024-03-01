@@ -57,11 +57,34 @@ namespace Service.Service
         }
 
 
-        public async Task<BookingDetail> GetBookingDetailByBookingIdAsync(int id)
+        public async Task<BookingDTO> GetBookingDetailByBookingIdAsync(int bookingId)
         {
             try
             {
-                return await _unitOfWork.BookingRepo.GetBookingDetailByBookingIdAsync(id);
+                BookingDTO? booking =  await _unitOfWork.BookingRepo.GetLatestBookingByBookingIdAsync(bookingId);
+                if (booking == null)
+                    throw new NullReferenceException("Cannot find booking");
+
+                Partner? bookingPartner = await _unitOfWork.PartnerRepo.GetPartnerByBookingIdAsync(bookingId);
+
+                List<MedicalServiceDTO> bookingMedServices = new();
+                List<MedicalReport> bookingMedReports = (List<MedicalReport>)await _unitOfWork.MedicalReportRepo.GetMedicalReportsByBookingIdAsync(bookingId);
+                foreach(var report in bookingMedReports)
+                {
+                    if(report == null) continue;
+                    List<PartnerServiceDTO> reportBookedServices = await _unitOfWork.PartnerServiceRepo.GetServiceBookedByMedicalReportIdAndBookingId(report.ReportId, bookingId);
+                    MedicalServiceDTO medicalService = new MedicalServiceDTO
+                    {
+                        MedicalName = report.Fullname,
+                        Services = reportBookedServices,
+                    };
+                    bookingMedServices.Add(medicalService);
+                }
+
+                booking.MedicalServices = bookingMedServices;
+                if(bookingPartner != null)
+                    booking.Partner = bookingPartner.DisplayName;
+                return booking;
             }
             catch (Exception ex)
             {
@@ -181,21 +204,6 @@ namespace Service.Service
             catch (Exception ex)
             {
                 Console.WriteLine($"Error in GetAllBookingsForYearAsync: {ex.Message}", ex);
-                throw new Exception(ex.Message);
-            }
-        }
-
-        public async Task<BookingDTO> GetBookingDetailInforByBookingIdAsync(int id)
-        {
-            try
-            {
-                var bookinginfor = await _unitOfWork.BookingRepo.GetBookingDetailInforByBookingIdAsync(id);
-
-                return bookinginfor;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error in GetAllBookedServicesAsync: {ex.Message}", ex);
                 throw new Exception(ex.Message);
             }
         }

@@ -12,6 +12,7 @@ namespace Repository.Interface
 {
     public interface IPartnerRepo
     {
+        Task<Partner?> GetPartnerByBookingIdAsync(int bookingId);
         Task<int> CountAppPartnerAsync();
         Task<PartnerServiceDTO?> GetPartnerServiceDetailByIdAsync(int id);
         Task<List<Partner>> GetAllPartnersAsync();
