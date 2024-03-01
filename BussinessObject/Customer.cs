@@ -19,6 +19,7 @@ namespace BussinessObject
         [Required]
         public string Email { get; set; }
         public string? Fullname { get; set; }
+        [Required]
         [JsonIgnore]
         public string? Password { get; set; }
         public string? Phone { get; set; }
@@ -26,11 +27,13 @@ namespace BussinessObject
         public int? Status { get; set; }
         public DateTime? LastLogin { get; set; }
         public DateTime? LastUpdate { get; set; }
+        [JsonIgnore]
         public string? UpdateBy { get; set; }
         public DateTime? CreatedDate { get; set; }
         public string? ImgUrl { get; set; }
+        [JsonIgnore]
         public string? RefreshToken { get; set; }
-
+        [JsonIgnore]
         public int? Role { get; set; }
 
         public virtual ICollection<Address> Addresses { get; set; }
