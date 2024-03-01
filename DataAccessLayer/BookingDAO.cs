@@ -179,7 +179,7 @@ namespace DataAccessLayer
 
                         await ProcessBookingLogAsync(booking, email);
 
-                        await ProcessServiceBookingsAsync(cartItem.Services, booking, email);
+                        await ProcessServiceBookingsAsync(cartItem.Services, booking, email, cartItem.ReportId);
                     }
 
                     await _context.SaveChangesAsync();
@@ -271,20 +271,19 @@ namespace DataAccessLayer
             await _context.SaveChangesAsync();
         }
 
-        private async Task ProcessServiceBookingsAsync(IEnumerable<ServiceDTO> services, Booking booking, string email)
+        private async Task ProcessServiceBookingsAsync(IEnumerable<ServiceDTO> services, Booking booking, string email, int reportid)
         {
             foreach (var serviceDTO in services)
             {
+                var bookingDetail = booking.BookingDetails.FirstOrDefault(bd => bd.ReportId == reportid);
                 var scheckervices = await _context.PartnerServices.FirstOrDefaultAsync(s => s.ServiceId == serviceDTO.ServiceId);
                 if (scheckervices == null || scheckervices.Status != 1)
                 {
                     throw new Exception($"Service with Id {serviceDTO.ServiceId} is not available");
                 }
 
-                foreach (var bookingDetail in booking.BookingDetails)
-                {
-                        var serviceBooking = new ServiceBooking
-                        {
+                    var serviceBooking = new ServiceBooking
+                     {
                             ServiceId = serviceDTO.ServiceId,
                             DetailId = bookingDetail.DetailId,
                             Price = (int?)serviceDTO.Price,
@@ -292,10 +291,9 @@ namespace DataAccessLayer
                             CreatedDate = booking.CreatedDate,
                             LastUpdate = (DateTime)booking.CreatedDate,
                             UpdatedBy = email
-                        };
+                     };
 
-                        _context.ServiceBookings.Add(serviceBooking);
-                }
+                  _context.ServiceBookings.Add(serviceBooking);
             }
         }
 
@@ -518,6 +516,19 @@ namespace DataAccessLayer
             {
                 Console.WriteLine($"Error in GetCustomerByReportIdAsync: {ex.Message}", ex);
                 throw;
+            }
+        }
+        public async Task<BookingDetail> GetBookingDetailByBookingIdAsync(int id)
+        {
+            try
+            {
+                var bookingdetails = await _context.BookingDetails.SingleOrDefaultAsync(u => u.BookingId == id);
+                return bookingdetails;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetBookingDetailByBookingIdAsync: {ex.Message}", ex);
+                throw new Exception(ex.Message);
             }
         }
     }
