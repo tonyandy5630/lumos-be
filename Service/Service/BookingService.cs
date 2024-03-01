@@ -65,6 +65,9 @@ namespace Service.Service
                 if (booking == null)
                     throw new NullReferenceException("Cannot find booking");
 
+                Customer? customer = await _unitOfWork.CustomerRepo.GetCustomerByBookingIdAsync(bookingId);
+                if (customer == null)
+                    throw new NullReferenceException("Cannot find customer");
                 Partner? bookingPartner = await _unitOfWork.PartnerRepo.GetPartnerByBookingIdAsync(bookingId);
 
                 List<MedicalServiceDTO> bookingMedServices = new();
@@ -84,6 +87,7 @@ namespace Service.Service
                 booking.MedicalServices = bookingMedServices;
                 if(bookingPartner != null)
                     booking.Partner = bookingPartner.DisplayName;
+                booking.Customer = customer;
                 return booking;
             }
             catch (Exception ex)
