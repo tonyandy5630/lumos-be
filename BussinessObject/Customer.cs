@@ -35,9 +35,12 @@ namespace BussinessObject
         public string? RefreshToken { get; set; }
         [JsonIgnore]
         public int? Role { get; set; }
-
+        [JsonIgnore]
         public virtual ICollection<Address> Addresses { get; set; }
+        [JsonIgnore]
+
         public virtual ICollection<FavoritePartner> FavoritePartners { get; set; }
+        [JsonIgnore]
         public virtual ICollection<MedicalReport> MedicalReports { get; set; }
     }
 }
