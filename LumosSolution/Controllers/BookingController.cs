@@ -54,8 +54,8 @@ namespace LumosSolution.Controllers
             }
             catch (Exception ex)
             {
-                response.message = MessagesResponse.Error.OperationFailed;
-                response.StatusCode = ApiStatusCode.BadRequest;
+                Console.WriteLine(ex.Message);
+                response.message = ex.Message;
                 return BadRequest(response);
             }
         }
@@ -73,27 +73,27 @@ namespace LumosSolution.Controllers
 
                 if (pendingBookingDTOs == null || !pendingBookingDTOs.Any())
                 {
-                    response.message = "No bookings found.";
+                    response.message = MessagesResponse.Error.BookingNotFound;
                     response.StatusCode = ApiStatusCode.NotFound;
                     return NotFound(response);
                 }
 
                 response.data = pendingBookingDTOs;
-                response.message = "Success";
+                response.message = MessagesResponse.Success.Completed;
                 response.StatusCode = ApiStatusCode.OK;
 
                 return Ok(response);
             }
             catch (UnauthorizedAccessException)
             {
-                response.message = "Unauthorized";
+                response.message = MessagesResponse.Error.Unauthorized;
                 response.StatusCode = ApiStatusCode.Unauthorized;
                 return Unauthorized(response);
             }
             catch (Exception ex)
             {
-                response.message = "Internal Server Error";
-                response.StatusCode = ApiStatusCode.BadRequest;
+                Console.WriteLine(ex.Message);
+                response.message = ex.Message;
                 return BadRequest(response);
             }
         }
@@ -108,27 +108,27 @@ namespace LumosSolution.Controllers
 
                 if (pendingBookingDTOs == null || !pendingBookingDTOs.Any())
                 {
-                    response.message = "No bookings found.";
+                    response.message = MessagesResponse.Error.BookingNotFound;
                     response.StatusCode = ApiStatusCode.NotFound;
                     return NotFound(response);
                 }
 
                 response.data = pendingBookingDTOs;
-                response.message = "Success";
+                response.message = MessagesResponse.Success.Completed;
                 response.StatusCode = ApiStatusCode.OK;
 
                 return Ok(response);
             }
             catch (UnauthorizedAccessException)
             {
-                response.message = "Unauthorized";
+                response.message = MessagesResponse.Error.Unauthorized;
                 response.StatusCode = ApiStatusCode.Unauthorized;
                 return Unauthorized(response);
             }
             catch (Exception ex)
             {
-                response.message = "Internal Server Error";
-                response.StatusCode = ApiStatusCode.BadRequest;
+                Console.WriteLine(ex.Message);
+                response.message = ex.Message;
                 return BadRequest(response);
             }
         }
@@ -146,27 +146,27 @@ namespace LumosSolution.Controllers
 
                 if (pendingBookingDTOs == null || !pendingBookingDTOs.Any())
                 {
-                    response.message = "No pending bookings found.";
+                    response.message = MessagesResponse.Error.BookingNotFound;
                     response.StatusCode = ApiStatusCode.NotFound;
                     return NotFound(response);
                 }
 
                 response.data = pendingBookingDTOs;
-                response.message = "Success";
+                response.message = MessagesResponse.Success.Completed;
                 response.StatusCode = ApiStatusCode.OK;
 
                 return Ok(response);
             }
             catch (UnauthorizedAccessException)
             {
-                response.message = "Unauthorized";
+                response.message = MessagesResponse.Error.Unauthorized;
                 response.StatusCode = ApiStatusCode.Unauthorized;
                 return Unauthorized(response);
             }
             catch (Exception ex)
             {
-                response.message = "Internal Server Error";
-                response.StatusCode = ApiStatusCode.BadRequest;
+                Console.WriteLine(ex.Message);
+                response.message = ex.Message;
                 return BadRequest(response);
             }
         }
@@ -217,8 +217,8 @@ namespace LumosSolution.Controllers
             }
             catch (Exception ex)
             {
-                response.message = "Internal Server Error";
-                response.StatusCode = ApiStatusCode.BadRequest;
+                Console.WriteLine(ex.Message);
+                response.message = ex.Message;
                 return BadRequest(response);
             }
         }
@@ -233,7 +233,7 @@ namespace LumosSolution.Controllers
                 var userEmail = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
                 if (userEmail == null)
                 {
-                    response.message = "không tìm thấy email";
+                    response.message = MessagesResponse.Error.UserEmailNotFound;
                     response.StatusCode = ApiStatusCode.BadRequest;
                     return BadRequest(response);
                 }
@@ -243,7 +243,7 @@ namespace LumosSolution.Controllers
 
                 if (topServices == null)
                 {
-                    response.message = "No data found.";
+                    response.message = MessagesResponse.Error.NotFound;
                     response.StatusCode = ApiStatusCode.NotFound;
                     return NotFound(response);
                 }
@@ -265,14 +265,14 @@ namespace LumosSolution.Controllers
             }
             catch (UnauthorizedAccessException)
             {
-                response.message = "Unauthorized";
+                response.message = MessagesResponse.Success.Completed;
                 response.StatusCode = ApiStatusCode.Unauthorized;
                 return Unauthorized(response);
             }
             catch (Exception ex)
             {
-                response.message = "Internal Server Error";
-                response.StatusCode = ApiStatusCode.BadRequest;
+                Console.WriteLine(ex.Message);
+                response.message = ex.Message;
                 return BadRequest(response);
             }
         }
@@ -295,21 +295,21 @@ namespace LumosSolution.Controllers
 
                 // Prepare output data
                 response.data = stats;
-                response.message = "Success";
+                response.message = MessagesResponse.Success.Completed;
                 response.StatusCode = ApiStatusCode.OK;
 
                 return Ok(response);
             }
             catch (UnauthorizedAccessException)
             {
-                response.message = "Unauthorized";
+                response.message = MessagesResponse.Error.Unauthorized;
                 response.StatusCode = ApiStatusCode.Unauthorized;
                 return Unauthorized(response);
             }
             catch (Exception ex)
             {
-                response.message = "Internal Server Error";
-                response.StatusCode = ApiStatusCode.BadRequest;
+                Console.WriteLine(ex.Message);
+                response.message = ex.Message;
                 return BadRequest(response);
             }
         }
@@ -332,27 +332,27 @@ namespace LumosSolution.Controllers
 
                 if (topServices == null || !topServices.Any())
                 {
-                    response.message = "No data found.";
+                    response.message = MessagesResponse.Error.NotFound;
                     response.StatusCode = ApiStatusCode.NotFound;
                     return NotFound(response);
                 }
 
                 response.data = topServices;
-                response.message = "Success";
+                response.message = MessagesResponse.Success.Completed;
                 response.StatusCode = ApiStatusCode.OK;
 
                 return Ok(response);
             }
             catch (UnauthorizedAccessException)
             {
-                response.message = "Unauthorized";
+                response.message = MessagesResponse.Error.Unauthorized;
                 response.StatusCode = ApiStatusCode.Unauthorized;
                 return Unauthorized(response);
             }
             catch (Exception ex)
             {
-                response.message = "Internal Server Error";
-                response.StatusCode = 500;
+                Console.WriteLine(ex.Message);
+                response.message = ex.Message;
                 return BadRequest(response);
             }
         }
@@ -381,8 +381,8 @@ namespace LumosSolution.Controllers
             }
             catch (Exception ex)
             {
-                response.message = MessagesResponse.Error.OperationFailed;
-                response.StatusCode = ApiStatusCode.BadRequest;
+                Console.WriteLine(ex.Message);
+                response.message = ex.Message;
                 return BadRequest(response);
             }
         }
@@ -411,8 +411,8 @@ namespace LumosSolution.Controllers
             }
             catch (Exception ex)
             {
-                response.message = MessagesResponse.Error.OperationFailed;
-                response.StatusCode = ApiStatusCode.BadRequest;
+                Console.WriteLine(ex.Message);
+                response.message = ex.Message;
                 return BadRequest(response);
             }
         }
@@ -445,8 +445,8 @@ namespace LumosSolution.Controllers
             }
             catch (Exception ex)
             {
-                response.message = MessagesResponse.Error.OperationFailed;
-                response.StatusCode = ApiStatusCode.BadRequest;
+                Console.WriteLine(ex.Message);
+                response.message = ex.Message;
                 return BadRequest(response);
             }
         }
@@ -475,8 +475,8 @@ namespace LumosSolution.Controllers
             }
             catch (Exception ex)
             {
-                response.message = MessagesResponse.Error.OperationFailed;
-                response.StatusCode = ApiStatusCode.BadRequest;
+                Console.WriteLine(ex.Message);
+                response.message = ex.Message;
                 return BadRequest(response);
             }
         }
@@ -505,8 +505,8 @@ namespace LumosSolution.Controllers
             }
             catch (Exception ex)
             {
-                response.message = MessagesResponse.Error.OperationFailed;
-                response.StatusCode = ApiStatusCode.BadRequest;
+                Console.WriteLine(ex.Message);
+                response.message = ex.Message;
                 return BadRequest(response);
             }
         }
@@ -540,8 +540,8 @@ namespace LumosSolution.Controllers
             }
             catch (Exception ex)
             {
-                response.message = MessagesResponse.Error.OperationFailed;
-                response.StatusCode = ApiStatusCode.BadRequest;
+                Console.WriteLine(ex.Message);
+                response.message = ex.Message;
                 return BadRequest(response);
             }
         }

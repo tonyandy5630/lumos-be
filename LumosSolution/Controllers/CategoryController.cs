@@ -37,10 +37,10 @@ namespace LumosSolution.Controllers
                     return Ok(response);
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                response.message = MessagesResponse.Error.OperationFailed;
-                response.StatusCode = ApiStatusCode.BadRequest;
+                Console.WriteLine(ex.Message);
+                response.message = ex.Message;
                 return BadRequest(response);
             }
         }

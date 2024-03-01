@@ -12,6 +12,7 @@ using Service.Service;
 using System.Collections.Generic;
 using System.Security.Claims;
 using Utils;
+using static Google.Apis.Requests.BatchRequest;
 using static Utils.MessagesResponse;
 
 namespace LumosSolution.Controllers
@@ -41,12 +42,12 @@ namespace LumosSolution.Controllers
                 if (pendingBookingDTOs == null || !pendingBookingDTOs.Any())
                 {
                     response.message = "No pending bookings found.";
-                    response.StatusCode = 200;
+                    response.StatusCode = ApiStatusCode.OK;
                     return Ok(response);
                 }
 
                 response.data = pendingBookingDTOs;
-                response.message = "Success";
+                response.message = MessagesResponse.Success.Completed;
                 response.StatusCode = ApiStatusCode.OK;
 
                 return Ok(response);
@@ -59,8 +60,8 @@ namespace LumosSolution.Controllers
                     response.StatusCode = ApiStatusCode.NotFound;
                     return NotFound(response);
                 }
-                response.message = "Internal Server Error";
-                response.StatusCode = ApiStatusCode.BadRequest;
+                Console.WriteLine(ex.ToString());
+                response.message = ex.Message;
                 return BadRequest(response);
             }
         }
@@ -99,9 +100,10 @@ namespace LumosSolution.Controllers
             }
             catch (Exception ex)
             {
-                response.message = MessagesResponse.Error.OperationFailed;
-                response.StatusCode = ApiStatusCode.BadRequest;
-                return BadRequest(response);
+                Console.WriteLine(ex.Message);
+                response.message = ex.Message;
+                response.StatusCode = ApiStatusCode.InternalServerError;
+                return StatusCode(500, response);
             }
         }
         [HttpGet("services")]
@@ -123,7 +125,7 @@ namespace LumosSolution.Controllers
                     return NotFound(response);
 
                 response.message = MessagesResponse.Success.Completed;
-                response.StatusCode = 200;
+                response.StatusCode = ApiStatusCode.OK;
                 response.data = partnerServices;
 
                 return Ok(response);
@@ -131,15 +133,15 @@ namespace LumosSolution.Controllers
             catch (UnauthorizedAccessException)
             {
                 response.message = MessagesResponse.Error.Unauthorized;
-                response.StatusCode = 401;
+                response.StatusCode = ApiStatusCode.Unauthorized;
                 return StatusCode(401, response);
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                response.message = MessagesResponse.Error.OperationFailed;
-                response.StatusCode = 406;
-                return StatusCode(406, response);
+                response.message = ex.Message;
+                response.StatusCode = ApiStatusCode.InternalServerError;
+                return StatusCode(500, response);
             }
         }
 
@@ -150,7 +152,7 @@ namespace LumosSolution.Controllers
             ApiResponse<List<MonthlyRevenueDTO>> response = new ApiResponse<List<MonthlyRevenueDTO>>
             {
                 message = MessagesResponse.Error.NotFound,
-                StatusCode = 404
+                StatusCode = ApiStatusCode.NotFound
             };
 
             try
@@ -161,21 +163,22 @@ namespace LumosSolution.Controllers
                     return NotFound(response);
 
                 response.message = MessagesResponse.Success.Completed;
-                response.StatusCode = 200;
+                response.StatusCode = ApiStatusCode.OK;
                 response.data = monthlyRevenue;
 
                 return Ok(response);
             }
             catch (UnauthorizedAccessException)
             {
-                response.message = "Không có quyền";
-                response.StatusCode = 401;
+                response.message = MessagesResponse.Error.Unauthorized;
+                response.StatusCode = ApiStatusCode.Unauthorized;
                 return StatusCode(401, response);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                response.message = "Lỗi máy chủ nội bộ";
-                response.StatusCode = 500;
+                Console.WriteLine(ex.Message);
+                response.message = ex.Message;
+                response.StatusCode = ApiStatusCode.InternalServerError;
                 return StatusCode(500, response);
             }
         }
@@ -187,7 +190,7 @@ namespace LumosSolution.Controllers
             ApiResponse<List<RevenuePerWeekDTO>> response = new ApiResponse<List<RevenuePerWeekDTO>>
             {
                 message = MessagesResponse.Error.NotFound,
-                StatusCode = 404
+                StatusCode = ApiStatusCode.NotFound
             };
 
             try
@@ -203,14 +206,16 @@ namespace LumosSolution.Controllers
                     return NotFound(response);
 
                 response.message = MessagesResponse.Success.Completed;
-                response.StatusCode = 200;
+                response.StatusCode = ApiStatusCode.OK;
                 response.data = revenuePerWeek;
 
                 return Ok(response);
             }
             catch (Exception ex)
             {
-                response.message = $"Internal server error";
+                Console.WriteLine(ex.Message);
+                response.message = ex.Message;
+                response.StatusCode = ApiStatusCode.InternalServerError;
                 return StatusCode(500, response);
             }
         }
@@ -222,7 +227,7 @@ namespace LumosSolution.Controllers
             ApiResponse<object> response = new ApiResponse<object>
             {
                 message = MessagesResponse.Error.NotFound,
-                StatusCode = 404,
+                StatusCode = ApiStatusCode.NotFound,
                 data = "Không tìm thấy kết quả"
             };
 
@@ -235,21 +240,22 @@ namespace LumosSolution.Controllers
 
 
                 response.message = MessagesResponse.Success.Completed;
-                response.StatusCode = 200;
+                response.StatusCode = ApiStatusCode.OK;
                 response.data = res;
 
                 return Ok(response);
             }
             catch (UnauthorizedAccessException)
             {
-                response.message = "Không có quyền";
-                response.StatusCode = 401;
+                response.message = MessagesResponse.Error.Unauthorized;
+                response.StatusCode = ApiStatusCode.Unauthorized;
                 return StatusCode(401, response);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                response.message = "Lỗi máy chủ nội bộ";
-                response.StatusCode = 500;
+                Console.WriteLine(ex.Message);
+                response.message = ex.Message;
+                response.StatusCode = ApiStatusCode.InternalServerError;
                 return StatusCode(500, response);
             }
         }
@@ -271,7 +277,7 @@ namespace LumosSolution.Controllers
                     return response;
 
                 response.message = MessagesResponse.Success.Completed;
-                response.StatusCode = 200;
+                response.StatusCode = ApiStatusCode.OK;
                 response.data = partnerService;
 
                 return Ok(response);
@@ -279,7 +285,9 @@ namespace LumosSolution.Controllers
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                return BadRequest(response);
+                response.message = ex.Message;
+                response.StatusCode = ApiStatusCode.InternalServerError;
+                return StatusCode(500, response);
             }
         }
 
@@ -290,20 +298,22 @@ namespace LumosSolution.Controllers
             ApiResponse<IEnumerable<SearchPartnerDTO>> res = new ApiResponse<IEnumerable<SearchPartnerDTO>>
             {
                 message = MessagesResponse.Error.OperationFailed,
-                StatusCode = 500
+                StatusCode = ApiStatusCode.InternalServerError
             };
             try
             {
                 IEnumerable<SearchPartnerDTO> searchPartnerDTOs = await _partnerService.SearchPartnerByPartnerOrServiceNameAsync(keyword);
                 res.message = MessagesResponse.Success.Completed;
-                res.StatusCode = 200;
+                res.StatusCode = ApiStatusCode.OK;
                 res.data = searchPartnerDTOs;
                 return Ok(res);
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                return BadRequest(res);
+                res.message = ex.Message;
+                res.StatusCode = ApiStatusCode.InternalServerError;
+                return StatusCode(500, res);
             }
         }
         [HttpGet("/api/partner/category/{categoryId}")]
@@ -313,20 +323,22 @@ namespace LumosSolution.Controllers
             ApiResponse<IEnumerable<SearchPartnerDTO>> res = new ApiResponse<IEnumerable<SearchPartnerDTO>>
             {
                 message = MessagesResponse.Error.OperationFailed,
-                StatusCode = 500
+                StatusCode = ApiStatusCode.InternalServerError
             };
             try
             {
                 IEnumerable<SearchPartnerDTO> searchPartnerDTOs = await _partnerService.GetPartnerByCategoryAsync(categoryId);
                 res.message = MessagesResponse.Success.Completed;
-                res.StatusCode = 200;
+                res.StatusCode = ApiStatusCode.OK;
                 res.data = searchPartnerDTOs;
                 return Ok(res);
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                return BadRequest(res);
+                res.message = ex.Message;
+                res.StatusCode = ApiStatusCode.InternalServerError;
+                return StatusCode(500, res);
             }
         }
         [HttpGet("{id}")]
@@ -336,7 +348,7 @@ namespace LumosSolution.Controllers
             ApiResponse<SearchPartnerDTO?> res = new ApiResponse<SearchPartnerDTO?>
             {
                 message = MessagesResponse.Error.NotFound,
-                StatusCode = 404
+                StatusCode = ApiStatusCode.NotFound
             };
             try
             {
@@ -346,7 +358,7 @@ namespace LumosSolution.Controllers
                     return res;
 
                 res.message = MessagesResponse.Success.Completed;
-                res.StatusCode = 200;
+                res.StatusCode = ApiStatusCode.OK;
                 res.data = partner;
 
                 return Ok(res);
@@ -354,7 +366,9 @@ namespace LumosSolution.Controllers
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                return BadRequest(res);
+                res.message = ex.Message;
+                res.StatusCode = ApiStatusCode.InternalServerError;
+                return StatusCode(500, res);
             }
         }
 
@@ -372,7 +386,7 @@ namespace LumosSolution.Controllers
                 if (!ModelState.IsValid)
                 {
                     response.message = MessagesResponse.Error.InvalidInput;
-                    response.StatusCode = 422;
+                    response.StatusCode = ApiStatusCode.UnprocessableEntity;
                     return UnprocessableEntity(response);
                 }
 
@@ -383,7 +397,7 @@ namespace LumosSolution.Controllers
                     throw new Exception("Added sevice failed");
 
                 response.message = MessagesResponse.Success.Created;
-                response.StatusCode = 200;
+                response.StatusCode = ApiStatusCode.OK;
                 response.data = newService;
                 return Ok(response);
             }
@@ -391,7 +405,8 @@ namespace LumosSolution.Controllers
             {
                 Console.WriteLine(ex.Message);
                 response.message = ex.Message;
-                return BadRequest(response);
+                response.StatusCode = ApiStatusCode.InternalServerError;
+                return StatusCode(500, response);
             }
         }
 
@@ -481,7 +496,7 @@ namespace LumosSolution.Controllers
 
                 if (data == null)
                 {
-                    response.StatusCode = 409;
+                    response.StatusCode = ApiStatusCode.Conflict;
                     response.data = error;
                     return Conflict(response);
                 }
@@ -496,7 +511,7 @@ namespace LumosSolution.Controllers
                 if (ex is NullReferenceException)
                 {
                     response.message = ex.Message;
-                    response.StatusCode = 422;
+                    response.StatusCode = ApiStatusCode.UnprocessableEntity;
                     return UnprocessableEntity(response);
                 }
                 return BadRequest(response);
@@ -548,7 +563,7 @@ namespace LumosSolution.Controllers
                     return response;
 
                 response.message = MessagesResponse.Success.Completed;
-                response.StatusCode = 200;
+                response.StatusCode = ApiStatusCode.OK;
                 response.data = topFiveServices;
 
                 return Ok(response);
