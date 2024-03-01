@@ -27,6 +27,19 @@ namespace DataAccessLayer
             }
         }
 
+        public async Task<int> CountAppPartnerAsync()
+        {
+            try
+            {
+                using LumosDBContext _context = new LumosDBContext();
+                return await _context.Partners.CountAsync();
+            }
+            catch
+            {
+                throw new Exception();
+            }
+        }
+
         public async Task<PartnerServiceDTO?> GetPartnerServiceByIdAsync(int serviceId)
         {
             try

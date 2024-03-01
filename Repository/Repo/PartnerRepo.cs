@@ -53,6 +53,8 @@ namespace Repository.Repo
 
         public Task<StatPartnerServiceDTO> CalculateServicesAndRevenueAsync(string? email) => PartnerDAO.Instance.CalculateServicesAndRevenueAsync(email);
 
-        public Task<List<BookingDTO>> GetPartnerBookingsAsync(string partnerEmail, int page, int pageSize) => PartnerDAO.Instance.GetPartnerBookingsAsync(partnerEmail, page, pageSize);    
+        public Task<List<BookingDTO>> GetPartnerBookingsAsync(string partnerEmail, int page, int pageSize) => PartnerDAO.Instance.GetPartnerBookingsAsync(partnerEmail, page, pageSize);
+
+        public Task<int> CountAppPartnerAsync() => PartnerDAO.Instance.CountAppPartnerAsync();
     }
 }

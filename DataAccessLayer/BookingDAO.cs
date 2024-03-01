@@ -33,6 +33,30 @@ namespace DataAccessLayer
                 return instance;
             }
         }
+        public async Task<int> CountAllBookingInAppAsync()
+        {
+            try
+            {
+                return await _context.Bookings.CountAsync();
+            }
+            catch
+            {
+                throw new Exception();
+            }
+        }
+
+        public async Task<List<Booking>> GetAllBookingInAppAsync()
+        {
+            try
+            {
+                return await _context.Bookings.ToListAsync();
+            }
+            catch
+            {
+                throw new Exception();
+            }
+        }
+
 
         public async Task<List<int>> GetBookingIdsByPartnerIdAsync(int partnerId)
         {
@@ -89,7 +113,8 @@ namespace DataAccessLayer
                                           BookingId = b.BookingId,
                                           bookingTime = b.bookingTime,
                                           PaymentMethod = pay.Name,
-                                          Status = EnumUtils.GetBookingEnumByStatus(bl.Status)
+                                          Status = EnumUtils.GetBookingEnumByStatus(bl.Status),
+                                          TotalPrice = b.TotalPrice
                                       }).Take(1).FirstOrDefaultAsync();
                 return await booking;
             }

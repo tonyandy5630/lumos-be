@@ -1,5 +1,6 @@
 ﻿using BussinessObject;
 using DataTransferObject.DTO;
+using Enum;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +11,7 @@ namespace Repository.Interface
 {
     public interface IBookingRepo
     {
+        Task<List<Booking>> GetAllAppBookingAsync();
         Task<BookingDetail> GetBookingDetailByBookingIdAsync(int id);
         Task<List<Booking>> GetBookingsByMedicalReportIdAsync(int medicalReportId);
         Task<bool> CreateBookingAsync(Booking booking, CreateBookingDTO createBookingDTO, string email);
@@ -25,6 +27,8 @@ namespace Repository.Interface
 
         Task<IncomingBookingDTO?> GetLatestBookingByBookingIdAsync(int bookingId);
         Task<List<int>> GetBookingIdsByPartnerIdAsync(int partnerId);
-
+        
+        Task<List<IncomingBookingDTO>> GetBookingByStatusIdAndPartnerId(BookingStatusEnum status, int partnerId);
+        Task<int> CountBookingInAppAsync();
     }
 }

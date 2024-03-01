@@ -32,24 +32,7 @@ namespace Service.Service
                     throw new NullReferenceException("Partner is ban or not existed");
                 }
 
-                //List<int> bookingDetails = await _unitOfWork.BookingDetailsRepo.GetDistinctBookingDetailsIdByPartnerId(partner.PartnerId);
-                List<IncomingBookingDTO> pendingBookings = new List<IncomingBookingDTO>();
-                List<int> partnerBookingIds = await _unitOfWork.BookingRepo.GetBookingIdsByPartnerIdAsync(partner.PartnerId);
-                foreach (int bookingId in partnerBookingIds)
-                {
-                    Customer? customer = await _unitOfWork.CustomerRepo.GetCustomerByBookingIdAsync(bookingId);
-                    if (customer == null)
-                    {
-                        continue;
-                    }
-                    IncomingBookingDTO? latestBooking = await _unitOfWork.BookingRepo.GetLatestBookingByBookingIdAsync(bookingId);
-                    if (latestBooking == null || latestBooking.Status != nameof(BookingStatusEnum.Pending))
-                    {
-                        continue;
-                    }
-                    latestBooking.Customer = customer;
-                    pendingBookings.Add(latestBooking);
-                }
+                List<IncomingBookingDTO> pendingBookings = await _unitOfWork.BookingRepo.GetBookingByStatusIdAndPartnerId(BookingStatusEnum.Pending, partner.PartnerId);
                 return pendingBookings;
             }
             catch (Exception ex)

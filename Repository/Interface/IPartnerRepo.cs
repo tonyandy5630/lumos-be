@@ -12,6 +12,7 @@ namespace Repository.Interface
 {
     public interface IPartnerRepo
     {
+        Task<int> CountAppPartnerAsync();
         Task<PartnerServiceDTO?> GetPartnerServiceDetailByIdAsync(int id);
         Task<List<Partner>> GetAllPartnersAsync();
         Task<Partner> GetPartnerByIDAsync(int id);
@@ -19,15 +20,12 @@ namespace Repository.Interface
         Task<Partner?> GetPartnerByEmailAsync(string email);
         Task<Partner> GetPartnerByCodeAsync(string code);
         Task<Partner?> AddPartnereAsync(Partner partner);
-
         Task<Partner?> GetPartnerByBussinessLicenseAsync(string license);
         Task<Partner?> GetPartnerByDisplayNameAsync(string displayName);
         Task<Partner?> GetPartnerByPartnerNameAsync(string name);
         Task<bool> UpdatePartnerAsync(Partner partner);
         Task<bool> BanPartnerAsync(int partnerId);
-
         Task<IEnumerable<Partner>> SearchPartnerByPartnerOrServiceNameAsync(string keyword);
-
         Task<IEnumerable<PartnerService>> GetPartnerServiceByServiceNameAsync(string serviceName, int partnerId);
         Task<PartnerService?> AddPartnerServiceAsync(PartnerService service);
         Task<IEnumerable<Partner>> SearchPartnerByCategoryIdAsync(int categoryId);
