@@ -299,6 +299,7 @@ namespace DataAccessLayer
                 return false;
             }
         }
+
         public async Task<IEnumerable<Partner>> GetPartnersByCategoryAsync(int categoryId)
         {
             try
@@ -323,7 +324,6 @@ namespace DataAccessLayer
                 using var _context = new LumosDBContext();
                 DateTime startDate = new DateTime(year, month, 1);
                 DateTime endDate = startDate.AddMonths(1).AddDays(-1);
-
                 var revenuePerWeek = await _context.BookingLogs
                     .Where(bl => bl.Status == 4 && bl.CreatedDate >= startDate && bl.CreatedDate <= endDate)
                     .Join(_context.ServiceBookings,
@@ -391,6 +391,8 @@ namespace DataAccessLayer
                 throw;
             }
         }
+
+
         public async Task<List<PartnerServiceDTO>> GetPartnerServicesWithBookingCountAsync(int partnerId)
         {
             try
@@ -442,6 +444,7 @@ namespace DataAccessLayer
                 throw;
             }
         }
+
         public async Task<StatPartnerServiceDTO> CalculateServicesAndRevenueAsync(string? email)
         {
             using var _context = new LumosDBContext();
@@ -487,6 +490,14 @@ namespace DataAccessLayer
                 .Select(p => p.PartnerId)
                 .FirstOrDefaultAsync();
         }
+
+        /** 
+         * 
+         *  ServiceBooking -> ParnterService -> Partner
+         *  _____________  -> BookingDetail -> Booking
+         * 
+         * **/
+
         private IQueryable<Booking> QueryPartnerBookings(LumosDBContext context, int partnerId)
         {
             return context.Bookings

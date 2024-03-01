@@ -8,6 +8,5 @@ namespace Repository.Interface
 {
     public interface IBookingDetailsRepo
     {
-        Task<List<int>> GetDistinctBookingDetailsIdByPartnerId(int partnerId);
     }
 }

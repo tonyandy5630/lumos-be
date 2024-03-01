@@ -36,5 +36,7 @@ namespace Repository.Repo
         public Task<BookingDTO> GetBookingDetailInforByBookingIdAsync(int id) => BookingDAO.Instance.GetBookingDetailInforByBookingIdAsync((int)id);
 
         public Task<IncomingBookingDTO?> GetLatestBookingByBookingIdAsync(int bookingId) => BookingDAO.Instance.GetLatestBookingByBookingIdAsync(bookingId);
+
+        public Task<List<int>> GetBookingIdsByPartnerIdAsync(int partnerId) => BookingDAO.Instance.GetBookingIdsByPartnerIdAsync(partnerId);
     }
 }

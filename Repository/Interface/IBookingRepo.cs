@@ -24,6 +24,7 @@ namespace Repository.Interface
         Task<Booking?> GetBookingByDetailIdAsync(int detailid);
 
         Task<IncomingBookingDTO?> GetLatestBookingByBookingIdAsync(int bookingId);
+        Task<List<int>> GetBookingIdsByPartnerIdAsync(int partnerId);
 
     }
 }

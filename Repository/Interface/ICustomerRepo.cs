@@ -21,6 +21,7 @@ namespace Repository.Interface
         Task<Address> AddCustomerAddressAsync(Address address, string email);
         Task<bool> CheckExistingAddressAsync(string address);
         Task<bool> CheckExistingMedicalReportAsync(string fullName);
+        Task<Customer?> GetCustomerByBookingIdAsync(int bookingId);
 
     }
 }

@@ -34,6 +34,26 @@ namespace DataAccessLayer
             }
         }
 
+        public async Task<List<int>> GetBookingIdsByPartnerIdAsync(int partnerId)
+        {
+            try
+            {
+                List<int> bookings = await (from sb in _context.ServiceBookings
+                                          join bd in _context.BookingDetails on sb.DetailId equals bd.DetailId
+                                          join mr in _context.MedicalReports on bd.ReportId equals mr.ReportId
+                                          join b in _context.Bookings on bd.BookingId equals b.BookingId
+                                          join ps in _context.PartnerServices on sb.ServiceId equals ps.ServiceId
+                                          join p in _context.Partners on ps.PartnerId equals p.PartnerId
+                                          where p.PartnerId == partnerId
+                                          select b.BookingId).Distinct().ToListAsync();
+                return bookings;
+            }
+            catch
+            {
+                throw new Exception("Get booking By partner id async");
+            }
+        }
+
         public async Task<Booking?> GetBookingsByDetailIdAsync(int detailId)
         {
             try
