@@ -13,7 +13,6 @@ namespace DataTransferObject.DTO
         public int bookingTime { get; set; } // workshift
         public string Address { get; set; }
         public string? PaymentMethod { get; set; }
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public Customer? Customer { get; set; }
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public List<PartnerServiceDTO?> services { get; set; }

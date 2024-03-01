@@ -33,6 +33,10 @@ namespace DataAccessLayer
                 return instance;
             }
         }
+        public async Task<BookingDetail> GetBookingDetailByIdAsync(int bookingId)
+        {
+            return await _context.BookingDetails.FirstOrDefaultAsync(bd => bd.BookingId == bookingId);
+        }
         public async Task<int> CountAllBookingInAppAsync()
         {
             try

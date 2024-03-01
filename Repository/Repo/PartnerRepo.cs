@@ -1,6 +1,7 @@
 ﻿using BussinessObject;
 using DataAccessLayer;
 using DataTransferObject.DTO;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Repository.Interface;
 using System;
@@ -8,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Utils;
 
 namespace Repository.Repo
 {
@@ -55,8 +57,67 @@ namespace Repository.Repo
 
         public Task<StatPartnerServiceDTO> CalculateServicesAndRevenueAsync(string? email) => PartnerDAO.Instance.CalculateServicesAndRevenueAsync(email);
 
-        public Task<List<BookingDTO>> GetPartnerBookingsAsync(string partnerEmail, int page, int pageSize) => PartnerDAO.Instance.GetPartnerBookingsAsync(partnerEmail, page, pageSize);
+        public async Task<List<BookingDTO>> GetPartnerBookingsAsync(string partnerEmail, int page, int pageSize)
+        {
+            try
+            {
+                var partner = await GetPartnerByEmailAsync(partnerEmail);
+                if (partner == null)
+                {
+                    return new List<BookingDTO>();
+                }
+
+                var allBookingLogs = await BookingLogDAO.Instance.GetAllPendingBookingLogsAsync();
+                var pendingBookings = BookingLogDAO.Instance.GroupPendingBookings(allBookingLogs);
+                var skipAmount = (page - 1) * pageSize;
+                var pendingBookingsForPage = pendingBookings.Skip(skipAmount).Take(pageSize).ToList();
+                var result = await FilterAndMapBookingsAsync(pendingBookingsForPage, partner);
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetPartnerBookingsAsync: {ex.Message}", ex);
+                throw;
+            }
+        }
 
         public Task<int> CountAppPartnerAsync() => PartnerDAO.Instance.CountAppPartnerAsync();
+
+        public async Task<List<BookingDTO>> FilterAndMapBookingsAsync(List<IGrouping<int, BookingLog>> pendingBookings, Partner partner)
+        {
+            var result = new List<BookingDTO>();
+
+            foreach (var group in pendingBookings)
+            {
+                var bookingId = group.Key;
+                var statuses = group.Select(bl => bl.Status).Distinct().ToList();
+                var bookingDetail = await BookingDAO.Instance.GetBookingDetailByBookingIdAsync(bookingId);
+                if (bookingDetail == null)
+                {
+                    continue;
+                }
+                var reportId = bookingDetail.ReportId;
+                foreach (var status in statuses)
+                {
+                    var medicalServiceDTOs = await BookingLogDAO.Instance.GetMedicalServiceDTOsAsync(bookingId);
+
+                    result.Add(new BookingDTO
+                    {
+                        BookingId = bookingId,
+                        Status = EnumUtils.GetBookingEnumByStatus(status),
+                        Partner = partner.DisplayName,
+                        BookingDate = await BookingLogDAO.Instance.GetBookingDateAsync(bookingId),
+                        bookingTime = (int)await BookingLogDAO.Instance.GetBookingTimeAsync(bookingId),
+                        Address = await BookingLogDAO.Instance.GetBookingAddressAsync(bookingId),
+                        PaymentMethod = await BookingLogDAO.Instance.GetPaymentMethodAsync(bookingId),
+                        Customer = await BookingDAO.Instance.GetCustomerByReportIdAsync(reportId),
+                        MedicalServices = medicalServiceDTOs
+                    });
+                }
+            }
+
+            return result;
+        }
     }
 }

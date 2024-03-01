@@ -233,7 +233,7 @@ namespace DataAccessLayer
             return true;
         }
 
-        private async Task<List<MedicalServiceDTO>> GetMedicalServiceDTOsAsync(int bookingId, Customer customer)
+        public async Task<List<MedicalServiceDTO>> GetMedicalServiceDTOsAsync(int bookingId)
         {
             var medicalReports = await dbContext.BookingDetails
                 .Where(detail => detail.BookingId == bookingId)
@@ -321,7 +321,7 @@ namespace DataAccessLayer
 
             return await paymentName;
         }
-        private async Task<List<BookingLog>> GetAllPendingBookingLogsAsync()
+        public async Task<List<BookingLog>> GetAllPendingBookingLogsAsync()
         {
             return await dbContext.BookingLogs
                 .Where(bl => bl.Status == 1 || bl.Status == 2)
@@ -330,7 +330,7 @@ namespace DataAccessLayer
                 .ToListAsync();
         }
 
-        private List<IGrouping<int, BookingLog>> GroupPendingBookings(List<BookingLog> allBookingLogs)
+        public List<IGrouping<int, BookingLog>> GroupPendingBookings(List<BookingLog> allBookingLogs)
         {
             return allBookingLogs
                  .Where(bl => bl.BookingId != null)
@@ -370,7 +370,7 @@ namespace DataAccessLayer
                     if (await IsBookingStatusValidAsync(bookingId, customer))
                     {
                         var partnerId = await GetPartnerIdFromBookingIdAsync(bookingId);
-                        var medicalServiceDTOs = await GetMedicalServiceDTOsAsync(bookingId, customer);
+                        var medicalServiceDTOs = await GetMedicalServiceDTOsAsync(bookingId);
 
                         result.Add(new BookingDTO
                         {
