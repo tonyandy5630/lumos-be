@@ -30,14 +30,14 @@ namespace LumosSolution.Controllers
             _mapper = mapper;
             _bookingLogService = bookingLogService;
         }
-        [HttpGet("detail/{id}")]
+        [HttpGet("{id}/detail")]
         [Authorize(Roles = "Partner,Admin")]
         public async Task<ActionResult<ApiResponse<BookingDTO>>> GetBookingDetailInforById(int id)
         {
             ApiResponse<BookingDTO> response = new ApiResponse<BookingDTO>();
             try
             {
-                BookingDTO bookingDetail = await _bookingService.GetBookingDetailInforByBookingIdAsync(id);
+                BookingDTO bookingDetail = await _bookingService.GetBookingDetailByBookingIdAsync(id);
 
                 if (bookingDetail == null)
                 {
@@ -348,36 +348,6 @@ namespace LumosSolution.Controllers
                 response.message = MessagesResponse.Error.Unauthorized;
                 response.StatusCode = ApiStatusCode.Unauthorized;
                 return Unauthorized(response);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-                response.message = ex.Message;
-                return BadRequest(response);
-            }
-        }
-
-        [HttpGet("{id}/detail")]
-        [Authorize(Roles = "Partner")]
-        public async Task<ActionResult<ApiResponse<object>>> GetBookingDetailById(int id)
-        {
-            ApiResponse<object> response = new ApiResponse<object>();
-            try
-            {
-                BookingDetail bookingDetail = await _bookingService.GetBookingDetailByBookingIdAsync(id);
-
-                if (bookingDetail == null)
-                {
-                    response.message = MessagesResponse.Error.NotFound;
-                    response.StatusCode = ApiStatusCode.NotFound;
-                    return NotFound(response);
-                }
-
-                response.data = bookingDetail;
-                response.message = MessagesResponse.Success.Completed;
-                response.StatusCode = ApiStatusCode.OK;
-
-                return Ok(response);
             }
             catch (Exception ex)
             {

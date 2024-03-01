@@ -12,11 +12,11 @@ namespace DataAccessLayer
     public class MedicalReportDAO
     {
         private static MedicalReportDAO instance = null;
-        private readonly LumosDBContext dbContext;
+        private readonly LumosDBContext _context;
 
-        public MedicalReportDAO(LumosDBContext dbContext)
+        public MedicalReportDAO(LumosDBContext _context)
         {
-            this.dbContext = dbContext;
+            this._context = _context;
         }
 
         public static MedicalReportDAO Instance
@@ -31,6 +31,24 @@ namespace DataAccessLayer
             }
         }
 
+        public async Task<IEnumerable<MedicalReport>> GetMedicalReportsByBookingIdAsync(int bookingId)
+        {
+            try
+            {
+                List<MedicalReport> reports = await (from b in _context.Bookings
+                                 join bd in _context.BookingDetails on b.BookingId equals bd.BookingId
+                                 join mr in _context.MedicalReports on bd.ReportId equals mr.ReportId
+                                 join c in _context.Customers on mr.CustomerId equals c.CustomerId
+                                 where b.BookingId == bookingId
+                                 select mr).ToListAsync();
+                return reports;
+            }
+            catch
+            {
+                throw new Exception();
+            }
+        }
+
         public async Task<MedicalReport> AddMedicalReportAsyn(MedicalReport medicalReport)
         {
             try
@@ -41,10 +59,10 @@ namespace DataAccessLayer
                 medicalReport.CreatedDate = DateTime.Now;
                 medicalReport.LastUpdate = DateTime.Now;
                 medicalReport.UpdatedBy = medicalReport.Fullname;
-                dbContext.MedicalReports.Add(medicalReport);
-                await dbContext.SaveChangesAsync();
+                _context.MedicalReports.Add(medicalReport);
+                await _context.SaveChangesAsync();
                 Console.WriteLine("Add medical report successfully!");
-                return await dbContext.MedicalReports.FirstOrDefaultAsync(x => x.Code.Equals(medicalReport.Code));
+                return await _context.MedicalReports.FirstOrDefaultAsync(x => x.Code.Equals(medicalReport.Code));
             } catch (Exception ex)
             {
                 Console.WriteLine($"Error in AddMedicalReportAsyn: {ex.Message}", ex);
@@ -56,7 +74,7 @@ namespace DataAccessLayer
         {
             try
             {
-                var customer = await dbContext.MedicalReports.Where(u => u.CustomerId == id).ToListAsync();
+                var customer = await _context.MedicalReports.Where(u => u.CustomerId == id).ToListAsync();
                 return customer;
             }
             catch (Exception ex)
@@ -70,7 +88,7 @@ namespace DataAccessLayer
         {
             try
             {
-                return await dbContext.MedicalReports.FirstOrDefaultAsync(u => u.ReportId == id);
+                return await _context.MedicalReports.FirstOrDefaultAsync(u => u.ReportId == id);
             }
             catch (Exception ex)
             {

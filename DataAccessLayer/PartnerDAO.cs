@@ -27,6 +27,27 @@ namespace DataAccessLayer
             }
         }
 
+        public async Task<Partner?> GetPartnerByBookingIdAsync(int bookingId)
+        {
+            try
+            {
+                using var _context = new LumosDBContext();
+                Partner? partner = await (from sb in _context.ServiceBookings
+                                            join bd in _context.BookingDetails on sb.DetailId equals bd.DetailId
+                                            join mr in _context.MedicalReports on bd.ReportId equals mr.ReportId
+                                            join b in _context.Bookings on bd.BookingId equals b.BookingId
+                                            join ps in _context.PartnerServices on sb.ServiceId equals ps.ServiceId
+                                            join p in _context.Partners on ps.PartnerId equals p.PartnerId
+                                            where b.BookingId == bookingId
+                                            select p).FirstOrDefaultAsync();
+                return partner;
+            }
+            catch
+            {
+                throw new Exception();
+            }
+        }
+
         public async Task<int> CountAppPartnerAsync()
         {
             try

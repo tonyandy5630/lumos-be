@@ -23,8 +23,6 @@ namespace Repository.Repo
         public Task<Booking?> GetBookingByDetailIdAsync(int detailid) => BookingDAO.Instance.GetBookingsByDetailIdAsync(detailid);
         public Task<bool> CreateBookingAsync(Booking booking, CreateBookingDTO createBookingDTO, string email) => BookingDAO.Instance.CreateBookingAsync(booking, createBookingDTO,email);  
 
-        public Task<BookingDetail> GetBookingDetailByBookingIdAsync(int id) =>BookingDAO.Instance.GetBookingDetailByBookingIdAsync(id);
-
         public Task<List<Booking>> GetBookingsByMedicalReportIdAsync(int medicalReportId) => BookingDAO.Instance.GetBookingsByMedicalReportIdAsync(medicalReportId);
         public Task<List<Booking>> GetIncompleteBookingsByCustomerIdAsync(int customerId) => BookingDAO.Instance.GetIncompleteBookingsByCustomerIdAsync(customerId);
 
@@ -35,8 +33,6 @@ namespace Repository.Repo
         public Task<TopBookingSummaryDTO> GetAllBookedServicesByPartnerEmailAsync(string email) => BookingDAO.Instance.GetAllBookedServicesByPartnerEmailAsync(email);
 
         public Task<List<TotalBookingMonthlyStat>> GetAllBookingsForYearAsync(int year) => BookingDAO.Instance.GetAllBookingsForYearAsync(year);
-
-        public Task<BookingDTO> GetBookingDetailInforByBookingIdAsync(int id) => BookingDAO.Instance.GetBookingDetailInforByBookingIdAsync((int)id);
 
         public Task<BookingDTO?> GetLatestBookingByBookingIdAsync(int bookingId) => BookingDAO.Instance.GetLatestBookingByBookingIdAsync(bookingId);
 
@@ -54,7 +50,7 @@ namespace Repository.Repo
                     continue;
                 }
                 BookingDTO? latestBooking = await GetLatestBookingByBookingIdAsync(bookingId);
-                if (latestBooking == null || latestBooking.Status != nameof(status))
+                if (latestBooking == null || latestBooking.Status == nameof(status))
                 {
                     continue;
                 }

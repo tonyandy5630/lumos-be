@@ -12,5 +12,6 @@ namespace Repository.Interface
     {
         Task<PartnerService?> GetPartnerServiceByServiceNameAsync(string serviceName, int partnerId);
         Task<IEnumerable<PartnerServiceDTO>> GetTopFiveBookedServicesAsync();
+        Task<List<PartnerServiceDTO>> GetServiceBookedByMedicalReportIdAndBookingId(int medicalReportId, int BookingId);
     }
 }

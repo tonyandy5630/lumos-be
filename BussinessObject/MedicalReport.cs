@@ -13,7 +13,7 @@ namespace BussinessObject
         public int ReportId { get; set; }
         public int? CustomerId { get; set; }
         public string? Code { get; set; }
-        public string? Fullname { get; set; }
+        public string Fullname { get; set; }
         public string? Phone { get; set; }
         public DateTime? Dob { get; set; }
         public bool? Gender { get; set; } //true = nam

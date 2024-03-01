@@ -32,6 +32,32 @@ namespace DataAccessLayer
             }
         }
 
+        public async Task<List<PartnerServiceDTO>> GetServiceBookedByMedicalReportIdAndBookingId(int reportId, int bookingId)
+        {
+            try
+            {
+                List<PartnerServiceDTO> bookedServices = await (from ps in _context.PartnerServices
+                                                                  join sb in _context.ServiceBookings on ps.ServiceId equals sb.ServiceId
+                                                                  join bd in _context.BookingDetails on sb.DetailId equals bd.DetailId
+                                                                  join mr in _context.MedicalReports on bd.ReportId equals mr.ReportId
+                                                                  join b in _context.Bookings on bd.BookingId equals b.BookingId
+                                                                  where mr.ReportId == reportId && b.BookingId == bookingId
+                                                                  select new PartnerServiceDTO
+                                                                  {
+                                                                      Code = ps.Code,
+                                                                      Name = ps.Name,
+                                                                      Price = ps.Price,
+                                                                      Duration = ps.Duration,
+                                                                      ServiceId = ps.ServiceId,
+                                                                  }).ToListAsync();
+                return bookedServices;
+            }
+            catch
+            {
+                throw new Exception();
+            }
+        }
+
         public async Task<PartnerService?> GetServiceOfPartnerByServiceNameAsync(string serviceName, int partnerId)
         {
             return await _context.PartnerServices.FirstOrDefaultAsync(s => s.PartnerId == partnerId && s.Name.ToLower().Contains(serviceName.ToLower()));

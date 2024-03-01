@@ -12,5 +12,6 @@ namespace Repository.Interface
         Task<List<MedicalReport>> GetMedicalReportByCustomerIdAsync(int id);
         Task<MedicalReport> AddMedicalReportAsyn(MedicalReport medicalReport);
         Task<MedicalReport> GetMedicalReportByIdAsync(int id);
+        Task<IEnumerable<MedicalReport>> GetMedicalReportsByBookingIdAsync(int bookingId);
     }
 }
