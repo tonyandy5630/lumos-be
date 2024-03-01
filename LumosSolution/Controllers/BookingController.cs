@@ -170,7 +170,7 @@ namespace LumosSolution.Controllers
                 return BadRequest(response);
             }
         }
-        [HttpPost("/api/booking-logs")]
+        [HttpPost("log")]
         [Authorize(Roles = "Partner")]
         public async Task<ActionResult<ApiResponse<object>>> UpdateBookingStatusAndCreateLog([FromBody] BookingLogRequest updateBookingStatusDTO)
         {
