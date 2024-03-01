@@ -13,6 +13,5 @@ namespace Repository.Repo
     {
         public BookingDetailsRepo(LumosDBContext context) { }
 
-        public Task<List<int>> GetDistinctBookingDetailsIdByPartnerId(int partnerId) => BookingDetailsDAO.Instance.GetDistinctDetailByPartnerId(partnerId);
     }
 }

@@ -9,6 +9,7 @@ namespace DataTransferObject.DTO
     public class MedicalServiceDTO
     {
         public string MedicalName { get; set; }
+
         public List<PartnerServiceDTO> Services { get; set; }
     }
 }

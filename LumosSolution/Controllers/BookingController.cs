@@ -357,8 +357,8 @@ namespace LumosSolution.Controllers
             }
         }
 
-        [HttpGet("admin/bookingdetail/{id}/booking")]
-        [Authorize(Roles = "Admin")]
+        [HttpGet("{id}/detail")]
+        [Authorize(Roles = "Partner")]
         public async Task<ActionResult<ApiResponse<object>>> GetBookingDetailById(int id)
         {
             ApiResponse<object> response = new ApiResponse<object>();

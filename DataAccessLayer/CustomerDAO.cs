@@ -26,6 +26,24 @@ namespace DataAccessLayer
             }
         }
 
+        public async Task<Customer?> GetCustomerByBookingIdAsync(int bookingId)
+        {
+            try
+            {
+                Customer? customer = await (from b in dbContext.Bookings
+                                           join bd in dbContext.BookingDetails on b.BookingId equals bd.BookingId
+                                           join mr in dbContext.MedicalReports on bd.ReportId equals mr.ReportId
+                                           join c in dbContext.Customers on mr.CustomerId equals c.CustomerId
+                                           where b.BookingId == bookingId
+                                           select c).Distinct().FirstOrDefaultAsync();
+                return customer;
+            }
+            catch
+            {
+                throw new Exception();
+            }
+        }
+
         public async Task<List<Customer>> GetCustomersAsync(string keyword)
         {
             try
