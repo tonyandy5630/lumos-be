@@ -31,7 +31,7 @@ namespace BussinessObject
         [JsonIgnore]
         public string? UpdateBy { get; set; }
         [JsonIgnore]
-        public DateTime? CreatedDate { get; set; }
+        public DateTime CreatedDate { get; set; }
         public string? ImgUrl { get; set; }
         [JsonIgnore]
         public string? RefreshToken { get; set; }

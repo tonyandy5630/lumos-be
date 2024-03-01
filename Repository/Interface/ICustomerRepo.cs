@@ -1,4 +1,5 @@
 using BussinessObject;
+using DataTransferObject.DTO;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,6 +23,7 @@ namespace Repository.Interface
         Task<bool> CheckExistingAddressAsync(string address);
         Task<bool> CheckExistingMedicalReportAsync(string fullName);
         Task<Customer?> GetCustomerByBookingIdAsync(int bookingId);
+        Task<List<ChartStatDTO>> GetNewCustomerMonthlyAsync(int year);
 
     }
 }
