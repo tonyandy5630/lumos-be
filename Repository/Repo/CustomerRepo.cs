@@ -1,5 +1,6 @@
 ﻿using BussinessObject;
 using DataAccessLayer;
+using DataTransferObject.DTO;
 using Repository.Interface;
 using System;
 using System.Collections.Generic;
@@ -12,6 +13,7 @@ namespace Repository.Repo
     public class CustomerRepo : ICustomerRepo
     {
         public CustomerRepo(LumosDBContext context) { }
+        public Task<List<ChartStatDTO>> GetNewCustomerMonthlyAsync(int year) => CustomerDAO.Instance.GetNewCustomerMonthlyAsync(year);
 
         public Task<bool> AddCustomerAsync(Customer customer) =>CustomerDAO.Instance.AddCustomerAsync(customer);
 

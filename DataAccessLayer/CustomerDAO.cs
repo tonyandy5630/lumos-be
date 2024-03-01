@@ -1,4 +1,5 @@
 ﻿using BussinessObject;
+using DataTransferObject.DTO;
 using Microsoft.EntityFrameworkCore;
 using Utils;
 
@@ -26,16 +27,34 @@ namespace DataAccessLayer
             }
         }
 
+        public async Task<List<ChartStatDTO>> GetNewCustomerMonthlyAsync(int year)
+        {
+            try
+            {
+                
+                List<ChartStatDTO> result = await (from ps in dbContext.Customers
+                                             where ps.CreatedDate.Year == year
+                                             group ps by new { Month = ps.CreatedDate.Month } into g
+                                             orderby g.Key.Month ascending
+                                             select new ChartStatDTO
+                                             {
+                                                 StatUnit = g.Key.Month,
+                                                 StatValue = g.Count()
+                                             }).ToListAsync();
+                return result;
+            }
+            catch (Exception ex) { throw new Exception(); }
+        }
         public async Task<Customer?> GetCustomerByBookingIdAsync(int bookingId)
         {
             try
             {
                 Customer? customer = await (from b in dbContext.Bookings
-                                           join bd in dbContext.BookingDetails on b.BookingId equals bd.BookingId
-                                           join mr in dbContext.MedicalReports on bd.ReportId equals mr.ReportId
-                                           join c in dbContext.Customers on mr.CustomerId equals c.CustomerId
-                                           where b.BookingId == bookingId
-                                           select c).Distinct().FirstOrDefaultAsync();
+                                            join bd in dbContext.BookingDetails on b.BookingId equals bd.BookingId
+                                            join mr in dbContext.MedicalReports on bd.ReportId equals mr.ReportId
+                                            join c in dbContext.Customers on mr.CustomerId equals c.CustomerId
+                                            where b.BookingId == bookingId
+                                            select c).Distinct().FirstOrDefaultAsync();
                 return customer;
             }
             catch
@@ -140,7 +159,7 @@ namespace DataAccessLayer
                     customer.Code = GenerateCode.GenerateRoleCode("customer");
                     customer.Status = 1;
                     customer.Role = 2;
-/*                    customer.Fullname = ExtractNameFromEmail(customer.Email);*/
+                    /*                    customer.Fullname = ExtractNameFromEmail(customer.Email);*/
                     DateTime currentDate = DateTime.UtcNow;
                     customer.LastUpdate = currentDate;
                     customer.UpdateBy = customer.Email;
@@ -239,7 +258,7 @@ namespace DataAccessLayer
                 //check if address existed via displayname and Address
                 bool existedAddress = dbContext.Addresses
                     .Where(x => x.CustomerId == address.CustomerId)
-                    .Any(x => x.Address1.ToLower().Equals(address.Address1.ToLower()));                            
+                    .Any(x => x.Address1.ToLower().Equals(address.Address1.ToLower()));
 
                 if (!existedAddress)
                 {

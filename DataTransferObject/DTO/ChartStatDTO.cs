@@ -6,8 +6,9 @@ using System.Threading.Tasks;
 
 namespace DataTransferObject.DTO
 {
-    public class MonthlyRevenueDTO : ChartStatDTO
+    public class ChartStatDTO
     {
-        public List<RevenuePerWeekDTO> Details { get; set; }
+        public int StatUnit { get; set; } // can be month, year, week
+        public int StatValue { get; set; }
     }
 }

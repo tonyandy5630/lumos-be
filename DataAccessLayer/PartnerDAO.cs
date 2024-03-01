@@ -401,8 +401,8 @@ namespace DataAccessLayer
                     {
                         monthlyRevenueList.Add(new MonthlyRevenueDTO
                         {
-                            Month = month,
-                            Revenue = 0,
+                            StatUnit = month,
+                            StatValue = 0,
                             Details = new List<RevenuePerWeekDTO>()
                         });
                     }
@@ -410,8 +410,8 @@ namespace DataAccessLayer
                     {
                         monthlyRevenueList.Add(new MonthlyRevenueDTO
                         {
-                            Month = month,
-                            Revenue = totalRevenue,
+                            StatUnit = month,
+                            StatValue = totalRevenue,
                             Details = monthlyRevenue
                         });
                     }

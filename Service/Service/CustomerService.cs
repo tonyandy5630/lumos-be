@@ -23,6 +23,34 @@ namespace Service.Service
             _mapper = mapper;
         }
 
+        public async Task<List<int?>> GetNewCustomerMonthlyAsync(int year)
+        {
+            try
+            {
+                List<ChartStatDTO> stats = await _unitOfWork.CustomerRepo.GetNewCustomerMonthlyAsync(year);
+                List<int?> monthlyStat = new();
+                if (stats == null)
+                {
+                    return monthlyStat;
+                }
+
+                for (int month = 1; month <= 12; month++)
+                {
+                    int? monthStatInDb = stats?.FirstOrDefault(t => t.StatUnit == month)?.StatValue;
+                    int? stat = 0;
+                    if (monthStatInDb != null)
+                    {
+                        stat = monthStatInDb;
+                    }
+                    monthlyStat.Add(stat);
+                }
+                return monthlyStat;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception();
+            }
+        }
         public async Task<bool> AddCustomerAsync(Customer customer)
         {
             try

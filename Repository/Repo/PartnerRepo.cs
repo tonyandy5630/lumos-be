@@ -92,7 +92,7 @@ namespace Repository.Repo
             {
                 var bookingId = group.Key;
                 var statuses = group.Select(bl => bl.Status).Distinct().ToList();
-                var bookingDetail = await BookingDAO.Instance.GetBookingDetailByBookingIdAsync(bookingId);
+                var bookingDetail = await BookingDAO.Instance.GetBookingDetailByIdAsync(bookingId);
                 if (bookingDetail == null)
                 {
                     continue;
