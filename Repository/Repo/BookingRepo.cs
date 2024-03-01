@@ -1,7 +1,9 @@
 ﻿using BussinessObject;
 using DataAccessLayer;
 using DataTransferObject.DTO;
+using Enum;
 using Repository.Interface;
+using Repository.Interface.IUnitOfWork;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,6 +19,7 @@ namespace Repository.Repo
         {
         }
 
+        public  Task<List<Booking>> GetAllAppBookingAsync () => BookingDAO.Instance.GetAllBookingInAppAsync();
         public Task<Booking?> GetBookingByDetailIdAsync(int detailid) => BookingDAO.Instance.GetBookingsByDetailIdAsync(detailid);
         public Task<bool> CreateBookingAsync(Booking booking, CreateBookingDTO createBookingDTO, string email) => BookingDAO.Instance.CreateBookingAsync(booking, createBookingDTO,email);  
 
@@ -38,5 +41,29 @@ namespace Repository.Repo
         public Task<IncomingBookingDTO?> GetLatestBookingByBookingIdAsync(int bookingId) => BookingDAO.Instance.GetLatestBookingByBookingIdAsync(bookingId);
 
         public Task<List<int>> GetBookingIdsByPartnerIdAsync(int partnerId) => BookingDAO.Instance.GetBookingIdsByPartnerIdAsync(partnerId);
+
+        public async Task<List<IncomingBookingDTO>> GetBookingByStatusIdAndPartnerId(BookingStatusEnum status, int partnerId)
+        {
+            List<IncomingBookingDTO> bookings = new List<IncomingBookingDTO>();
+            List<int> partnerBookingIds = await GetBookingIdsByPartnerIdAsync(partnerId);
+            foreach (int bookingId in partnerBookingIds)
+            {
+                Customer? customer = await CustomerDAO.Instance.GetCustomerByBookingIdAsync(bookingId);
+                if (customer == null)
+                {
+                    continue;
+                }
+                IncomingBookingDTO? latestBooking = await GetLatestBookingByBookingIdAsync(bookingId);
+                if (latestBooking == null || latestBooking.Status != nameof(status))
+                {
+                    continue;
+                }
+                latestBooking.Customer = customer;
+                bookings.Add(latestBooking);
+            }
+            return bookings;
+        }
+
+        public Task<int> CountBookingInAppAsync() => BookingDAO.Instance.CountAllBookingInAppAsync();   
     }
 }

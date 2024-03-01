@@ -1,4 +1,6 @@
 ﻿using BussinessObject;
+using DataTransferObject.DTO;
+using Enum;
 using Microsoft.EntityFrameworkCore;
 using Repository.Interface.IUnitOfWork;
 using Service.InterfaceService;
@@ -17,6 +19,41 @@ namespace Service.Service
         public AdminService(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
+        }
+        public async Task<AdminDashboardStat> GetAdminDashboardStatAsync()
+        {
+            try
+            {
+                AdminDashboardStat stats = new AdminDashboardStat
+                {
+                    OnGoingBookings = 0,
+                    Earning = 0,
+                    TotalBookings = 0,
+                    TotalMembers = 0
+                };
+
+                List<Booking> bookings = await _unitOfWork.BookingRepo.GetAllAppBookingAsync();
+                foreach (Booking booking in bookings)
+                {
+                    IncomingBookingDTO? curBooking = await _unitOfWork.BookingRepo.GetLatestBookingByBookingIdAsync(booking.BookingId);
+                    if (curBooking == null)
+                        continue;
+
+                    if (curBooking.Status == nameof(BookingStatusEnum.Pending))
+                        stats.OnGoingBookings++;
+
+                    if (curBooking.Status == nameof(BookingStatusEnum.Completed))
+                        stats.Earning += (int)curBooking?.TotalPrice;
+                }
+                stats.TotalMembers = await _unitOfWork.PartnerRepo.CountAppPartnerAsync();
+                stats.TotalBookings = await _unitOfWork.BookingRepo.CountBookingInAppAsync();
+
+                return await Task.FromResult(stats);
+            }catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                throw new Exception();
+            }
         }
 
         public async Task<bool> AddAdminAsync(Admin admin)
@@ -89,7 +126,6 @@ namespace Service.Service
                 throw new Exception(ex.Message);
             }
         }
-
         public async Task<List<Admin>> GetAdminsAsync()
         {
             try

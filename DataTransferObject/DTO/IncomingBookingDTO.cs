@@ -13,6 +13,7 @@ namespace DataTransferObject.DTO
         public int BookingId { get; set; }
         public string Status { get; set; } // BookingStatusEnum
         public string? Partner { get; set; }
+        public int? TotalPrice { get; set; }
         public DateTime BookingDate { get; set; }
         public int bookingTime { get; set; } // workshift
         public string Address { get; set; }

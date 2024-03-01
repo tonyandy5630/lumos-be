@@ -1,4 +1,5 @@
 ﻿using BussinessObject;
+using DataTransferObject.DTO;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,5 +19,6 @@ namespace Service.InterfaceService
         Task<bool> AddAdminAsync(Admin admin);
         Task<bool> UpdateAdminAsync(Admin admin);
         Task<bool> BanAdminAsync(int id);
+        Task<AdminDashboardStat> GetAdminDashboardStatAsync();
     }
 }
