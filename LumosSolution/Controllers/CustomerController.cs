@@ -8,6 +8,7 @@ using Service.InterfaceService;
 using Service.Service;
 using System.Security.Claims;
 using Utils;
+using static Google.Apis.Requests.BatchRequest;
 using static Microsoft.Extensions.Logging.EventSource.LoggingEventSource;
 
 namespace LumosSolution.Controllers
@@ -37,6 +38,7 @@ namespace LumosSolution.Controllers
                 {
                     res.message = MessagesResponse.Error.NotFound;
                     res.StatusCode = ApiStatusCode.NotFound;
+                    return NotFound(res);
                 }
                 else
                 {
@@ -48,10 +50,10 @@ namespace LumosSolution.Controllers
 
                 return Ok(res);
             }
-            catch
+            catch (Exception ex)
             {
-                res.message = MessagesResponse.Error.OperationFailed;
-                res.StatusCode = ApiStatusCode.BadRequest;
+                Console.WriteLine(ex.Message);
+                res.message = ex.Message;
                 return BadRequest(res);
             }
         }
@@ -79,9 +81,8 @@ namespace LumosSolution.Controllers
             }
             catch (Exception ex)
             {
-                response.message = MessagesResponse.Error.OperationFailed;
-                response.StatusCode = ApiStatusCode.BadRequest;
-                
+                Console.WriteLine(ex.Message);
+                response.message = ex.Message;
                 return BadRequest(response);
             }
         }
@@ -107,11 +108,10 @@ namespace LumosSolution.Controllers
 
                 return Ok(response);
             }
-            catch
+            catch (Exception ex)
             {
-                response.message = MessagesResponse.Error.OperationFailed;
-                response.StatusCode = ApiStatusCode.BadRequest;
-
+                Console.WriteLine(ex.Message);
+                response.message = ex.Message;
                 return BadRequest(response);
             }
         }
@@ -131,14 +131,14 @@ namespace LumosSolution.Controllers
                 bool existingReport = await _customerService.CheckExistingMedicalReportAsync(medicalReport.Fullname);
                 if (existingReport)
                 {
-                    response.message = "Medical report with the same name already exists";
+                    response.message = MessagesResponse.Error.MedicalReportExists;
                     return BadRequest(response);
                 }
                 string? userEmail = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
 
                 if (string.IsNullOrEmpty(userEmail))
                 {
-                    response.message = "Cannot find user email";
+                    response.message = MessagesResponse.Error.UserEmailNotFound;
                     return BadRequest(response);
                 }
 
@@ -148,7 +148,7 @@ namespace LumosSolution.Controllers
                     return response;
 
                 response.message = MessagesResponse.Success.Created;
-                response.StatusCode = 200;
+                response.StatusCode = ApiStatusCode.OK;
                 response.data = med;
 
                 return Ok(response);
@@ -172,7 +172,7 @@ namespace LumosSolution.Controllers
                 bool existingAddress = await _customerService.CheckExistingAddressAsync(addressrequest.address1);
                 if (existingAddress)
                 {
-                    response.message = "Address with the same name already exists";
+                    response.message = MessagesResponse.Error.AddressExists;
                     response.StatusCode = ApiStatusCode.BadRequest;
                     return BadRequest(response);
                 }
@@ -192,11 +192,10 @@ namespace LumosSolution.Controllers
 
                 return Ok(response);
             }
-            catch
+            catch (Exception ex)
             {
-                response.message = MessagesResponse.Error.OperationFailed;
-                response.StatusCode = ApiStatusCode.BadRequest;
-
+                Console.WriteLine(ex.Message);
+                response.message = ex.Message;
                 return BadRequest(response);
             }
         }
@@ -225,9 +224,8 @@ namespace LumosSolution.Controllers
             }
             catch (Exception ex)
             {
-                response.message = MessagesResponse.Error.OperationFailed;
-                response.StatusCode = ApiStatusCode.BadRequest;
-
+                Console.WriteLine(ex.Message);
+                response.message = ex.Message;
                 return BadRequest(response);
             }
         }

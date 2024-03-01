@@ -49,7 +49,7 @@ namespace LumosSolution.Controllers
             ApiResponse<string> response = new ApiResponse<string>
             {
                 message = MessagesResponse.Error.OperationFailed,
-                StatusCode = 500
+                StatusCode = ApiStatusCode.InternalServerError
             };
 
             try
@@ -59,7 +59,7 @@ namespace LumosSolution.Controllers
                 if (!isUserSignedOut)
                     return BadRequest(response);
                 response.message = MessagesResponse.Success.Completed;
-                response.StatusCode = 200;
+                response.StatusCode = ApiStatusCode.OK;
             }catch(Exception ex)
             {
                 Console.WriteLine(ex.Message);
@@ -84,8 +84,8 @@ namespace LumosSolution.Controllers
                 var existingCustomer = await _customerService.GetCustomerByEmailAsync(model.Email);
                 if (existingCustomer != null)
                 {
-                    response.message = "Email đã tồn tại trong hệ thống.";
-                    response.StatusCode = ApiStatusCode.BadRequest;
+                    response.message = MessagesResponse.Error.EmailAlreadyExists;
+                    response.StatusCode = ApiStatusCode.Conflict;
                     return Conflict(response);
                 }
 
@@ -97,8 +97,8 @@ namespace LumosSolution.Controllers
                 }
                 if (model.Password != model.ConfirmPassword)
                 {
-                    response.message = "ConfirmPassword và Password không giống nhau";
-                    response.StatusCode = 422;
+                    response.message = MessagesResponse.Error.PasswordMismatch;
+                    response.StatusCode = ApiStatusCode.UnprocessableEntity;
                     return UnprocessableEntity(response);
                 }
 
@@ -107,8 +107,8 @@ namespace LumosSolution.Controllers
 
                 if (result)
                 {
-                    response.message = MessagesResponse.Success.Completed;
-                    response.StatusCode = ApiStatusCode.OK;
+                    response.message = MessagesResponse.Success.RegisterSuccess;
+                    response.StatusCode = ApiStatusCode.Created;
                     return Ok(response);
                 }
                 else
@@ -157,12 +157,12 @@ namespace LumosSolution.Controllers
 
                     if (result)
                     {
-                        response.message = MessagesResponse.Success.Completed;
-                        response.StatusCode = ApiStatusCode.OK;
+                        response.message = MessagesResponse.Success.RegisterSuccess;
+                        response.StatusCode = ApiStatusCode.Created;
                     }
                     else
                     {
-                        response.message = MessagesResponse.Error.RegisterFailed;
+                        response.message = MessagesResponse.Error.OperationFailed;
                         response.StatusCode = ApiStatusCode.BadRequest;
                     }
                 }
@@ -194,8 +194,8 @@ namespace LumosSolution.Controllers
                 var checkcustomer = await _customerService.GetCustomerByEmailAsync(userEmail);
                 if (checkcustomer == null)
                 {
-                    response.message = "Tài khoản đã bị cấm.";
-                    response.StatusCode = ApiStatusCode.BadRequest;
+                    response.message = MessagesResponse.Error.BannedAccount;
+                    response.StatusCode = ApiStatusCode.Forbidden;
                     return BadRequest(response);
                 }
                 var (roleValid, userRole, userDetails) = await _authentication.GetUserdetailsInLoginGooogle(userEmail);
@@ -212,13 +212,13 @@ namespace LumosSolution.Controllers
                     var (token, accessTokenTime, refreshTokentime, refreshToken) = await _authentication.GenerateToken(userEmail, userRole);
                     if (string.IsNullOrEmpty(token))
                     {
-                        response.message = "không có token";
+                        response.message = MessagesResponse.Error.AccessTokenNotFound;
                         response.StatusCode = ApiStatusCode.BadRequest;
                         return BadRequest(response);
                     }
                     if (string.IsNullOrEmpty(refreshToken))
                     {
-                        response.message = "không có refresh token";
+                        response.message = MessagesResponse.Error.RefreshTokenNotFound;
                         response.StatusCode = ApiStatusCode.BadRequest;
                         return BadRequest(response);
                     }
@@ -254,12 +254,12 @@ namespace LumosSolution.Controllers
                 if (string.IsNullOrEmpty(model.Password))
                 {
                     // Nếu không nhập mật khẩu
-                    response.message = "Password is required";
+                    response.message = MessagesResponse.Validation.PasswordRequired;
                     response.StatusCode = ApiStatusCode.BadRequest;
                     return BadRequest(response);
                 }else if (string.IsNullOrEmpty(model.Email))
                 {
-                    response.message = "Email is required";
+                    response.message = MessagesResponse.Validation.EmailRequired;
                     response.StatusCode = ApiStatusCode.BadRequest;
                     return BadRequest(response);
                 }
@@ -268,8 +268,8 @@ namespace LumosSolution.Controllers
                 var checkpartner = await _partnerService.GetPartnerByEmailAsync((model.Email));
                 if (checkcustomer == null && checkadmin == null && checkpartner == null)
                 {
-                    response.message = "Tài khoản đã bị cấm.";
-                    response.StatusCode = ApiStatusCode.BadRequest;
+                    response.message = MessagesResponse.Error.BannedAccount;
+                    response.StatusCode =ApiStatusCode.Forbidden;
                     return BadRequest(response);
                 }
                 var (authenticated, role, username, userdetails, emailExists, passwordCorrect) = await _authentication.IsUserAuthenticatedAsync(model.Email, model.Password);
@@ -280,13 +280,13 @@ namespace LumosSolution.Controllers
                     var (token, accessTokenTime, refreshTokentime, refreshToken) = await _authentication.GenerateToken(model.Email, role);
                     if (string.IsNullOrEmpty(token))
                     {
-                        response.message = "không có token";
+                        response.message = MessagesResponse.Error.AccessTokenNotFound;
                         response.StatusCode = ApiStatusCode.BadRequest;
                         return BadRequest(response);
                     }
                     if (string.IsNullOrEmpty(refreshToken))
                     {
-                        response.message = "không có refresh token";
+                        response.message = MessagesResponse.Error.RefreshTokenNotFound;
                         response.StatusCode = ApiStatusCode.BadRequest;
                         return BadRequest(response);
                     }
@@ -345,9 +345,9 @@ namespace LumosSolution.Controllers
 
                 if (string.IsNullOrEmpty(userEmail))
                 {
-                    response.message = MessagesResponse.Error.InvalidInput;
-                    response.StatusCode = ApiStatusCode.BadRequest;
-                    return BadRequest(response);
+                    response.message = MessagesResponse.Error.Unauthorized;
+                    response.StatusCode = ApiStatusCode.Unauthorized;
+                    return Unauthorized(response);
                 }
 
                 var (isValid, _) = await _authentication.ValidateRefreshTokenByEmail(userEmail);
@@ -371,13 +371,13 @@ namespace LumosSolution.Controllers
                 var (token, accessTokenTime, refreshTokentime, newRefreshToken) = await _authentication.GenerateToken(userEmail, userRole);
                 if (string.IsNullOrEmpty(token))
                 {
-                    response.message = "không có token";
+                    response.message = MessagesResponse.Error.AccessTokenNotFound;
                     response.StatusCode = ApiStatusCode.BadRequest;
                     return BadRequest(response);
                 }
                 if (string.IsNullOrEmpty(newRefreshToken))
                 {
-                    response.message = "không có refresh token";
+                    response.message = MessagesResponse.Error.RefreshTokenNotFound;
                     response.StatusCode = ApiStatusCode.BadRequest;
                     return BadRequest(response);
                 }

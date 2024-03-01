@@ -37,7 +37,7 @@ namespace LumosSolution.Controllers
                         return NotFound(response);
                 };
                 response.message = MessagesResponse.Success.Completed;
-                response.StatusCode = 200;
+                response.StatusCode = ApiStatusCode.OK;
                 response.data = config;
                 return Ok(response);
             }catch(Exception ex)
@@ -63,7 +63,7 @@ namespace LumosSolution.Controllers
                 IEnumerable<SystemConfiguration> systemConfigurations = await _systemService.SearchSystemConfigByNameAsync(keyword);
                 response.message = MessagesResponse.Success.Completed;
                 response.data = systemConfigurations;
-                response.StatusCode = 200;
+                response.StatusCode = ApiStatusCode.OK;
             }catch(Exception ex)
             {
                 Console.WriteLine(ex.Message);
