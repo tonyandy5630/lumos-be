@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace BussinessObject
 {
@@ -24,8 +25,12 @@ namespace BussinessObject
         public string? CreatedBy { get; set; }
         public string Address { get; set; }
         public int bookingTime { get; set; }
+        [JsonIgnore]
         public virtual PaymentMethod? Payment { get; set; }
+        [JsonIgnore]
         public virtual ICollection<BookingDetail> BookingDetails { get; set; }
+        [JsonIgnore]
+
         public virtual ICollection<BookingLog> BookingLogs { get; set; }
     }
 }
