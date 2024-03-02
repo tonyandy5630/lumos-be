@@ -20,6 +20,18 @@ namespace Service.Service
         {
             _unitOfWork = unitOfWork;
         }
+
+        public async Task<List<Partner>> GetTopPartnerAsync(int top)
+        {
+            try
+            {
+                List<Partner> topPartner = await _unitOfWork.PartnerRepo.GetTopPartnerAsync(top);
+                return topPartner;
+            }catch (Exception ex)
+            {
+                throw new Exception();
+            }
+        }
         public async Task<AdminDashboardStat> GetAdminDashboardStatAsync()
         {
             try
