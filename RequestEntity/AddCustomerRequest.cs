@@ -14,4 +14,3 @@ namespace RequestEntity
         public string? ImgUrl { get; set; }
     }
 }
-}
