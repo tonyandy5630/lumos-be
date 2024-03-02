@@ -41,18 +41,18 @@ namespace Service.Service
             }
         }
 
-        public async Task<bool> CreateBookingAsync(Booking booking, CreateBookingDTO createBookingDTO, string email)
+        public async Task<BookingCreationResultDTO> CreateBookingAsync(Booking booking, CreateBookingDTO createBookingDTO, string email)
         {
             try
             {
-                bool result = await _unitOfWork.BookingRepo.CreateBookingAsync(booking, createBookingDTO, email);
+                var result = await _unitOfWork.BookingRepo.CreateBookingAsync(booking, createBookingDTO, email);
 
                 return result;
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error in CreateBookingAsync: {ex.Message}", ex);
-                return false;
+                return null;
             }
         }
 

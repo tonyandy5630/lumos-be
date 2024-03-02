@@ -149,7 +149,7 @@ namespace DataAccessLayer
                 throw new Exception(ex.Message);
             }
         }
-        public async Task<bool> CreateBookingAsync(Booking booking, CreateBookingDTO createBookingDTO, string email)
+        public async Task<BookingCreationResultDTO> CreateBookingAsync(Booking booking, CreateBookingDTO createBookingDTO, string email)
         {
             using var _context = new LumosDBContext();
             using (var transaction = _context.Database.BeginTransaction())
@@ -189,13 +189,18 @@ namespace DataAccessLayer
                     await _context.SaveChangesAsync();
 
                     transaction.Commit();
-                    return true;
+                    var bookingCreationResult = new BookingCreationResultDTO
+                    {
+                        BookingId = booking.BookingId,
+                        TotalPrice = booking.TotalPrice
+                    };
+                    return bookingCreationResult;
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine($"Error in CreateBookingAsync: {ex.Message}", ex);
                     transaction.Rollback();
-                    return false;
+                    return null;
                 }
             }
         }
@@ -297,7 +302,7 @@ namespace DataAccessLayer
             var bookingLog = new BookingLog
             {
                 BookingId = booking.BookingId,
-                Status = 1, // Status mặc định khi tạo booking detail
+                Status = (int) BookingStatusEnum.WaitingForPayment, 
                 CreatedDate = booking.CreatedDate,
                 Note = null,
                 CreatedBy = email
@@ -412,10 +417,11 @@ namespace DataAccessLayer
             {
                 var topServices = await _context.ServiceBookings
                     .Include(sb => sb.Service)
-                    .GroupBy(sb => new { sb.ServiceId, sb.Service.Name, sb.Service.PartnerId })
+                    .GroupBy(sb => new { sb.ServiceId, sb.Service.Name, sb.Service.PartnerId, sb.Service.Code })
                     .Select(g => new TopBookedServiceDTO
                     {
                         ServiceId = (int)g.Key.ServiceId,
+                        ServiceCode = g.Key.Code,
                         PartnerId = (int)g.Key.PartnerId,
                         ServiceName = g.Key.Name,
                         PartnerName = g.Select(sb => sb.Service.Partner.PartnerName).FirstOrDefault(),

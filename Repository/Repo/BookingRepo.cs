@@ -21,7 +21,7 @@ namespace Repository.Repo
 
         public  Task<List<Booking>> GetAllAppBookingAsync () => BookingDAO.Instance.GetAllBookingInAppAsync();
         public Task<Booking?> GetBookingByDetailIdAsync(int detailid) => BookingDAO.Instance.GetBookingsByDetailIdAsync(detailid);
-        public Task<bool> CreateBookingAsync(Booking booking, CreateBookingDTO createBookingDTO, string email) => BookingDAO.Instance.CreateBookingAsync(booking, createBookingDTO,email);  
+        public Task<BookingCreationResultDTO> CreateBookingAsync(Booking booking, CreateBookingDTO createBookingDTO, string email) => BookingDAO.Instance.CreateBookingAsync(booking, createBookingDTO,email);  
 
         public Task<List<Booking>> GetBookingsByMedicalReportIdAsync(int medicalReportId) => BookingDAO.Instance.GetBookingsByMedicalReportIdAsync(medicalReportId);
         public Task<List<Booking>> GetIncompleteBookingsByCustomerIdAsync(int customerId) => BookingDAO.Instance.GetIncompleteBookingsByCustomerIdAsync(customerId);

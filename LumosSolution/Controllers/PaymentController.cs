@@ -25,7 +25,7 @@ namespace LumosSolution.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<string>> CreatePaymentLink([FromBody] PaymentRequest request)
+        public async Task<ActionResult<PaymentResponse>> CreatePaymentLink([FromBody] PaymentRequest request)
         {
             try
             {
