@@ -338,7 +338,7 @@ namespace LumosSolution.Controllers
                 {
                     response.message = MessagesResponse.Error.NotFound;
                     response.StatusCode = ApiStatusCode.NotFound;
-                    return NotFound(response);
+                    return Ok(response);
                 }
 
                 response.data = topServices;

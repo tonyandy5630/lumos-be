@@ -15,12 +15,7 @@ namespace DataAccessLayer
     public class BookingDAO
     {
         private static BookingDAO instance = null;
-        private readonly LumosDBContext _context;
 
-        public BookingDAO(LumosDBContext _context)
-        {
-            this._context = _context;
-        }
 
         public static BookingDAO Instance
         {
@@ -28,19 +23,21 @@ namespace DataAccessLayer
             {
                 if (instance == null)
                 {
-                    instance = new BookingDAO(new LumosDBContext());
+                    instance = new BookingDAO();
                 }
                 return instance;
             }
         }
         public async Task<BookingDetail> GetBookingDetailByIdAsync(int bookingId)
         {
+            using var _context = new LumosDBContext();
             return await _context.BookingDetails.FirstOrDefaultAsync(bd => bd.BookingId == bookingId);
         }
         public async Task<int> CountAllBookingInAppAsync()
         {
             try
             {
+                using var _context = new LumosDBContext();
                 return await _context.Bookings.CountAsync();
             }
             catch
@@ -53,6 +50,7 @@ namespace DataAccessLayer
         {
             try
             {
+                using var _context = new LumosDBContext();
                 return await _context.Bookings.ToListAsync();
             }
             catch
@@ -66,6 +64,7 @@ namespace DataAccessLayer
         {
             try
             {
+                using var _context = new LumosDBContext();
                 List<int> bookings = await (from sb in _context.ServiceBookings
                                           join bd in _context.BookingDetails on sb.DetailId equals bd.DetailId
                                           join mr in _context.MedicalReports on bd.ReportId equals mr.ReportId
@@ -86,6 +85,7 @@ namespace DataAccessLayer
         {
             try
             {
+                using var _context = new LumosDBContext();
                 var bookings = (from bd in _context.BookingDetails
                                 join b in _context.Bookings on bd.BookingId equals b.BookingId
                                 where bd.DetailId == detailId
@@ -106,6 +106,7 @@ namespace DataAccessLayer
         {
             try
             {
+                using var _context = new LumosDBContext();
                 var booking = (from bl in _context.BookingLogs
                                       join b in _context.Bookings on bl.BookingId equals b.BookingId
                                       join pay in _context.PaymentMethods on b.PaymentId equals pay.PaymentId
@@ -134,6 +135,7 @@ namespace DataAccessLayer
         {
             try
             {
+                using var _context = new LumosDBContext();
                 var bookings = await _context.BookingDetails
                 .Where(bd => bd.ReportId == medicalReportId)
                 .Select(bd => bd.Booking)
@@ -149,6 +151,7 @@ namespace DataAccessLayer
         }
         public async Task<BookingCreationResultDTO> CreateBookingAsync(Booking booking, CreateBookingDTO createBookingDTO, string email)
         {
+            using var _context = new LumosDBContext();
             using (var transaction = _context.Database.BeginTransaction())
             {
                 try
@@ -203,6 +206,7 @@ namespace DataAccessLayer
         }
         private async Task<int> CalculateTotalPriceAsync(int bookingId)
         {
+            using var _context = new LumosDBContext();
             int totalPrice = 0;
 
             // Lấy danh sách tất cả các chi tiết đặt hàng cho bookingId đã cho
@@ -228,6 +232,7 @@ namespace DataAccessLayer
 
         private async Task ValidatePartnerScheduleAsync(int partnerId, int dayOfWeek, int bookingTime)
         {
+            using var _context = new LumosDBContext();
             var partnerSchedules = await _context.Schedules
                 .Where(s => s.PartnerId == partnerId)
                 .ToListAsync();
@@ -244,6 +249,7 @@ namespace DataAccessLayer
 
         private async Task ValidatePartnerStatusAsync(int partnerId)
         {
+            using var _context = new LumosDBContext();
             var partner = await _context.Partners.FirstOrDefaultAsync(p => p.PartnerId == partnerId);
             if (partner == null || partner.Status != 1)
             {
@@ -253,6 +259,7 @@ namespace DataAccessLayer
 
         private async Task ValidateCustomerStatusAsync(string email)
         {
+            using var _context = new LumosDBContext();
             var customer = await _context.Customers.FirstOrDefaultAsync(c => c.Email == email);
             if (customer == null || customer.Status != 1)
             {
@@ -262,6 +269,7 @@ namespace DataAccessLayer
 
         private async Task ProcessPaymentMethodAsync(Booking booking)
         {
+            using var _context = new LumosDBContext();
             if (booking.PaymentId.HasValue)
             {
                 var paymentMethod = await _context.PaymentMethods.FindAsync(booking.PaymentId);
@@ -275,6 +283,7 @@ namespace DataAccessLayer
 
         private async Task ProcessBookingDetailAsync(Booking booking, string note, int reportId, string email)
         {
+            using var _context = new LumosDBContext();
             var bookingDetail = new BookingDetail
             {
                 BookingId = booking.BookingId,
@@ -289,6 +298,7 @@ namespace DataAccessLayer
 
         private async Task ProcessBookingLogAsync(Booking booking, string email)
         {
+            using var _context = new LumosDBContext();
             var bookingLog = new BookingLog
             {
                 BookingId = booking.BookingId,
@@ -303,6 +313,7 @@ namespace DataAccessLayer
 
         private async Task ProcessServiceBookingsAsync(IEnumerable<ServiceDTO> services, Booking booking, string email, int reportid)
         {
+            using var _context = new LumosDBContext();
             foreach (var serviceDTO in services)
             {
                 var bookingDetail = booking.BookingDetails.FirstOrDefault(bd => bd.ReportId == reportid);
@@ -330,6 +341,7 @@ namespace DataAccessLayer
 
         public async Task<List<Booking>> GetAllIncompleteBookingsAsync()
         {
+            using var _context = new LumosDBContext();
             try
             {
                 var incompleteBookingIds = await _context.BookingLogs
@@ -352,6 +364,7 @@ namespace DataAccessLayer
 
         public async Task<List<Booking>> GetIncompleteBookingsByCustomerIdAsync(int customerId)
         {
+            using var _context = new LumosDBContext();
             try
             {
                 var incompleteBookingIds = await _context.BookingLogs
@@ -376,6 +389,7 @@ namespace DataAccessLayer
 
         public async Task<List<Booking>> GetIncompleteBookingsByReportIdAsync(int reportId)
         {
+            using var _context = new LumosDBContext();
             try
             {
                 var incompleteBookingIds = await _context.BookingLogs
@@ -398,6 +412,7 @@ namespace DataAccessLayer
         }
         public async Task<List<TopBookedServiceDTO>> GetTopBookedServicesAsync(int top)
         {
+            using var _context = new LumosDBContext();
             try
             {
                 var topServices = await _context.ServiceBookings
@@ -428,6 +443,7 @@ namespace DataAccessLayer
 
         public async Task<TopBookingSummaryDTO> GetAllBookedServicesByPartnerEmailAsync(string partnerEmail)
         {
+            using var _context = new LumosDBContext();
             try
             {
                 var allServices = await _context.ServiceBookings
@@ -494,6 +510,7 @@ namespace DataAccessLayer
 
         public async Task<List<TotalBookingMonthlyStat>> GetAllBookingsForYearAsync(int year)
         {
+            using var _context = new LumosDBContext();
             try
             {
                 var result = await _context.Bookings
@@ -517,6 +534,7 @@ namespace DataAccessLayer
         }
         public async Task<string> GetMedicalNameByReportIdAsync(int? reportId)
         {
+            using var _context = new LumosDBContext();
             try
             {
                 var medicalName = await _context.MedicalReports
@@ -535,6 +553,7 @@ namespace DataAccessLayer
        
         public async Task<Customer?> GetCustomerByReportIdAsync(int? reportId)
         {
+            using var _context = new LumosDBContext();
             try
             {
                 var medicalReport = await _context.MedicalReports
@@ -547,19 +566,6 @@ namespace DataAccessLayer
             {
                 Console.WriteLine($"Error in GetCustomerByReportIdAsync: {ex.Message}", ex);
                 throw;
-            }
-        }
-        public async Task<BookingDetail> GetBookingDetailByBookingIdAsync(int id)
-        {
-            try
-            {
-                var bookingdetails = await _context.BookingDetails.SingleOrDefaultAsync(u => u.BookingId == id);
-                return bookingdetails;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error in GetBookingDetailByBookingIdAsync: {ex.Message}", ex);
-                throw new Exception(ex.Message);
             }
         }
     }
