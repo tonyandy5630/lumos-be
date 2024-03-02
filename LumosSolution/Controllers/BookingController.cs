@@ -31,7 +31,7 @@ namespace LumosSolution.Controllers
             _bookingLogService = bookingLogService;
         }
         [HttpGet("{id}/detail")]
-        [Authorize(Roles = "Partner,Admin")]
+        [Authorize(Roles = "Partner,Admin,Customer")]
         public async Task<ActionResult<ApiResponse<BookingDTO>>> GetBookingDetailInforById(int id)
         {
             ApiResponse<BookingDTO> response = new ApiResponse<BookingDTO>();
