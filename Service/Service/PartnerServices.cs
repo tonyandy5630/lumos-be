@@ -474,29 +474,25 @@ namespace Service.Service
             return  await Task.FromResult(stat);
         }
 
-      
-        public async Task<List<RevenuePerWeekDTO>> CalculatePartnerRevenueInMonthAsync(int month, int year)
-        {
-            try
-            {
-                return await _unitOfWork.PartnerRepo.CalculatePartnerRevenueInMonthAsync(month,year);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error in CalculatePartnerRevenueInMonthAsync: {ex.Message}", ex);
-                throw;
-            }
-        }
 
-        public async Task<List<MonthlyRevenueDTO>> CalculateMonthlyRevenueAsync(int year)
+        public async Task<ListDataDTO> CalculatePartnerRevenueInMonthAsync(string email,int month, int year)
         {
             try
             {
-                return await _unitOfWork.PartnerRepo.CalculateMonthlyRevenueAsync(year);
+                var revenuePerWeek = await _unitOfWork.PartnerRepo.GetRevenuePerWeekInMonthAsync(email,month, year);
+
+                List<int?> result = revenuePerWeek.Select(revenue => (int?)revenue).ToList();
+
+                ListDataDTO listData = new ListDataDTO
+                {
+                    Data = result
+                };
+
+                return listData;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error in CalculateMonthlyRevenueAsync: {ex.Message}", ex);
+                Console.WriteLine($"Error in CalculatePartnerRevenueInMonthAsync Services: {ex.Message}", ex);
                 throw;
             }
         }

@@ -143,51 +143,13 @@ namespace LumosSolution.Controllers
                 response.StatusCode = ApiStatusCode.InternalServerError;
                 return StatusCode(500, response);
             }
-        }
-
-        [HttpGet("/api/stat/revenue/monthly/{year}")]
-        [Authorize(Roles = "Admin")]
-        public async Task<ActionResult<ApiResponse<List<MonthlyRevenueDTO>>>> GetMonthlyRevenue(int year)
-        {
-            ApiResponse<List<MonthlyRevenueDTO>> response = new ApiResponse<List<MonthlyRevenueDTO>>
-            {
-                message = MessagesResponse.Error.NotFound,
-                StatusCode = ApiStatusCode.NotFound
-            };
-
-            try
-            {
-                List<MonthlyRevenueDTO> monthlyRevenue = await _partnerService.CalculateMonthlyRevenueAsync(year);
-
-                if (monthlyRevenue == null || monthlyRevenue.Count == 0)
-                    return NotFound(response);
-
-                response.message = MessagesResponse.Success.Completed;
-                response.StatusCode = ApiStatusCode.OK;
-                response.data = monthlyRevenue;
-
-                return Ok(response);
-            }
-            catch (UnauthorizedAccessException)
-            {
-                response.message = MessagesResponse.Error.Unauthorized;
-                response.StatusCode = ApiStatusCode.Unauthorized;
-                return StatusCode(401, response);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-                response.message = ex.Message;
-                response.StatusCode = ApiStatusCode.InternalServerError;
-                return StatusCode(500, response);
-            }
-        }
+        }      
 
         [HttpGet("revenue/{month}")]
         [Authorize(Roles = "Partner")]
-        public async Task<ActionResult<ApiResponse<List<RevenuePerWeekDTO>>>> GetPartnerRevenueInMonth(int month, int? year = null)
+        public async Task<ActionResult<ListDataDTO>> GetPartnerRevenueInMonth(int month, int? year = null)
         {
-            ApiResponse<List<RevenuePerWeekDTO>> response = new ApiResponse<List<RevenuePerWeekDTO>>
+            ApiResponse<ListDataDTO> response = new ApiResponse<ListDataDTO>
             {
                 message = MessagesResponse.Error.NotFound,
                 StatusCode = ApiStatusCode.NotFound
@@ -195,14 +157,15 @@ namespace LumosSolution.Controllers
 
             try
             {
+                string? userEmail = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
                 if (year == null)
                 {
                     year = DateTime.Now.Year;
                 }
 
-                var revenuePerWeek = await _partnerService.CalculatePartnerRevenueInMonthAsync(month, (int)year);
+                var revenuePerWeek = await _partnerService.CalculatePartnerRevenueInMonthAsync(userEmail, month, (int)year);
 
-                if (revenuePerWeek == null || revenuePerWeek.Count() == 0)
+                if (revenuePerWeek == null)
                     return NotFound(response);
 
                 response.message = MessagesResponse.Success.Completed;

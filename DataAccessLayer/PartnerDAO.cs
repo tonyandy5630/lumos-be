@@ -351,35 +351,81 @@ namespace DataAccessLayer
                 throw new Exception(ex.Message);
             }
         }
-        public async Task<List<RevenuePerWeekDTO>> CalculatePartnerRevenueInMonthAsync(int month, int year)
+        public async Task<int?> CalculatePartnerRevenueInMonthAsync(int month, int year)
         {
             try
             {
                 using var _context = new LumosDBContext();
                 DateTime startDate = new DateTime(year, month, 1);
                 DateTime endDate = startDate.AddMonths(1).AddDays(-1);
-                var revenuePerWeek = await _context.BookingLogs
+
+                // Truy vấn cơ sở dữ liệu để tính tổng doanh thu của đối tác trong tháng được chỉ định
+                var totalRevenue = await _context.BookingLogs
                     .Where(bl => bl.Status == 4 && bl.CreatedDate >= startDate && bl.CreatedDate <= endDate)
-                    .Join(_context.ServiceBookings,
+                    .Join(_context.Bookings,
                         bl => bl.BookingId,
-                        sb => sb.Detail.BookingId,
-                        (bl, sb) => new { sb.Price, bl.CreatedDate })
-                    .GroupBy(x => ((x.CreatedDate.Value.Day - 1) / 7) + 1)
-                    .OrderBy(g => g.Key)
-                    .Select(g => new RevenuePerWeekDTO
-                    {
-                        WeekNumber = g.Key,
-                        Revenue = (decimal)g.Sum(x => x.Price),
-                        StartDate = startDate.AddDays((g.Key - 1) * 7), // Ngày bắt đầu của tuần
-                        EndDate = startDate.AddDays(g.Key * 7).AddDays(-1) // Ngày kết thúc của tuần
-                    })
+                        sb => sb.BookingId,
+                        (bl, sb) => sb.TotalPrice)
+                    .SumAsync();
+
+                return totalRevenue;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in CalculatePartnerRevenueInMonthAsync: {ex.Message}", ex);
+                throw;
+            }
+        }
+        public async Task<List<int>> GetRevenuePerWeekInMonthAsync(string partnerEmail, int month, int year)
+        {
+            try
+            {
+                using var _context = new LumosDBContext();
+
+                // Step 1: Get the partner from the provided email
+                var partner = await _context.Partners
+                    .Include(p => p.PartnerServices)
+                    .FirstOrDefaultAsync(p => p.Email == partnerEmail);
+
+                if (partner == null)
+                {
+                    return new List<int>(); // Partner doesn't exist
+                }
+
+                // Step 2: Get all service IDs of the partner
+                var serviceIds = partner.PartnerServices.Select(ps => ps.ServiceId).ToList();
+
+                // Step 3: Get all booking IDs associated with the partner's service bookings
+                var bookingIds = await _context.ServiceBookings
+                    .Where(sb => serviceIds.Contains((int)sb.ServiceId))
+                    .Select(sb => sb.Detail.BookingId) // Assuming Detail is a navigation property to BookingDetail
                     .ToListAsync();
+
+                // Step 4: Get booking logs for the partner's bookings in the specified month and year
+                var bookingLogs = await _context.BookingLogs
+                    .Where(bl => bl.Status == 4 &&
+                                 bl.CreatedDate.Value.Year == year && bl.CreatedDate.Value.Month == month &&
+                                 bookingIds.Contains(bl.BookingId))
+                    .ToListAsync();
+
+                // Step 5: Calculate revenue per week in the month
+                var startDate = new DateTime(year, month, 1);
+                var endDate = startDate.AddMonths(1).AddDays(-1);
+                var revenuePerWeek = bookingLogs
+                    .Join(_context.Bookings,
+                        bl => bl.BookingId,
+                        sb => sb.BookingId,
+                        (bl, sb) => new { BookingDate = sb.BookingDate, TotalPrice = sb.TotalPrice })
+                    .GroupBy(x => ((x.BookingDate.Day - 1) / 7) + 1)
+                    .OrderBy(g => g.Key)
+                    .Select(g => (int)g.Sum(x => x.TotalPrice))
+                    .ToList();
 
                 return revenuePerWeek;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error in CalculatePartnerRevenueInMonthAsync: {ex.Message}", ex);
+                Console.WriteLine($"Error in GetRevenuePerWeekInMonthAsync: {ex.Message}", ex);
                 throw;
             }
         }
@@ -402,49 +448,6 @@ namespace DataAccessLayer
             }
             catch (Exception ex) { throw new Exception(); }
         }
-
-
-        public async Task<List<MonthlyRevenueDTO>> CalculateMonthlyRevenueAsync(int year)
-        {
-            try
-            {
-                using var _context = new LumosDBContext();
-                List<MonthlyRevenueDTO> monthlyRevenueList = new List<MonthlyRevenueDTO>();
-
-                for (int month = 1; month <= 12; month++)
-                {
-                    var monthlyRevenue = await CalculatePartnerRevenueInMonthAsync(month, year);
-                    int totalRevenue = (int)monthlyRevenue.Sum(r => r.Revenue);
-
-                    if (monthlyRevenue.Count == 0)
-                    {
-                        monthlyRevenueList.Add(new MonthlyRevenueDTO
-                        {
-                            StatUnit = month,
-                            StatValue = 0,
-                            Details = new List<RevenuePerWeekDTO>()
-                        });
-                    }
-                    else
-                    {
-                        monthlyRevenueList.Add(new MonthlyRevenueDTO
-                        {
-                            StatUnit = month,
-                            StatValue = totalRevenue,
-                            Details = monthlyRevenue
-                        });
-                    }
-                }
-
-                return monthlyRevenueList;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error in CalculateMonthlyRevenueAsync: {ex.Message}", ex);
-                throw;
-            }
-        }
-
 
         public async Task<List<PartnerServiceDTO>> GetPartnerServicesWithBookingCountAsync(int partnerId)
         {

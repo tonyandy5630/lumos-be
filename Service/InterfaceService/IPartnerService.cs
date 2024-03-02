@@ -29,12 +29,10 @@ namespace Service.InterfaceService
         Task<PartnerService> AddPartnerServiceAsync(AddPartnerServiceResquest service, string? partnerEmail);
         Task<IEnumerable<SearchPartnerDTO>> GetPartnerByCategoryAsync(int categoryId);
         Task<IEnumerable<PartnerServiceDTO>> GetTopFiveBookedServicesAsync();
-        Task<List<RevenuePerWeekDTO>> CalculatePartnerRevenueInMonthAsync(int month, int year);
-        Task<List<MonthlyRevenueDTO>> CalculateMonthlyRevenueAsync(int year);
+        Task<ListDataDTO> CalculatePartnerRevenueInMonthAsync(string email, int month, int year);
         Task<List<PartnerServiceDTO>> GetPartnerServicesWithBookingCountAsync(string email);
         Task<StatPartnerServiceDTO> GetStatPartnerServiceAsync (string email);
         Task<StatPartnerServiceDTO> CalculateServicesAndRevenueAsync(string? email);
         Task<List<BookingDTO>> GetPartnerBookingsAsync(string partnerEmail, int page, int pageSize);
-
     }
 }

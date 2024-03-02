@@ -46,8 +46,34 @@ namespace Repository.Repo
         public Task<bool> UpdatePartnerAsync(Partner partner) => PartnerDAO.Instance.UpdatePartnerAsync(partner);
         public Task<IEnumerable<Partner>> SearchPartnerByCategoryIdAsync(int categoryId) => PartnerDAO.Instance.GetPartnersByCategoryAsync(categoryId);
 
-        public Task<List<RevenuePerWeekDTO>> CalculatePartnerRevenueInMonthAsync(int month,int year) => PartnerDAO.Instance.CalculatePartnerRevenueInMonthAsync(month, year);
-        public Task<List<MonthlyRevenueDTO>> CalculateMonthlyRevenueAsync(int year) => PartnerDAO.Instance.CalculateMonthlyRevenueAsync(year);
+        public Task<int?> CalculatePartnerRevenueInMonthAsync(int month, int year) => PartnerDAO.Instance.CalculatePartnerRevenueInMonthAsync(month, year);
+        public Task<List<int>> GetRevenuePerWeekInMonthAsync(string email,int month, int year) => PartnerDAO.Instance.GetRevenuePerWeekInMonthAsync(email,month, year);
+        public async Task<ListDataDTO> CalculateMonthlyRevenueAsync(int year)
+        {
+            try
+            {
+                List<int?> monthlyRevenueList = new List<int?>();
+
+                for (int month = 1; month <= 12; month++)
+                {
+                    var monthlyRevenue = await CalculatePartnerRevenueInMonthAsync(month, year);
+                    monthlyRevenueList.Add((int)monthlyRevenue);
+                }
+
+                ListDataDTO result = new ListDataDTO
+                {
+                    Data = monthlyRevenueList
+                };
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in CalculateMonthlyRevenueAsync in partnerrepo: {ex.Message}", ex);
+                throw;
+            }
+        }
+
 
         public Task<List<PartnerServiceDTO>> GetPartnerServicesWithBookingCountAsync(int partnerId) => PartnerDAO.Instance.GetPartnerServicesWithBookingCountAsync(partnerId);
 

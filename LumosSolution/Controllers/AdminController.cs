@@ -1,4 +1,5 @@
-﻿using DataTransferObject.DTO;
+﻿using BussinessObject;
+using DataTransferObject.DTO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -61,6 +62,41 @@ namespace LumosSolution.Controllers
                 return BadRequest(res);
             }
         }
+        [HttpGet("revenue/monthy/{year}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<List<ListDataDTO?>>> GetMonthlyRevenue(int year)
+        {
+            ApiResponse<ListDataDTO?> response = new ApiResponse<ListDataDTO?>
+            {
+                message = MessagesResponse.Error.NotFound,
+                StatusCode = ApiStatusCode.NotFound
+            };
 
+            try
+            {
+                ListDataDTO monthlyRevenue = await _adminService.GetAppMonthlyRevenueAsync(year);
+
+                if (monthlyRevenue == null)
+                    return NotFound(response);
+
+                response.message = MessagesResponse.Success.Completed;
+                response.StatusCode = ApiStatusCode.OK;
+                response.data = monthlyRevenue;
+
+                return Ok(response);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                response.message = MessagesResponse.Error.Unauthorized;
+                response.StatusCode = ApiStatusCode.Unauthorized;
+                return StatusCode(401, response);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                response.message = ex.Message;
+                return StatusCode(500, response);
+            }
+        }
     }
 }

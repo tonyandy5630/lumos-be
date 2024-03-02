@@ -194,5 +194,20 @@ namespace Service.Service
                 throw new Exception();
             }
         }
+        public async Task<ListDataDTO> GetAppMonthlyRevenueAsync(int year)
+        {
+            try
+            {
+
+                var res = await _unitOfWork.PartnerRepo.CalculateMonthlyRevenueAsync(year);
+
+                return res;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception();
+            }
+        }
+
     }
 }

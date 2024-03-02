@@ -40,5 +40,7 @@ namespace Repository.Repo
         public Task<bool> CheckExistingMedicalReportAsync(string fullName) => CustomerDAO.Instance.CheckExistingMedicalReportAsync(fullName);
 
         public Task<Customer?> GetCustomerByBookingIdAsync(int bookingId) => CustomerDAO.Instance.GetCustomerByBookingIdAsync(bookingId);
+
+        public Task<List<Customer>> GetAllCustomersAsync() => CustomerDAO.Instance.GetAllCustomersAsync();
     }
 }

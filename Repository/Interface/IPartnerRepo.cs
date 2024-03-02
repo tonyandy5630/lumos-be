@@ -30,12 +30,13 @@ namespace Repository.Interface
         Task<IEnumerable<PartnerService>> GetPartnerServiceByServiceNameAsync(string serviceName, int partnerId);
         Task<PartnerService?> AddPartnerServiceAsync(PartnerService service);
         Task<IEnumerable<Partner>> SearchPartnerByCategoryIdAsync(int categoryId);
-        Task<List<RevenuePerWeekDTO>> CalculatePartnerRevenueInMonthAsync(int month,int year);
-        Task<List<MonthlyRevenueDTO>> CalculateMonthlyRevenueAsync(int year);
+        Task<int?> CalculatePartnerRevenueInMonthAsync(int month, int year);
+        Task<ListDataDTO> CalculateMonthlyRevenueAsync(int year);
         Task<List<PartnerServiceDTO>> GetPartnerServicesWithBookingCountAsync(int partnerId);
         Task<StatPartnerServiceDTO> CalculateServicesAndRevenueAsync(string? email);
         Task<List<BookingDTO>> GetPartnerBookingsAsync(string partnerEmail, int page, int pageSize);
 
         Task<List<ChartStatDTO>> GetNewPartnerMonthlyAsync(int year);
+        Task<List<int>> GetRevenuePerWeekInMonthAsync(string email,int month, int year);
     }
 }

@@ -26,6 +26,18 @@ namespace DataAccessLayer
                 return instance;
             }
         }
+        public async Task<List<Customer>> GetAllCustomersAsync()
+        {
+            try
+            {
+                List<Customer> customers = await dbContext.Customers.ToListAsync();
+                return customers;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error in GetAllCustomersAsync", ex);
+            }
+        }
 
         public async Task<List<ChartStatDTO>> GetNewCustomerMonthlyAsync(int year)
         {

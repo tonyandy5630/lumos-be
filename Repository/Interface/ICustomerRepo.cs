@@ -24,6 +24,7 @@ namespace Repository.Interface
         Task<bool> CheckExistingMedicalReportAsync(string fullName);
         Task<Customer?> GetCustomerByBookingIdAsync(int bookingId);
         Task<List<ChartStatDTO>> GetNewCustomerMonthlyAsync(int year);
+        Task<List<Customer>> GetAllCustomersAsync();
 
     }
 }
