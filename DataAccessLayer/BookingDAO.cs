@@ -120,6 +120,7 @@ namespace DataAccessLayer
                                           PaymentMethod = pay.Name,
                                           Status = bl.Status,
                                           TotalPrice = b.TotalPrice,
+                                          Rating = b.Rating
                                       }).Take(1).FirstOrDefaultAsync();
                 return await booking;
             }
