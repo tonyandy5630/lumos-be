@@ -12,12 +12,17 @@ namespace BussinessObject
         }
 
         public int PaymentId { get; set; }
+        [JsonIgnore]
         public string? Code { get; set; }
         public string Name { get; set; }
         public int? Status { get; set; }
+        [JsonIgnore]
         public DateTime? CreateDate { get; set; }
+        [JsonIgnore]
         public string? CreatedBy { get; set; }
+        [JsonIgnore]
         public DateTime? LastUpdate { get; set; }
+        [JsonIgnore]
         public string? UpdatedBy { get; set; }
         [JsonIgnore]
         public virtual ICollection<Booking> Bookings { get; set; }
