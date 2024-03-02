@@ -16,6 +16,7 @@ namespace DataTransferObject.DTO
         public string? PaymentMethod { get; set; }
         public Customer? Customer { get; set; }
         public string? Note { get; set; }
+        public string? PaymentLinkId { get; set; }
         public List<MedicalServiceDTO?>? MedicalServices { get; set; }
     }
 }

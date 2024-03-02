@@ -18,6 +18,7 @@ namespace DataTransferObject.DTO
         public int bookingTime { get; set; }
         public string Address { get; set; }
         public string Note { get; set; }
+        public string? PaymentLinkId { get; set; }
         public List<CartModelDTO> CartModel { get; set; }
     }
 

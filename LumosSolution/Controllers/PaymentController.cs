@@ -23,8 +23,8 @@ namespace LumosSolution.Controllers
         {
             try
             {
-                string checkoutUrl = await _paymentService.CreatePaymentLink(request);
-                return Ok(checkoutUrl);
+                var  res = await _paymentService.CreatePaymentLink(request);
+                return Ok(res);
             }
             catch (Exception ex)
             {
