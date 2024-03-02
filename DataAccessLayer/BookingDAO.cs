@@ -402,10 +402,11 @@ namespace DataAccessLayer
             {
                 var topServices = await _context.ServiceBookings
                     .Include(sb => sb.Service)
-                    .GroupBy(sb => new { sb.ServiceId, sb.Service.Name, sb.Service.PartnerId })
+                    .GroupBy(sb => new { sb.ServiceId, sb.Service.Name, sb.Service.PartnerId, sb.Service.Code })
                     .Select(g => new TopBookedServiceDTO
                     {
                         ServiceId = (int)g.Key.ServiceId,
+                        ServiceCode = g.Key.Code,
                         PartnerId = (int)g.Key.PartnerId,
                         ServiceName = g.Key.Name,
                         PartnerName = g.Select(sb => sb.Service.Partner.PartnerName).FirstOrDefault(),

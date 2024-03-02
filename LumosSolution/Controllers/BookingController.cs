@@ -318,7 +318,7 @@ namespace LumosSolution.Controllers
             }
         }
 
-        [HttpGet("{top}")]
+        [HttpGet("service/{top}")]
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult<ApiResponse<object>>> GetTopBookedServices(int top)
         {
