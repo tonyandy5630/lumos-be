@@ -9,6 +9,7 @@ namespace DataTransferObject.DTO
         public string Status { get; set; }
         public string? Partner { get; set; }
         public int? TotalPrice { get; set; }
+        public int? AdditionalFee { get; set; } = 0;
         public DateTime BookingDate { get; set; }
         public int bookingTime { get; set; } // workshift
         public string Address { get; set; }

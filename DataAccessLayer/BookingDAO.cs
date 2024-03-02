@@ -170,6 +170,7 @@ namespace DataAccessLayer
                     booking.bookingTime = createBookingDTO.bookingTime;
                     booking.From = DateTime.Now;
                     booking.CreatedBy = email;
+                    booking.TotalPrice = createBookingDTO.TotalPrice;
                     _context.Bookings.Add(booking);
                     await _context.SaveChangesAsync();
 
