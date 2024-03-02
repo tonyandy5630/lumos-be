@@ -468,7 +468,7 @@ namespace DataAccessLayer
                             PaymentMethod = await GetPaymentMethodAsync(bookingId),
                             Note = await GetNoteFromBookingByidAsync(bookingId),
                             Customer = await BookingDAO.Instance.GetCustomerByReportIdAsync(reportId),
-                            MedicalServices = medicalServiceDTOs
+                            MedicalServices = medicalServiceDTOs,
                         });
                     }
                 }
