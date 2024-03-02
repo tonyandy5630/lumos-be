@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Service.InterfaceService;
+using Service.Service;
 using Utils;
 
 namespace LumosSolution.Controllers
@@ -38,7 +39,28 @@ namespace LumosSolution.Controllers
                 return BadRequest(response);
             }
         }
-
+        [HttpGet("user/{year}/monthly")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<List<NewUserMonthlyChartDTO?>>> GetMonthlyAppNewUser(int year)
+        {
+            ApiResponse<NewUserMonthlyChartDTO?> res = new ApiResponse<NewUserMonthlyChartDTO?>
+            {
+                message = MessagesResponse.Error.OperationFailed,
+                StatusCode = 400
+            };
+            try
+            {
+                NewUserMonthlyChartDTO monthlyUser = await _adminService.GetAppNewUserMonthlyAsync(year);
+                res.message = MessagesResponse.Success.Completed;
+                res.StatusCode = 200;
+                res.data = monthlyUser;
+                return Ok(res);
+            }
+            catch
+            {
+                return BadRequest(res);
+            }
+        }
 
     }
 }

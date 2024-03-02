@@ -16,7 +16,9 @@ namespace Repository.Repo
     public class PartnerRepo : IPartnerRepo
     {
         public PartnerRepo(LumosDBContext context) { }
-        
+
+
+        public Task<List<ChartStatDTO>> GetNewPartnerMonthlyAsync(int year) => PartnerDAO.Instance.GetNewPartnerMonthlyAsync(year);
         public Task<Partner?> GetPartnerByBookingIdAsync(int bookingId) => PartnerDAO.Instance.GetPartnerByBookingIdAsync(bookingId);
 
         public Task<PartnerService?> AddPartnerServiceAsync(PartnerService service) => PartnerDAO.Instance.AddPartnerServiceAsync(service);

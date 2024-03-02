@@ -25,28 +25,6 @@ namespace LumosSolution.Controllers
             _mapper = mapper;
             _customerService = customerService;
         }
-        [HttpGet("new/{year}/monthly")]
-        [Authorize(Roles ="Admin")]
-        public async Task<ActionResult<List<int?>>> GetMonthlyAppNewUser(int year)
-        {
-            ApiResponse<List<int?>> res = new ApiResponse<List<int?>>
-            {
-                message = MessagesResponse.Error.OperationFailed,
-                StatusCode = 400
-            };
-            try
-            {
-                List<int?> monthlyUser = await _customerService.GetNewCustomerMonthlyAsync(year);
-                res.message = MessagesResponse.Success.Completed;
-                res.StatusCode = 200;
-                res.data = monthlyUser;
-                return Ok(res);
-            }
-            catch
-            {
-                return BadRequest(res);
-            }
-        }
 
         [HttpGet("{id}/medical-report")]
         [Authorize(Roles = "Admin,Customer")]

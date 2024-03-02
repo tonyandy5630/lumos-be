@@ -384,6 +384,25 @@ namespace DataAccessLayer
             }
         }
 
+        public async Task<List<ChartStatDTO>> GetNewPartnerMonthlyAsync(int year)
+        {
+            try
+            {
+                using var _context = new LumosDBContext();
+                List<ChartStatDTO> result = await (from ps in _context.Partners
+                                                   where ps.CreatedDate.Year == year
+                                                   group ps by new { Month = ps.CreatedDate.Month } into g
+                                                   orderby g.Key.Month ascending
+                                                   select new ChartStatDTO
+                                                   {
+                                                       StatUnit = g.Key.Month,
+                                                       StatValue = g.Count()
+                                                   }).ToListAsync();
+                return result;
+            }
+            catch (Exception ex) { throw new Exception(); }
+        }
+
 
         public async Task<List<MonthlyRevenueDTO>> CalculateMonthlyRevenueAsync(int year)
         {

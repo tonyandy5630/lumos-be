@@ -20,5 +20,6 @@ namespace Service.InterfaceService
         Task<bool> UpdateAdminAsync(Admin admin);
         Task<bool> BanAdminAsync(int id);
         Task<AdminDashboardStat> GetAdminDashboardStatAsync();
+        Task<NewUserMonthlyChartDTO> GetAppNewUserMonthlyAsync(int year);
     }
 }

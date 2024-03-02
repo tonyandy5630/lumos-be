@@ -151,5 +151,48 @@ namespace Service.Service
                 throw new Exception(ex.Message);
             }
         }
+
+        public async Task<NewUserMonthlyChartDTO> GetAppNewUserMonthlyAsync(int year)
+        {
+            try
+            {
+                NewUserMonthlyChartDTO res = new NewUserMonthlyChartDTO
+                {
+                    newCustomerMonthly = new (),
+                    newPartnerMonthly = new ()
+                };
+                List<ChartStatDTO> customerStats = await _unitOfWork.CustomerRepo.GetNewCustomerMonthlyAsync(year);
+                List<ChartStatDTO> partnerStats = await _unitOfWork.PartnerRepo.GetNewPartnerMonthlyAsync(year);
+
+                if (customerStats == null && partnerStats == null)
+                {
+                    return res;
+                }
+
+                for (int month = 1; month <= 12; month++)
+                {
+                    int? cusMonthStatInDb = customerStats?.FirstOrDefault(t => t.StatUnit == month)?.StatValue;
+                    int? partnerMonthStatInDB = partnerStats?.FirstOrDefault(t => t.StatUnit == month)?.StatValue;
+
+                    int? stat = 0;
+                    if (cusMonthStatInDb != null)
+                    {
+                        stat = cusMonthStatInDb;
+                    }
+
+                    res.newCustomerMonthly.Add(stat);
+                    stat = 0;
+                    if (partnerMonthStatInDB != null)
+                    {
+                        stat = partnerMonthStatInDB;
+                    }
+                    res.newPartnerMonthly.Add(stat);
+                }
+                return res;
+            }catch(Exception ex)
+            {
+                throw new Exception();
+            }
+        }
     }
 }
