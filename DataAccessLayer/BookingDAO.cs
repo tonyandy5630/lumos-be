@@ -178,11 +178,10 @@ namespace DataAccessLayer
                     {
                         await ProcessBookingDetailAsync(booking, createBookingDTO.Note, cartItem.ReportId, email);
 
-                        await ProcessBookingLogAsync(booking, email);
-
                         await ProcessServiceBookingsAsync(cartItem.Services, booking, email, cartItem.ReportId);
                     }
                     booking.TotalPrice = await CalculateTotalPriceAsync(booking.BookingId);
+                    await ProcessBookingLogAsync(booking, email);
                     await _context.SaveChangesAsync();
 
                     transaction.Commit();
