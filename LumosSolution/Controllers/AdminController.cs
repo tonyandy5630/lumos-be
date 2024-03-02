@@ -77,7 +77,7 @@ namespace LumosSolution.Controllers
                 ListDataDTO monthlyRevenue = await _adminService.GetAppMonthlyRevenueAsync(year);
 
                 if (monthlyRevenue == null)
-                    return NotFound(response);
+                    return Ok(response);
 
                 response.message = MessagesResponse.Success.Completed;
                 response.StatusCode = ApiStatusCode.OK;

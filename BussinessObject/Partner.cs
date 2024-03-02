@@ -38,7 +38,7 @@ namespace BussinessObject
         public string? RefreshToken { get; set; }
         public string BusinessLicenseNumber { get; set; }
         public int? Role { get; set; }
-
+        public decimal Rating { get;set; }
         public virtual PartnerType? Type { get; set; }
         [JsonIgnore]
         public virtual ICollection<FavoritePartner> FavoritePartners { get; set; }
