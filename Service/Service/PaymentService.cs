@@ -37,7 +37,12 @@ namespace Service.Service
                     request.Description,
                     items,
                     null,
-                    null
+                    null,
+                    request.buyerName,
+                    request.buyerEmail,
+                    request.buyerPhone,
+                    request.buyerAddress,
+                    request.expiredAt.ToString()
                 );
                 CreatePaymentResult createPayment = await payOS.createPaymentLink(paymentData);
 
