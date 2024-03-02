@@ -62,6 +62,28 @@ namespace LumosSolution.Controllers
                 return BadRequest(res);
             }
         }
+        [HttpGet("{top}/partner")]
+        [Authorize(Roles ="Admin")]
+        public async Task<ActionResult<List<Partner>>> GetTopPartnerAsync(int top = 5)
+        {
+            ApiResponse<List<Partner>> response = new ApiResponse<List<Partner>>
+            {
+                message = MessagesResponse.Error.NotFound,
+                StatusCode = ApiStatusCode.NotFound
+            };
+            try
+            {
+                List<Partner> topPartner = await _adminService.GetTopPartnerAsync(top);
+                response.message = MessagesResponse.Success.Completed;
+                response.StatusCode = ApiStatusCode.OK;
+                response.data = topPartner;
+                return Ok(response);
+            }catch(Exception ex)
+            {
+                return BadRequest(response);
+            }
+        }
+
         [HttpGet("revenue/monthly/{year}")]
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult<List<ListDataDTO?>>> GetMonthlyRevenue(int year)

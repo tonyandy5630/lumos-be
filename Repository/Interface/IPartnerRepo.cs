@@ -12,6 +12,7 @@ namespace Repository.Interface
 {
     public interface IPartnerRepo
     {
+        Task<List<Partner>> GetTopPartnerAsync(int top);
         Task<Partner?> GetPartnerByBookingIdAsync(int bookingId);
         Task<int> CountAppPartnerAsync();
         Task<PartnerServiceDTO?> GetPartnerServiceDetailByIdAsync(int id);
@@ -35,7 +36,6 @@ namespace Repository.Interface
         Task<List<PartnerServiceDTO>> GetPartnerServicesWithBookingCountAsync(int partnerId);
         Task<StatPartnerServiceDTO> CalculateServicesAndRevenueAsync(string? email);
         Task<List<BookingDTO>> GetPartnerBookingsAsync(string partnerEmail, int page, int pageSize);
-
         Task<List<ChartStatDTO>> GetNewPartnerMonthlyAsync(int year);
         Task<List<int>> GetRevenuePerWeekInMonthAsync(string email,int month, int year);
     }

@@ -27,6 +27,19 @@ namespace DataAccessLayer
             }
         }
 
+        public async Task<List<Partner>> GetTopPartnerRatingAsync(int top)
+        {
+            try
+            {
+                using var _context = new LumosDBContext();
+                return await _context.Partners.Where(p => p.Status != 0).OrderByDescending(p => p.Rating).Take(top).ToListAsync();
+            }
+            catch
+            {
+                throw new Exception();
+            }
+        }
+
         public async Task<Partner?> GetPartnerByBookingIdAsync(int bookingId)
         {
             try

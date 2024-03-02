@@ -17,7 +17,7 @@ namespace Repository.Repo
     {
         public PartnerRepo(LumosDBContext context) { }
 
-
+        public Task<List<Partner>> GetTopPartnerAsync(int top) => PartnerDAO.Instance.GetTopPartnerRatingAsync(top);
         public Task<List<ChartStatDTO>> GetNewPartnerMonthlyAsync(int year) => PartnerDAO.Instance.GetNewPartnerMonthlyAsync(year);
         public Task<Partner?> GetPartnerByBookingIdAsync(int bookingId) => PartnerDAO.Instance.GetPartnerByBookingIdAsync(bookingId);
 

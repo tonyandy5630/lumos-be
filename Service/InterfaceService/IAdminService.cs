@@ -11,6 +11,7 @@ namespace Service.InterfaceService
 {
     public interface IAdminService
     {
+        Task<List<Partner>> GetTopPartnerAsync(int top);
         Task<List<Admin>> GetAdminsAsync();
         Task<Admin> GetAdminByEmailAsync(string email);
         Task<Admin> GetAdminByRefreshTokenAsync(string token);

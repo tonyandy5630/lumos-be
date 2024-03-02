@@ -28,20 +28,29 @@ namespace BussinessObject
         public string? Description { get; set; }
         [JsonIgnore]
         public int? Status { get; set; }
+        [JsonIgnore]
         public DateTime? LastLogin { get; set; }
+        [JsonIgnore]
         public string? CreatedBy { get; set; }
+        [JsonIgnore]
         public DateTime? LastUpdate { get; set; }
+        [JsonIgnore]
         public DateTime CreatedDate { get; set; }
+        [JsonIgnore]
         public string? UpdatedBy { get; set; }
         public string? ImgUrl { get; set; }
         [JsonIgnore]
         public string? RefreshToken { get; set; }
+        [JsonIgnore]
         public string BusinessLicenseNumber { get; set; }
+        [JsonIgnore]
         public int? Role { get; set; }
-        public decimal Rating { get;set; }
+        public decimal? Rating { get; set; }
+        [JsonIgnore]
         public virtual PartnerType? Type { get; set; }
         [JsonIgnore]
         public virtual ICollection<FavoritePartner> FavoritePartners { get; set; }
+        [JsonIgnore]
         public virtual ICollection<PartnerService> PartnerServices { get; set; }
         [JsonIgnore]
         public virtual ICollection<Schedule> Schedules { get; set; }
