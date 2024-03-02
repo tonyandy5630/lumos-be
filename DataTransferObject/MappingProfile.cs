@@ -28,20 +28,11 @@ namespace DataTransferObject
                 .ForMember(dto => dto.Phone, opt => opt.MapFrom(src => src.Phone))
                 .ForMember(dest => dest.Password, opt => opt.MapFrom(src => src.Password));
 
-            CreateMap<CustomerServiceDTO, Customer>()
-                .ForMember(dto => dto.Code, opt => opt.MapFrom(src => src.Code))
+            CreateMap<AddCustomerRequest, Customer>()
                 .ForMember(dto => dto.Email, opt => opt.MapFrom(src => src.Email))
                 .ForMember(dto => dto.Fullname, opt => opt.MapFrom(src => src.Fullname))
                 .ForMember(dto => dto.Password, opt => opt.MapFrom(src => src.Password))
-                .ForMember(dto => dto.Phone, opt => opt.MapFrom(src => src.Phone))
-                .ForMember(dto => dto.Pronounce, opt => opt.MapFrom(src => src.Pronounce))
-                .ForMember(dto => dto.Status, opt => opt.MapFrom(src => src.Status))
-                .ForMember(dto => dto.LastLogin, opt => opt.MapFrom(src => src.LastLogin))
-                .ForMember(dto => dto.LastUpdate, opt => opt.MapFrom(src => src.LastUpdate))
-                .ForMember(dto => dto.UpdateBy, opt => opt.MapFrom(src => src.UpdateBy))
-                .ForMember(dto => dto.CreatedDate, opt => opt.MapFrom(src => src.CreatedDate))
-                .ForMember(dto => dto.ImgUrl, opt => opt.MapFrom(src => src.ImgUrl))
-                .ForMember(dto => dto.RefreshToken, opt => opt.MapFrom(src => src.RefreshToken));
+                .ForMember(dto => dto.ImgUrl, opt => opt.MapFrom(src => src.ImgUrl));
 
             CreateMap<PartnerService, PartnerServiceDTO>()
                 .ForMember(dto => dto.ServiceId, act => act.MapFrom(src => src.ServiceId))

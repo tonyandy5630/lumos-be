@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using RequestEntity;
 using Service.InterfaceService;
 using Utils;
 using static Google.Apis.Requests.BatchRequest;
@@ -145,7 +146,7 @@ namespace LumosSolution.Controllers
 
                 if (!roleValid)
                 {
-                    var newCustomer = new CustomerServiceDTO
+                    var newCustomer = new AddCustomerRequest
                     {
                         Email = userEmail,
                         Fullname = payload.Name,
