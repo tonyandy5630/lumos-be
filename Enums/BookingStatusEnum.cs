@@ -9,8 +9,9 @@ namespace Enum
     public enum BookingStatusEnum
     {
         Canceled,
+        WaitingForPayment,
         Pending,
-        Doing ,
+        Doing,
         Finished,
         Completed
     }
