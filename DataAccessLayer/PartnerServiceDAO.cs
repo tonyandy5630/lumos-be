@@ -46,7 +46,7 @@ namespace DataAccessLayer
                                                                   {
                                                                       Code = ps.Code,
                                                                       Name = ps.Name,
-                                                                      Price = ps.Price,
+                                                                      Price = sb.Price,
                                                                       Duration = ps.Duration,
                                                                       ServiceId = ps.ServiceId,
                                                                   }).ToListAsync();
