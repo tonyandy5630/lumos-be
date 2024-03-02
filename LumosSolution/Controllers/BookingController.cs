@@ -393,19 +393,26 @@ namespace LumosSolution.Controllers
 
         [HttpPost("customer")]
         [Authorize(Roles = "Customer")]
-        public async Task<ActionResult<ApiResponse<object>>> CreateBookingAsync([FromBody] CreateBookingDTO createBookingDTO)
+        public async Task<ActionResult<ApiResponse<BookingCreationResultDTO>>> CreateBookingAsync([FromBody] CreateBookingDTO createBookingDTO)
         {
-            ApiResponse<object> response = new ApiResponse<object>();
+            ApiResponse<BookingCreationResultDTO> response = new ApiResponse<BookingCreationResultDTO>();
             try
             {
                 var userEmail = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
 
                 var booking = _mapper.Map<Booking>(createBookingDTO);
                 createBookingDTO.TotalPrice = 0;
-                bool result = await _bookingService.CreateBookingAsync(booking, createBookingDTO, userEmail);
+                var result = await _bookingService.CreateBookingAsync(booking, createBookingDTO, userEmail);
 
-                if (result)
+                if (result != null && result.BookingId > 0)
                 {
+                    var bookingCreationResult = new BookingCreationResultDTO
+                    {
+                        BookingId = result.BookingId,
+                        TotalPrice = result.TotalPrice
+                    };
+
+                    response.data = bookingCreationResult;
                     response.message = MessagesResponse.Success.Created;
                     response.StatusCode = ApiStatusCode.OK;
                     return Ok(response);

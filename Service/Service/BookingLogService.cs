@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using static Google.Apis.Requests.BatchRequest;
 using Utils;
+using Enum;
 
 namespace Service.Service
 {
@@ -70,13 +71,13 @@ namespace Service.Service
             {
                 var latestBookingLog = await GetLatestBookingLogAsync(id);
 
-                if (latestBookingLog.Status < 0 || latestBookingLog.Status > 4)
+                if (latestBookingLog.Status < (int) BookingStatusEnum.Canceled || latestBookingLog.Status > (int)BookingStatusEnum.Completed)
                 {
                     response.message = "The status of the latest booking log is invalid or not allowed.";
                     response.StatusCode = ApiStatusCode.BadRequest;
                 }
 
-                if (latestBookingLog.Status != 1)
+                if (latestBookingLog.Status != (int)BookingStatusEnum.Pending)
                 {
                     response.message = "The status of the latest booking log is not Pending. Cannot decline.";
                     response.StatusCode = ApiStatusCode.BadRequest;
@@ -86,7 +87,7 @@ namespace Service.Service
                 {
                     BookingId = id,
                     Note = latestBookingLog.Note,
-                    Status = 0,
+                    Status = (int)BookingStatusEnum.Canceled,
                     CreatedDate = DateTime.Now,
                     CreatedBy = email
                 };
@@ -106,19 +107,19 @@ namespace Service.Service
             {
                 var latestBookingLog = await GetLatestBookingLogAsync(id);
 
-                if (latestBookingLog.Status < 0 || latestBookingLog.Status > 4)
+                if (latestBookingLog.Status < (int)BookingStatusEnum.Canceled || latestBookingLog.Status > (int)BookingStatusEnum.Completed)
                 {
                     response.message = "The status of the latest booking log is invalid or not allowed.";
                     response.StatusCode = ApiStatusCode.BadRequest;
                 }
 
-                if (latestBookingLog.Status == 4)
+                if (latestBookingLog.Status == (int)BookingStatusEnum.Completed)
                 {
                     response.message = "The status of the latest booking log is already Completed. Cannot update.";
                     response.StatusCode = ApiStatusCode.BadRequest;
 
                 }
-                if (latestBookingLog.Status == 0)
+                if (latestBookingLog.Status == (int)BookingStatusEnum.Canceled)
                 {
                     response.message = "The status of the latest booking log is  Cancel. Cannot update.";
                     response.StatusCode = ApiStatusCode.BadRequest;
@@ -128,7 +129,7 @@ namespace Service.Service
                 {
                     BookingId = id,
                     Note = latestBookingLog.Note,
-                    Status = 0,
+                    Status = latestBookingLog.Status + 1,
                     CreatedDate = DateTime.Now,
                     CreatedBy = email
                 };

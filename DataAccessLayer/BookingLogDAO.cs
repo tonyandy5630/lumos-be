@@ -373,7 +373,8 @@ namespace DataAccessLayer
         public async Task<List<BookingLog>> GetAllPendingBookingLogsAsync()
         {
             return await dbContext.BookingLogs
-                .Where(bl => bl.Status == 1 || bl.Status == 2 || bl.Status ==0)
+                .Where(bl => bl.Status == (int)BookingStatusEnum.Pending 
+                || bl.Status == (int)BookingStatusEnum.Doing)
                 .GroupBy(bl => bl.BookingId)
                 .Select(g => g.OrderByDescending(bl => bl.CreatedDate).FirstOrDefault())
                 .ToListAsync();
@@ -468,7 +469,7 @@ namespace DataAccessLayer
                             PaymentMethod = await GetPaymentMethodAsync(bookingId),
                             Note = await GetNoteFromBookingByidAsync(bookingId),
                             Customer = await BookingDAO.Instance.GetCustomerByReportIdAsync(reportId),
-                            MedicalServices = medicalServiceDTOs,
+                            MedicalServices = medicalServiceDTOs
                         });
                     }
                 }
@@ -504,6 +505,7 @@ namespace DataAccessLayer
                             BookingId = bookingId,
                             Status = status,
                             Partner = await GetPartnerNameAsync(partnerId),
+                            PaymentLinkId = await GetPaymentLinkIdFromBookingByidAsync(bookingId),
                             TotalPrice = await GetTotalPriceFromBookingByidAsync(bookingId),
                             BookingDate = await GetBookingDateAsync(bookingId),
                             bookingTime = (int)await GetBookingTimeAsync(bookingId),
