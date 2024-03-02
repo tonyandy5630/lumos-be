@@ -23,8 +23,13 @@ namespace Service.Service
         {
             try
             {
-                ItemData item = new ItemData(request.Name, request.Quantity=1, request.Amount);
-                List<ItemData> items = new List<ItemData> { item };
+                List<ItemData> items = new List<ItemData>();
+
+                foreach (var itemRequest in request.Items)
+                {
+                    ItemData item = new ItemData(itemRequest.Name, itemRequest.Quantity, itemRequest.Amount);
+                    items.Add(item);
+                }
 
                 PaymentData paymentData = new PaymentData(
                     request.OrderId,

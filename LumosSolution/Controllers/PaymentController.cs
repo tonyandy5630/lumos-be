@@ -1,8 +1,13 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using BussinessObject;
+using DataTransferObject.DTO;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualBasic;
 using RequestEntity;
 using Service.InterfaceService;
+using Utils;
+using static Google.Apis.Requests.BatchRequest;
 using static RequestEntity.Constraint.Constraint;
 
 namespace LumosSolution.Controllers
@@ -12,10 +17,11 @@ namespace LumosSolution.Controllers
     public class PaymentController : ControllerBase
     {
         private readonly IPaymentService _paymentService;
-
-        public PaymentController(IPaymentService paymentService)
+        private readonly IPaymentMethodService  _paymentMethodService;
+        public PaymentController(IPaymentService paymentService, IPaymentMethodService paymentMethodService)
         {
             _paymentService = paymentService;
+            _paymentMethodService = paymentMethodService;
         }
 
         [HttpPost]
@@ -28,7 +34,45 @@ namespace LumosSolution.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Error creating payment link: {ex.Message}");
+                return StatusCode(500, $"Error CreatePaymentLink: {ex.Message}");
+            }
+        }
+        [HttpGet("all-method")]
+        [Authorize(Roles = "Admin,Customer,Partner")]
+        public async Task<ActionResult<List<PaymentMethod>>> GetAllPaymentMethod()
+        {
+            ApiResponse<List<PaymentMethod>> response = new ApiResponse<List<PaymentMethod>>
+            {
+                message = MessagesResponse.Error.NotFound,
+                StatusCode = ApiStatusCode.NotFound
+            };
+            try
+            {
+                response.data = await _paymentMethodService.GetAllPaymentMethodAsync();
+                if (response.data == null || response.data.Count == 0)
+                {
+                    response.message = MessagesResponse.Error.NotFound;
+                    response.StatusCode = ApiStatusCode.NotFound;
+                    return NotFound(response);
+                }
+                else
+                {
+                    response.message = MessagesResponse.Success.Completed;
+                    response.StatusCode = ApiStatusCode.OK;
+                    return Ok(response);
+                }
+            }
+            catch (UnauthorizedAccessException)
+            {
+                response.message = MessagesResponse.Error.Unauthorized;
+                response.StatusCode = ApiStatusCode.Unauthorized;
+                return StatusCode(401, response);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                response.message = ex.Message;
+                return StatusCode(500, response);
             }
         }
     }

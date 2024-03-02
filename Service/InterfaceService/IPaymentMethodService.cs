@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BussinessObject;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,5 +9,6 @@ namespace Service.InterfaceService
 {
     public interface IPaymentMethodService
     {
+        Task<List<PaymentMethod>> GetAllPaymentMethodAsync();
     }
 }
