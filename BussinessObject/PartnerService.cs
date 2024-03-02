@@ -21,7 +21,7 @@ namespace BussinessObject
         public int PartnerId { get; set; }
         [Required]
         public string Name { get; set; }
-        public string? Code { get; set; }
+        public string Code { get; set; }
         public int? Duration { get; set; }
         public int? Status { get; set; }
         public string? Description { get; set; }

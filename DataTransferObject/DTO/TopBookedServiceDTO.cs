@@ -9,6 +9,7 @@ namespace DataTransferObject.DTO
     public class TopBookedServiceDTO
     {
         public int ServiceId { get; set; }
+        public string Code { get; set; }
         public int PartnerId { get; set; }
         public string ServiceName { get; set; }
         public string PartnerName { get; set; }
