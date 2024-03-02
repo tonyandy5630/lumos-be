@@ -177,8 +177,8 @@ namespace DataAccessLayer
                     foreach (var cartItem in createBookingDTO.CartModel)
                     {
                         await ProcessBookingDetailAsync(booking, createBookingDTO.Note, cartItem.ReportId, email);
-
-                        await ProcessServiceBookingsAsync(cartItem.Services, booking, email, cartItem.ReportId);
+                        IEnumerable<ServiceDTO> services = cartItem.Services.Select(serviceId => new ServiceDTO { ServiceId = serviceId.Value });
+                        await ProcessServiceBookingsAsync(services, booking, email, cartItem.ReportId);
                     }
                     booking.TotalPrice = await CalculateTotalPriceAsync(booking.BookingId);
                     await ProcessBookingLogAsync(booking, email);

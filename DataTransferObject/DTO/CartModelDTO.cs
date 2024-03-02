@@ -9,6 +9,6 @@ namespace DataTransferObject.DTO
     public  class CartModelDTO
     {
         public int ReportId { get; set; }
-        public List<ServiceDTO> Services { get; set; }
+        public List<int?> Services { get; set; }
     }
 }
