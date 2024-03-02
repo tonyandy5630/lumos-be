@@ -449,7 +449,7 @@ namespace DataAccessLayer
                         result.Add(new BookingDTO
                         {
                             BookingId = bookingId,
-                            Status = EnumUtils.GetBookingEnumByStatus(status),
+                            Status = status,
                             Partner = await GetPartnerNameAsync(partnerId),
                             TotalPrice = await GetTotalPriceFromBookingByidAsync(bookingId),
                             BookingDate = await GetBookingDateAsync(bookingId),
@@ -492,7 +492,7 @@ namespace DataAccessLayer
                         result.Add(new BookingDTO
                         {
                             BookingId = bookingId,
-                            Status = EnumUtils.GetBookingEnumByStatus(status),
+                            Status = status,
                             Partner = await GetPartnerNameAsync(partnerId),
                             TotalPrice = await GetTotalPriceFromBookingByidAsync(bookingId),
                             BookingDate = await GetBookingDateAsync(bookingId),
