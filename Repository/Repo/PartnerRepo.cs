@@ -133,7 +133,7 @@ namespace Repository.Repo
                     result.Add(new BookingDTO
                     {
                         BookingId = bookingId,
-                        Status = EnumUtils.GetBookingEnumByStatus(status),
+                        Status = status,
                         Partner = partner.DisplayName,
                         BookingDate = await BookingLogDAO.Instance.GetBookingDateAsync(bookingId),
                         bookingTime = (int)await BookingLogDAO.Instance.GetBookingTimeAsync(bookingId),

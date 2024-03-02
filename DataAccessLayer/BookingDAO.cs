@@ -118,7 +118,7 @@ namespace DataAccessLayer
                                           BookingId = b.BookingId,
                                           bookingTime = b.bookingTime,
                                           PaymentMethod = pay.Name,
-                                          Status = EnumUtils.GetBookingEnumByStatus(bl.Status),
+                                          Status = bl.Status,
                                           TotalPrice = b.TotalPrice,
                                       }).Take(1).FirstOrDefaultAsync();
                 return await booking;

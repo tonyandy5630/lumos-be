@@ -7,7 +7,7 @@ namespace BussinessObject
     {
         public int BookingLogId { get; set; }
         public int? BookingId { get; set; }
-        public int? Status { get; set; }
+        public int Status { get; set; }
         public string? Note { get; set; }
         public DateTime? CreatedDate { get; set; }
         public string? CreatedBy { get; set; }

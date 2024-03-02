@@ -50,7 +50,7 @@ namespace Repository.Repo
                     continue;
                 }
                 BookingDTO? latestBooking = await GetLatestBookingByBookingIdAsync(bookingId);
-                if (latestBooking != null && latestBooking.Status != nameof(status))
+                if (latestBooking != null && latestBooking.Status != (int)status)
                 {
                     continue;
                 }

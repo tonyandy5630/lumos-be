@@ -39,10 +39,10 @@ namespace Service.Service
                     if (curBooking == null)
                         continue;
 
-                    if (curBooking.Status == nameof(BookingStatusEnum.Pending))
+                    if (curBooking.Status == (int) BookingStatusEnum.Pending)
                         stats.OnGoingBookings++;
 
-                    if (curBooking.Status == nameof(BookingStatusEnum.Completed))
+                    if (curBooking.Status == (int)BookingStatusEnum.Completed)
                         stats.Earning += (int)curBooking?.TotalPrice;
                 }
                 stats.TotalMembers = await _unitOfWork.PartnerRepo.CountAppPartnerAsync();
