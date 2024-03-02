@@ -170,6 +170,34 @@ namespace LumosSolution.Controllers
                 return BadRequest(response);
             }
         }
+        [HttpPost("decline")]
+        [Authorize(Roles = "Partner")]
+        public async Task<ActionResult<ApiResponse<object>>> DeclineBooking([FromBody] BookingLogRequest updateBookingStatusDTO)
+        {
+            ApiResponse<object> response = new ApiResponse<object>();
+            try
+            {
+                string? email = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+                bool result = await _bookingLogService.DeclineBooking(updateBookingStatusDTO.BookingId,email);
+                if (!result)
+                {
+                    response.message = "Failed to create booking log with new status.";
+                    response.StatusCode = ApiStatusCode.BadRequest;
+                    return BadRequest(response);
+                }
+
+                response.message = "Booking log with new status created successfully.";
+                response.StatusCode = ApiStatusCode.OK;
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                response.message = ex.Message;
+                return BadRequest(response);
+            }
+        }
         [HttpPost("log")]
         [Authorize(Roles = "Partner")]
         public async Task<ActionResult<ApiResponse<object>>> UpdateBookingStatusAndCreateLog([FromBody] BookingLogRequest updateBookingStatusDTO)
@@ -177,32 +205,8 @@ namespace LumosSolution.Controllers
             ApiResponse<object> response = new ApiResponse<object>();
             try
             {
-                var latestBookingLog = await _bookingLogService.GetLatestBookingLogAsync(updateBookingStatusDTO.BookingId);
-
-                if (latestBookingLog.Status < 0 || latestBookingLog.Status > 4)
-                {
-                    response.message = "The status of the latest booking log is invalid or not allowed.";
-                    response.StatusCode = ApiStatusCode.BadRequest;
-                    return BadRequest(response);
-                }
-
-                if (latestBookingLog.Status == 4)
-                {
-                    response.message = "The status of the latest booking log is already Completed. Cannot create a new one.";
-                    response.StatusCode = ApiStatusCode.BadRequest;
-                    return BadRequest(response);
-                }
-
-                BookingLog newBookingLog = new BookingLog
-                {
-                    BookingId = updateBookingStatusDTO.BookingId,
-                    Note = latestBookingLog.Note,
-                    Status = latestBookingLog.Status + 1,
-                    CreatedDate = DateTime.Now,
-                    CreatedBy = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value
-            };
-
-                bool result = await _bookingLogService.CreateBookingLogAsync(newBookingLog);
+                string? email = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+                bool result = await _bookingLogService.AcceptBooking(updateBookingStatusDTO.BookingId, email);
                 if (!result)
                 {
                     response.message = "Failed to create booking log with new status.";

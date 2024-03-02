@@ -5,8 +5,11 @@ using Service.InterfaceService;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using static Google.Apis.Requests.BatchRequest;
+using Utils;
 
 namespace Service.Service
 {
@@ -60,12 +63,76 @@ namespace Service.Service
                 throw;
             }
         }
-
-        public async Task<bool> CreateBookingLogAsync(BookingLog bookingLog)
+        public async Task<bool> DeclineBooking(int id, string email)
         {
+            ApiResponse<object> response = new ApiResponse<object>();
             try
             {
-                bool result = await _unitOfWork.BookingLogRepo.CreateBookingLogAsync(bookingLog);
+                var latestBookingLog = await GetLatestBookingLogAsync(id);
+
+                if (latestBookingLog.Status < 0 || latestBookingLog.Status > 4)
+                {
+                    response.message = "The status of the latest booking log is invalid or not allowed.";
+                    response.StatusCode = ApiStatusCode.BadRequest;
+                }
+
+                if (latestBookingLog.Status != 1)
+                {
+                    response.message = "The status of the latest booking log is not Pending. Cannot decline.";
+                    response.StatusCode = ApiStatusCode.BadRequest;
+                }
+
+                BookingLog newBookingLog = new BookingLog
+                {
+                    BookingId = id,
+                    Note = latestBookingLog.Note,
+                    Status = 0,
+                    CreatedDate = DateTime.Now,
+                    CreatedBy = email
+                };
+                bool result = await _unitOfWork.BookingLogRepo.CreateBookingLogAsync(newBookingLog);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in CreateBookingLogAsync: {ex.Message}", ex);
+                return false;
+            }
+        }
+        public async Task<bool> AcceptBooking(int id, string email)
+        {
+            ApiResponse<object> response = new ApiResponse<object>();
+            try
+            {
+                var latestBookingLog = await GetLatestBookingLogAsync(id);
+
+                if (latestBookingLog.Status < 0 || latestBookingLog.Status > 4)
+                {
+                    response.message = "The status of the latest booking log is invalid or not allowed.";
+                    response.StatusCode = ApiStatusCode.BadRequest;
+                }
+
+                if (latestBookingLog.Status == 4)
+                {
+                    response.message = "The status of the latest booking log is already Completed. Cannot update.";
+                    response.StatusCode = ApiStatusCode.BadRequest;
+
+                }
+                if (latestBookingLog.Status == 0)
+                {
+                    response.message = "The status of the latest booking log is  Cancel. Cannot update.";
+                    response.StatusCode = ApiStatusCode.BadRequest;
+                }
+
+                BookingLog newBookingLog = new BookingLog
+                {
+                    BookingId = id,
+                    Note = latestBookingLog.Note,
+                    Status = 0,
+                    CreatedDate = DateTime.Now,
+                    CreatedBy = email
+                };
+                bool result = await _unitOfWork.BookingLogRepo.CreateBookingLogAsync(newBookingLog);
                 return result;
             }
             catch (Exception ex)
