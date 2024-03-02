@@ -397,7 +397,7 @@ namespace LumosSolution.Controllers
                 var userEmail = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
 
                 var booking = _mapper.Map<Booking>(createBookingDTO);
-
+                createBookingDTO.TotalPrice = 0;
                 bool result = await _bookingService.CreateBookingAsync(booking, createBookingDTO, userEmail);
 
                 if (result)

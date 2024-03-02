@@ -170,7 +170,6 @@ namespace DataAccessLayer
                     booking.bookingTime = createBookingDTO.bookingTime;
                     booking.From = DateTime.Now;
                     booking.CreatedBy = email;
-                    booking.TotalPrice = createBookingDTO.TotalPrice;
                     booking.PaymentLinkId = createBookingDTO.PaymentLinkId;
                     _context.Bookings.Add(booking);
                     await _context.SaveChangesAsync();
@@ -183,7 +182,7 @@ namespace DataAccessLayer
 
                         await ProcessServiceBookingsAsync(cartItem.Services, booking, email, cartItem.ReportId);
                     }
-
+                    booking.TotalPrice = await CalculateTotalPriceAsync(booking.BookingId);
                     await _context.SaveChangesAsync();
 
                     transaction.Commit();
@@ -197,6 +196,30 @@ namespace DataAccessLayer
                 }
             }
         }
+        private async Task<int> CalculateTotalPriceAsync(int bookingId)
+        {
+            int totalPrice = 0;
+
+            // Lấy danh sách tất cả các chi tiết đặt hàng cho bookingId đã cho
+            var bookingDetails = await _context.BookingDetails
+                .Include(bd => bd.ServiceBookings)
+                .Where(bd => bd.BookingId == bookingId)
+                .ToListAsync();
+
+            // Duyệt qua từng chi tiết đặt hàng
+            foreach (var bookingDetail in bookingDetails)
+            {
+                // Duyệt qua từng dịch vụ trong chi tiết đặt hàng
+                foreach (var serviceBooking in bookingDetail.ServiceBookings)
+                {
+                    // Thêm giá của dịch vụ vào tổng giá
+                    totalPrice += serviceBooking.Price ?? 0;
+                }
+            }
+
+            return totalPrice;
+        }
+
 
         private async Task ValidatePartnerScheduleAsync(int partnerId, int dayOfWeek, int bookingTime)
         {
@@ -288,7 +311,7 @@ namespace DataAccessLayer
                      {
                             ServiceId = serviceDTO.ServiceId,
                             DetailId = bookingDetail.DetailId,
-                            Price = (int?)serviceDTO.Price,
+                            Price = (int?)scheckervices.Price,
                             Description = null,
                             CreatedDate = booking.CreatedDate,
                             LastUpdate = (DateTime)booking.CreatedDate,

@@ -11,6 +11,7 @@ namespace DataTransferObject.DTO
     {
         public int PartnerId { get; set; }
         public int PaymentId { get; set; }
+        [JsonIgnore]
         public int TotalPrice { get; set; }
         public DateTime BookingDate { get; set; }
 /*        public DateTime From { get; set; }*/
