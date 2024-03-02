@@ -360,12 +360,12 @@ namespace DataAccessLayer
                 DateTime endDate = startDate.AddMonths(1).AddDays(-1);
 
                 // Truy vấn cơ sở dữ liệu để tính tổng doanh thu của đối tác trong tháng được chỉ định
-                var totalRevenue = await _context.BookingLogs
-                    .Where(bl => bl.Status == 4 && bl.CreatedDate >= startDate && bl.CreatedDate <= endDate)
-                    .Join(_context.Bookings,
+                var totalRevenue = await _context.Bookings
+                    .Where(b => b.BookingDate.Year == year && b.BookingDate.Month == month)
+                    .Join(_context.BookingLogs.Where(bl => bl.Status == 4),
+                        b => b.BookingId,
                         bl => bl.BookingId,
-                        sb => sb.BookingId,
-                        (bl, sb) => sb.TotalPrice)
+                        (b, bl) => b.TotalPrice)
                     .SumAsync();
 
                 return totalRevenue;
