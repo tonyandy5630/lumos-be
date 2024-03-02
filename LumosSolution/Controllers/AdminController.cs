@@ -62,7 +62,7 @@ namespace LumosSolution.Controllers
                 return BadRequest(res);
             }
         }
-        [HttpGet("revenue/monthy/{year}")]
+        [HttpGet("revenue/monthly/{year}")]
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult<List<ListDataDTO?>>> GetMonthlyRevenue(int year)
         {
