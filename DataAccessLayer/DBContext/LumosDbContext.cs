@@ -379,7 +379,7 @@ namespace BussinessObject
 
                 entity.Property(e => e.CreatedDate).HasColumnType("datetime");
 
-                entity.Property(e => e.Description).HasColumnType("text");
+                entity.Property(e => e.Description).IsUnicode(true).HasMaxLength(255);
 
                 entity.Property(e => e.DisplayName).HasMaxLength(100).IsRequired();
 
@@ -397,7 +397,7 @@ namespace BussinessObject
 
                 entity.Property(e => e.Phone)
                     .HasMaxLength(13)
-                    .IsUnicode(true)
+                    .IsUnicode(false)
                     .IsRequired();
 
                 entity.Property(e => e.RefreshToken).IsUnicode(false);
@@ -474,7 +474,7 @@ namespace BussinessObject
 
                 entity.Property(e => e.CreatedDate).HasColumnType("datetime");
 
-                entity.Property(e => e.Description).HasColumnType("text");
+                entity.Property(e => e.Description).IsUnicode(true).HasMaxLength(100);
 
                 entity.Property(e => e.LastUpdate).HasColumnType("datetime");
 
@@ -563,7 +563,7 @@ namespace BussinessObject
 
                 entity.Property(e => e.CreatedDate).HasColumnType("datetime");
 
-                entity.Property(e => e.Description).HasColumnType("text");
+                entity.Property(e => e.Description).IsUnicode(true).HasMaxLength(100);
 
                 entity.Property(e => e.LastUpdate).HasColumnType("datetime");
 
@@ -653,7 +653,7 @@ namespace BussinessObject
 
                 entity.Property(e => e.ConfigId).ValueGeneratedOnAdd();
 
-                entity.Property(e => e.Config).HasColumnType("text");
+                entity.Property(e => e.Config).IsUnicode(true).HasColumnType("text");
 
                 entity.Property(e => e.Field).HasMaxLength(50)
                     .IsUnicode(true);
