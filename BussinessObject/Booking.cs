@@ -25,6 +25,7 @@ namespace BussinessObject
         public string? CreatedBy { get; set; }
         public string Address { get; set; }
         public int bookingTime { get; set; }
+        public decimal? Rating { get; set; }
         public string? PaymentLinkId { get; set; }
         [JsonIgnore]
         public virtual PaymentMethod? Payment { get; set; }
