@@ -357,6 +357,15 @@ namespace DataAccessLayer
 
             return totalprice;
         }
+        public async Task<string> GetNoteFromBookingByidAsync(int bookingId)
+        {
+            var totalprice = await dbContext.BookingDetails
+                .Where(sb => sb.BookingId == bookingId)
+                .Select(sb => sb.Note)
+                .FirstOrDefaultAsync();
+
+            return totalprice;
+        }
 
         private async Task<List<BookingDTO>> FilterAndMapIncomingBookingsAsync(List<IGrouping<int, BookingLog>> pendingBookings, Customer customer)
         {
@@ -391,6 +400,7 @@ namespace DataAccessLayer
                             bookingTime = (int)await GetBookingTimeAsync(bookingId),
                             Address = await GetBookingAddressAsync(bookingId),
                             PaymentMethod = await GetPaymentMethodAsync(bookingId),
+                            Note = await GetNoteFromBookingByidAsync(bookingId),
                             Customer = await BookingDAO.Instance.GetCustomerByReportIdAsync(reportId),
                             MedicalServices = medicalServiceDTOs
                         });
