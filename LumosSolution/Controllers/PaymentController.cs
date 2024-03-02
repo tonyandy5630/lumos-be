@@ -37,7 +37,7 @@ namespace LumosSolution.Controllers
                 return StatusCode(500, $"Error CreatePaymentLink: {ex.Message}");
             }
         }
-        [HttpGet("all-method")]
+        [HttpGet("method")]
         [Authorize(Roles = "Admin,Customer,Partner")]
         public async Task<ActionResult<List<PaymentMethod>>> GetAllPaymentMethod()
         {
