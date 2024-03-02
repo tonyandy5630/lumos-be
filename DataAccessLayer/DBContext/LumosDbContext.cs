@@ -170,7 +170,9 @@ namespace BussinessObject
                 entity.Property(e => e.CreatedBy)
                     .HasMaxLength(50)
                     .IsUnicode(true);
-
+                entity.Property(e => e.PaymentLinkId)
+                    .HasMaxLength(50)
+                    .IsUnicode(true);
                 entity.Property(e => e.CreatedDate).HasColumnType("datetime");
 
                 entity.Property(e => e.FeedbackImage)

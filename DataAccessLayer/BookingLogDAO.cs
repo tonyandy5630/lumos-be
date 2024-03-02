@@ -422,6 +422,15 @@ namespace DataAccessLayer
 
             return totalprice;
         }
+        public async Task<string> GetPaymentLinkIdFromBookingByidAsync(int bookingId)
+        {
+            var totalprice = await dbContext.Bookings
+                .Where(sb => sb.BookingId == bookingId)
+                .Select(sb => sb.PaymentLinkId)
+                .FirstOrDefaultAsync();
+
+            return totalprice;
+        }
 
         private async Task<List<BookingDTO>> FilterAndMapIncomingBookingsAsync(List<IGrouping<int, BookingLog>> pendingBookings, Customer customer)
         {
@@ -450,6 +459,7 @@ namespace DataAccessLayer
                         {
                             BookingId = bookingId,
                             Status = status,
+                            PaymentLinkId = await GetPaymentLinkIdFromBookingByidAsync(bookingId),
                             Partner = await GetPartnerNameAsync(partnerId),
                             TotalPrice = await GetTotalPriceFromBookingByidAsync(bookingId),
                             BookingDate = await GetBookingDateAsync(bookingId),

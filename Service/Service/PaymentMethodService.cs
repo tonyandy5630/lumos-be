@@ -1,4 +1,8 @@
-﻿using Repository.Interface.IUnitOfWork;
+﻿using BussinessObject;
+using DataTransferObject.DTO;
+using Net.payOS.Types;
+using Net.payOS;
+using Repository.Interface.IUnitOfWork;
 using Service.InterfaceService;
 using System;
 using System.Collections.Generic;
@@ -14,6 +18,18 @@ namespace Service.Service
         public PaymentMethodService(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
+        }
+
+        public async Task<List<PaymentMethod>> GetAllPaymentMethodAsync()
+        {
+            try
+            {
+                return await _unitOfWork.PaymentMethodRepo.GetAllPaymentMethodAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error in GetAllPaymentMethodAsync,Service: {ex.Message}");
+            }
         }
     }
 }

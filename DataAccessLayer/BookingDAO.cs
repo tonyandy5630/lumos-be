@@ -171,6 +171,7 @@ namespace DataAccessLayer
                     booking.From = DateTime.Now;
                     booking.CreatedBy = email;
                     booking.TotalPrice = createBookingDTO.TotalPrice;
+                    booking.PaymentLinkId = createBookingDTO.PaymentLinkId;
                     _context.Bookings.Add(booking);
                     await _context.SaveChangesAsync();
 

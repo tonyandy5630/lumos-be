@@ -1,4 +1,5 @@
-﻿using RequestEntity;
+﻿using DataTransferObject.DTO;
+using RequestEntity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +10,6 @@ namespace Service.InterfaceService
 {
     public interface IPaymentService
     {
-        Task<string> CreatePaymentLink(PaymentRequest request);
+        Task<PaymentResponse> CreatePaymentLink(PaymentRequest request);
     }
 }
