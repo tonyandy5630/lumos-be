@@ -31,7 +31,7 @@ namespace BussinessObject
         public DateTime? LastLogin { get; set; }
         public string? CreatedBy { get; set; }
         public DateTime? LastUpdate { get; set; }
-        public DateTime? CreatedDate { get; set; }
+        public DateTime CreatedDate { get; set; }
         public string? UpdatedBy { get; set; }
         public string? ImgUrl { get; set; }
         [JsonIgnore]

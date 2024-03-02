@@ -11,7 +11,6 @@ namespace Service.InterfaceService
 {
     public interface ICustomerService
     {
-        Task<List<int?>> GetNewCustomerMonthlyAsync(int year);
         Task<List<Customer>> GetCustomersAsync(string keyword);
         Task<Customer> GetCustomerByEmailAsync(string email);
         Task<Customer> GetCustomerByRefreshTokenAsync(string token);
