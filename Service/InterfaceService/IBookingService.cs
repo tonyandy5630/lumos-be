@@ -1,5 +1,6 @@
 ﻿using BussinessObject;
 using DataTransferObject.DTO;
+using Enum;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,6 +21,6 @@ namespace Service.InterfaceService
         Task<List<int?>> GetAllBookingsForYearAsync(int year);
         Task<BookingDTO> GetBookingDetailByBookingIdAsync(int id);
 
-        Task<List<BookingDTO>> GetPartnerPendingBookingsDTOAsync(string  partnerEmail);
+        Task<List<BookingDTO>> GetPartnerBookingsByStatusAsync(string partnerEmail, int stats);
     }
 }

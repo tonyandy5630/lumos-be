@@ -35,6 +35,8 @@ builder.Services.AddCors(options =>
             .AllowAnyHeader()
             .AllowCredentials());
 });
+
+
 // Add Authentication and JwtBearer
 builder.Services
     .AddAuthentication(options =>

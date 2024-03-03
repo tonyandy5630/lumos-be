@@ -1,5 +1,6 @@
 ﻿using BussinessObject;
 using DataTransferObject.DTO;
+using Enum;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -29,19 +30,19 @@ namespace LumosSolution.Controllers
             _bookingService = bookingService;
         }
 
-        [HttpGet("bookings/pending")]
+        [HttpGet("bookings/status/{stat}")]
         [Authorize(Roles = "Partner")]
-        public async Task<ActionResult<ApiResponse<List<BookingDTO>>>> GetPendingBookings()
+        public async Task<ActionResult<ApiResponse<List<BookingDTO>>>> GetPendingBookings(int stat)
         {
             ApiResponse<object> response = new ApiResponse<object>();
             try
             {
                 var userEmail = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
-                List<BookingDTO> pendingBookingDTOs = await _bookingService.GetPartnerPendingBookingsDTOAsync(userEmail);
+                List<BookingDTO> pendingBookingDTOs = await _bookingService.GetPartnerBookingsByStatusAsync(userEmail, stat);
 
                 if (pendingBookingDTOs == null || !pendingBookingDTOs.Any())
                 {
-                    response.message = "No pending bookings found.";
+                    response.message = "No bookings found.";
                     response.StatusCode = ApiStatusCode.OK;
                     return Ok(response);
                 }
@@ -59,6 +60,13 @@ namespace LumosSolution.Controllers
                     response.message = ex.Message;
                     response.StatusCode = ApiStatusCode.NotFound;
                     return NotFound(response);
+                }
+
+                if(ex is NotSupportedException)
+                {
+                    response.message = ex.Message;
+                    response.StatusCode = 422;
+                    return UnprocessableEntity(response);
                 }
                 Console.WriteLine(ex.ToString());
                 response.message = ex.Message;

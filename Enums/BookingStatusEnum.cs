@@ -13,6 +13,7 @@ namespace Enum
         Pending,
         Doing,
         Finished,
-        Completed
+        Completed,
+        Unknown
     }
 }

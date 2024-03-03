@@ -10,6 +10,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Utils;
 
 namespace Service.Service
 {
@@ -21,7 +22,7 @@ namespace Service.Service
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<List<BookingDTO>> GetPartnerPendingBookingsDTOAsync(string partnerEmail)
+        public async Task<List<BookingDTO>> GetPartnerBookingsByStatusAsync(string partnerEmail, int stats)
         {
             try
             {
@@ -31,13 +32,18 @@ namespace Service.Service
                 {
                     throw new NullReferenceException("Partner is ban or not existed");
                 }
+                BookingStatusEnum statusEnum = EnumUtils.GetBookingEnumByStatus(stats);
+                if (statusEnum == BookingStatusEnum.Unknown)
+                {
+                    throw new NotSupportedException("Invalid status");
+                }
 
-                List<BookingDTO> pendingBookings = await _unitOfWork.BookingRepo.GetBookingByStatusIdAndPartnerId(BookingStatusEnum.Pending, partner.PartnerId);
+                List<BookingDTO> pendingBookings = await _unitOfWork.BookingRepo.GetBookingByStatusIdAndPartnerId(statusEnum, partner.PartnerId);
                 return pendingBookings;
             }
             catch (Exception ex)
             {
-                throw new Exception();
+                throw;
             }
         }
 
