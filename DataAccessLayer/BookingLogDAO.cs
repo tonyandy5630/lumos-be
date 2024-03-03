@@ -548,6 +548,11 @@ namespace DataAccessLayer
                     }
                 }
             }
+            var waitingForPaymentBookings = result.Where(b => b.Status == (int)BookingStatusEnum.WaitingForPayment).ToList();
+            if (waitingForPaymentBookings.Any())
+            {
+                result = waitingForPaymentBookings.Concat(result.Except(waitingForPaymentBookings)).ToList();
+            }
 
             return result;
         }
