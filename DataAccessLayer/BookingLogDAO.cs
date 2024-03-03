@@ -179,7 +179,7 @@ namespace DataAccessLayer
         
         private async Task<bool> IsBookingStatusValidAsync(int bookingId, Customer customer)
         {
-            var hasStatusGreaterThan2 = await dbContext.BookingLogs.AnyAsync(bl => bl.BookingId == bookingId && bl.Status > 2);
+            var hasStatusGreaterThan2 = await dbContext.BookingLogs.AnyAsync(bl => bl.BookingId == bookingId && bl.Status > (int)BookingStatusEnum.Doing);
             if (hasStatusGreaterThan2)
             {
                 return false;
