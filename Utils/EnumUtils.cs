@@ -9,16 +9,16 @@ namespace Utils
 {
     public class EnumUtils
     {
-        public static string GetBookingEnumByStatus(int? status)
+        public static BookingStatusEnum GetBookingEnumByStatus(int? status)
         {
             return status switch
             {
-                0 => BookingStatusEnum.Canceled.ToString(),
-                1 => BookingStatusEnum.Pending.ToString(),
-                2 => BookingStatusEnum.Doing.ToString(),
-                3 => BookingStatusEnum.Finished.ToString(),
-                4 => BookingStatusEnum.Completed.ToString(),
-                _ => "Unknown",
+                0 => BookingStatusEnum.Canceled,
+                1 => BookingStatusEnum.Pending,
+                2 => BookingStatusEnum.Doing,
+                3 => BookingStatusEnum.Finished,
+                4 => BookingStatusEnum.Completed,
+                _ => BookingStatusEnum.Unknown,
             };
         }
     }
