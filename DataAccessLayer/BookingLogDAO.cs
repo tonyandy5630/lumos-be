@@ -412,7 +412,6 @@ namespace DataAccessLayer
         public async Task<List<BookingLog>> GetALLBookingBillsAsync()
         {
             return await dbContext.BookingLogs
-                .Where(bl => bl.Status == (int)BookingStatusEnum.WaitingForPayment)
                 .GroupBy(bl => bl.BookingId)
                 .Select(g => g.OrderByDescending(bl => bl.CreatedDate).FirstOrDefault())
                 .ToListAsync();
