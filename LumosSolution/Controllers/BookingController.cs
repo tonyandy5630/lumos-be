@@ -59,8 +59,43 @@ namespace LumosSolution.Controllers
                 return BadRequest(response);
             }
         }
+        [HttpGet("bill")]
+        [Authorize(Roles = "Customer")]
+        public async Task<ActionResult<ApiResponse<object>>> GetBookingBill()
+        {
+            ApiResponse<object> response = new ApiResponse<object>();
+            try
+            {
+                var userEmail = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+                var pendingBookingDTOs = await _bookingLogService.GetBookingsBillsByCustomerIdAsync(userEmail);
 
-       
+                if (pendingBookingDTOs == null || !pendingBookingDTOs.Any())
+                {
+                    response.message = MessagesResponse.Error.BookingNotFound;
+                    response.StatusCode = ApiStatusCode.NotFound;
+                    return NotFound(response);
+                }
+
+                response.data = pendingBookingDTOs;
+                response.message = MessagesResponse.Success.Completed;
+                response.StatusCode = ApiStatusCode.OK;
+
+                return Ok(response);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                response.message = MessagesResponse.Error.Unauthorized;
+                response.StatusCode = ApiStatusCode.Unauthorized;
+                return Unauthorized(response);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                response.message = ex.Message;
+                return BadRequest(response);
+            }
+        }
+
         [HttpGet]
         [Authorize(Roles = "Customer")]
         public async Task<ActionResult<ApiResponse<object>>> GetAllBookingsByCustomerID()
@@ -170,15 +205,15 @@ namespace LumosSolution.Controllers
                 return BadRequest(response);
             }
         }
-        [HttpPost("decline")]
+        [HttpPost("decline-booking")]
         [Authorize(Roles = "Partner")]
-        public async Task<ActionResult<ApiResponse<object>>> DeclineBooking([FromBody] BookingLogRequest updateBookingStatusDTO)
+        public async Task<ActionResult<ApiResponse<object>>> DeclineBooking([FromBody] BookingLogDeclineRequest updateBookingStatusDTO)
         {
             ApiResponse<object> response = new ApiResponse<object>();
             try
             {
                 string? email = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
-                bool result = await _bookingLogService.DeclineBooking(updateBookingStatusDTO.BookingId,email);
+                bool result = await _bookingLogService.DeclineBooking(updateBookingStatusDTO,email);
                 if (!result)
                 {
                     response.message = "Failed to create booking log with new status.";
@@ -207,6 +242,34 @@ namespace LumosSolution.Controllers
             {
                 string? email = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
                 bool result = await _bookingLogService.AcceptBooking(updateBookingStatusDTO.BookingId, email);
+                if (!result)
+                {
+                    response.message = "Failed to create booking log with new status.";
+                    response.StatusCode = ApiStatusCode.BadRequest;
+                    return BadRequest(response);
+                }
+
+                response.message = "Booking log with new status created successfully.";
+                response.StatusCode = ApiStatusCode.OK;
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                response.message = ex.Message;
+                return BadRequest(response);
+            }
+        }
+        [HttpPost("update-status-after-payment")]
+        [Authorize(Roles = "Partner")]
+        public async Task<ActionResult<ApiResponse<object>>> UpdateStatusAfterPayment([FromBody] BookingLogAcceptRequest updateBookingStatusDTO)
+        {
+            ApiResponse<object> response = new ApiResponse<object>();
+            try
+            {
+                string? email = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+                bool result = await _bookingLogService.ChangeStatusToPending(updateBookingStatusDTO, email);
                 if (!result)
                 {
                     response.message = "Failed to create booking log with new status.";
@@ -402,6 +465,7 @@ namespace LumosSolution.Controllers
 
                 var booking = _mapper.Map<Booking>(createBookingDTO);
                 createBookingDTO.TotalPrice = 0;
+                createBookingDTO.PaymentLinkId = null;
                 var result = await _bookingService.CreateBookingAsync(booking, createBookingDTO, userEmail);
 
                 if (result != null && result.BookingId > 0)

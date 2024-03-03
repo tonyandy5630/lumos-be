@@ -60,6 +60,12 @@ namespace Repository.Repo
             return bookings;
         }
 
-        public Task<int> CountBookingInAppAsync() => BookingDAO.Instance.CountAllBookingInAppAsync();   
+        public Task<int> CountBookingInAppAsync() => BookingDAO.Instance.CountAllBookingInAppAsync();
+
+        public Task<List<(string ServiceName, int? Price, int Quantity)>> GetBookingServiceInfoAsync(int bookingId) => BookingDAO.Instance.GetBookingServiceInfoAsync(bookingId);
+
+        public Task<int?> GetTotalPriceByBookingIdAsync(int bookingId) => BookingDAO.Instance.GetTotalPriceByBookingIdAsync(bookingId);
+
+        public Task UpdatePaymentLinkIdAsync(int bookingid, string newPaymentLinkId) => BookingDAO.Instance.UpdatePaymentLinkIdAsync(bookingid,newPaymentLinkId);
     }
 }

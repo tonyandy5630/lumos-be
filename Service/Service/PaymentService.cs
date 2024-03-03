@@ -4,19 +4,22 @@ using Net.payOS;
 using Net.payOS.Types;
 using static RequestEntity.Constraint.Constraint;
 using DataTransferObject.DTO;
+using Repository.Interface.IUnitOfWork;
+using Repository;
 
 namespace Service.Service
 {
     public class PaymentService : IPaymentService
     {
         private readonly PayOS payOS;
-
-        public PaymentService()
+        private readonly IUnitOfWork _unitOfWork;
+        public PaymentService(IUnitOfWork unitOfWork)
         {
             string clientId = PaymentsConstraint.clientId;
             string apiKey = PaymentsConstraint.apiKey;
             string checksumKey = PaymentsConstraint.checksumKey;
             payOS = new PayOS(clientId, apiKey, checksumKey);
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<PaymentResponse> CreatePaymentLink(PaymentRequest request)
@@ -24,28 +27,50 @@ namespace Service.Service
             try
             {
                 List<ItemData> items = new List<ItemData>();
+                List<(string ServiceName, int? Price, int Quantity)> bookingServiceInfo = await _unitOfWork.BookingRepo.GetBookingServiceInfoAsync(request.BookingId);
 
-                foreach (var itemRequest in request.Items)
+                Dictionary<(string ServiceName, int? Price), int> serviceQuantities = new Dictionary<(string ServiceName, int? Price), int>();
+
+                foreach (var itemRequest in bookingServiceInfo)
                 {
-                    ItemData item = new ItemData(itemRequest.Name, itemRequest.Quantity, itemRequest.Amount);
+                    var key = (itemRequest.ServiceName, itemRequest.Price);
+                    if (serviceQuantities.ContainsKey(key))
+                    {
+                        // Nếu đã tồn tại ServiceName và Price trong Dictionary, tăng Quantity lên
+                        serviceQuantities[key] += itemRequest.Quantity;
+                    }
+                    else
+                    {
+                        // Nếu chưa tồn tại, thêm ServiceName và Price vào Dictionary
+                        serviceQuantities.Add(key, itemRequest.Quantity);
+                    }
+                }
+
+                foreach (var kvp in serviceQuantities)
+                {
+                    ItemData item = new ItemData(kvp.Key.ServiceName, kvp.Value, kvp.Key.Price ?? 0);
                     items.Add(item);
                 }
+
+                int? totalPrice = await _unitOfWork.BookingRepo.GetTotalPriceByBookingIdAsync(request.BookingId);
+
+
                 long currentTimeStamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
-                long expireTimeStamp = currentTimeStamp + (1 * 60 * 60);
+                long expireTimeStamp = currentTimeStamp + (20 * 60); // 20 minutes
                 PaymentData paymentData = new PaymentData(
-                    request.OrderId,
-                    request.TotalAmount,
+                    request.BookingId,
+                    (int)totalPrice,
                     request.Description,
                     items,
-                    request.CancelUrl,
-                    request.ReturnUrl,
-                    request.Signature,
+                    "",
+                    "",
+                    "",
                     request.BuyerName,
                     request.BuyerEmail,
                     request.BuyerPhone,
                     request.BuyerAddress,
-                    request.ExpiredAt = (int)expireTimeStamp
+                    (int)expireTimeStamp
                 );
                 CreatePaymentResult createPayment = await payOS.createPaymentLink(paymentData);
 

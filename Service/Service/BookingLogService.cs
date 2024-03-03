@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using static Google.Apis.Requests.BatchRequest;
 using Utils;
 using Enum;
+using RequestEntity;
 
 namespace Service.Service
 {
@@ -64,12 +65,12 @@ namespace Service.Service
                 throw;
             }
         }
-        public async Task<bool> DeclineBooking(int id, string email)
+        public async Task<bool> DeclineBooking(BookingLogDeclineRequest updateBookingStatus, string email)
         {
             ApiResponse<object> response = new ApiResponse<object>();
             try
             {
-                var latestBookingLog = await GetLatestBookingLogAsync(id);
+                var latestBookingLog = await GetLatestBookingLogAsync(updateBookingStatus.BookingId);
 
                 if (latestBookingLog.Status < (int) BookingStatusEnum.Canceled || latestBookingLog.Status > (int)BookingStatusEnum.Completed)
                 {
@@ -79,24 +80,33 @@ namespace Service.Service
 
                 if (latestBookingLog.Status != (int)BookingStatusEnum.Pending)
                 {
-                    response.message = "The status of the latest booking log is not Pending. Cannot decline.";
+                    response.message = $"The status of the latest booking log is not {((BookingStatusEnum)latestBookingLog.Status).ToString()}." +
+                                       " Cannot update.";
                     response.StatusCode = ApiStatusCode.BadRequest;
                 }
 
                 BookingLog newBookingLog = new BookingLog
                 {
-                    BookingId = id,
-                    Note = latestBookingLog.Note,
+                    BookingId = updateBookingStatus.BookingId,
+                    Note = updateBookingStatus.CancellationReason,
                     Status = (int)BookingStatusEnum.Canceled,
                     CreatedDate = DateTime.Now,
                     CreatedBy = email
                 };
-                bool result = await _unitOfWork.BookingLogRepo.CreateBookingLogAsync(newBookingLog);
-                return result;
+                bool createLogResult = await _unitOfWork.BookingLogRepo.CreateBookingLogAsync(newBookingLog);
+
+                if (!createLogResult)
+                {
+                    return false;
+                }
+
+                await _unitOfWork.BookingRepo.UpdatePaymentLinkIdAsync(updateBookingStatus.BookingId, "");
+
+                return true;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error in CreateBookingLogAsync: {ex.Message}", ex);
+                Console.WriteLine($"Error in DeclineBooking: {ex.Message}", ex);
                 return false;
             }
         }
@@ -112,16 +122,12 @@ namespace Service.Service
                     response.message = "The status of the latest booking log is invalid or not allowed.";
                     response.StatusCode = ApiStatusCode.BadRequest;
                 }
-
-                if (latestBookingLog.Status == (int)BookingStatusEnum.Completed)
+                if (latestBookingLog.Status == (int)BookingStatusEnum.Completed ||
+                    latestBookingLog.Status == (int)BookingStatusEnum.Canceled ||
+                    latestBookingLog.Status == (int)BookingStatusEnum.WaitingForPayment)
                 {
-                    response.message = "The status of the latest booking log is already Completed. Cannot update.";
-                    response.StatusCode = ApiStatusCode.BadRequest;
-
-                }
-                if (latestBookingLog.Status == (int)BookingStatusEnum.Canceled)
-                {
-                    response.message = "The status of the latest booking log is  Cancel. Cannot update.";
+                    response.message = $"The status of the latest booking log is {((BookingStatusEnum)latestBookingLog.Status).ToString()}." +
+                                       " Cannot update.";
                     response.StatusCode = ApiStatusCode.BadRequest;
                 }
 
@@ -138,7 +144,51 @@ namespace Service.Service
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error in CreateBookingLogAsync: {ex.Message}", ex);
+                Console.WriteLine($"Error in AcceptBooking: {ex.Message}", ex);
+                return false;
+            }
+        }
+        public async Task<bool> ChangeStatusToPending(BookingLogAcceptRequest updateBookingStatus, string email)
+        {
+            ApiResponse<object> response = new ApiResponse<object>();
+            try
+            {
+                var latestBookingLog = await GetLatestBookingLogAsync(updateBookingStatus.BookingId);
+
+                if (latestBookingLog.Status < (int)BookingStatusEnum.Canceled || latestBookingLog.Status > (int)BookingStatusEnum.Completed)
+                {
+                    response.message = "The status of the latest booking log is invalid or not allowed.";
+                    response.StatusCode = ApiStatusCode.BadRequest;
+                }
+
+                if (latestBookingLog.Status != (int)BookingStatusEnum.WaitingForPayment)
+                {
+                    response.message = $"The status of the latest booking log is not {((BookingStatusEnum)latestBookingLog.Status).ToString()}." +
+                                       " Cannot update.";
+                    response.StatusCode = ApiStatusCode.BadRequest;
+                }
+                BookingLog newBookingLog = new BookingLog
+                {
+                    BookingId = updateBookingStatus.BookingId,
+                    Note = latestBookingLog.Note,
+                    Status = (int)BookingStatusEnum.Pending,
+                    CreatedDate = DateTime.Now,
+                    CreatedBy = email
+                };
+                bool createLogResult = await _unitOfWork.BookingLogRepo.CreateBookingLogAsync(newBookingLog);
+
+                if (!createLogResult)
+                {
+                    return false;
+                }
+
+                await _unitOfWork.BookingRepo.UpdatePaymentLinkIdAsync(updateBookingStatus.BookingId, updateBookingStatus.PaymentLinkId);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in ChangeStatusToPending: {ex.Message}", ex);
                 return false;
             }
         }
@@ -184,6 +234,18 @@ namespace Service.Service
             }
         }
 
-       
+        public async Task<List<BookingDTO>> GetBookingsBillsByCustomerIdAsync(string email)
+        {
+            try
+            {
+                var bookingbill = await _unitOfWork.BookingLogRepo.GetBookingsBillsByCustomerIdAsync(email);
+                return bookingbill;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetBookingsBillsByCustomerIdAsync: {ex.Message}", ex);
+                throw;
+            }
+        }
     }
 }

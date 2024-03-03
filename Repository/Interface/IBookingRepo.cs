@@ -27,5 +27,8 @@ namespace Repository.Interface
         
         Task<List<BookingDTO>> GetBookingByStatusIdAndPartnerId(BookingStatusEnum status, int partnerId);
         Task<int> CountBookingInAppAsync();
+        Task<List<(string ServiceName, int? Price, int Quantity)>> GetBookingServiceInfoAsync(int bookingId);
+        Task<int?> GetTotalPriceByBookingIdAsync(int bookingId);
+        Task UpdatePaymentLinkIdAsync(int bookingid, string newPaymentLinkId);
     }
 }

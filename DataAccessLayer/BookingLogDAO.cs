@@ -114,9 +114,9 @@ namespace DataAccessLayer
                     return new List<BookingDTO>();
                 }
 
-                var allPendingLogs = await GetAllPendingBookingLogsAsync();
-                var pendingBookings = GroupPendingBookings(allPendingLogs);
-                var result = await FilterAndMapIncomingBookingsAsync(pendingBookings, customer);
+                var allbookingbill = await GetAllPendingBookingLogsAsync();
+                var bookingbill = GroupPendingBookings(allbookingbill);
+                var result = await FilterAndMapIncomingBookingsAsync(bookingbill, customer);
 
                 return result;
             }
@@ -160,6 +160,28 @@ namespace DataAccessLayer
                 }
 
                 var allBookingLogs = await GetAllBookingLogsAsync();
+                var pendingBookings = GroupPendingBookings(allBookingLogs);
+                var result = await FilterAndMapAllBookingsAsync(pendingBookings, customer);
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetBookingsByCustomerIdAsync: {ex.Message}", ex);
+                throw;
+            }
+        }
+        public async Task<List<BookingDTO>> GetBookingsBillsByCustomerIdAsync(string email)
+        {
+            try
+            {
+                var customer = await FindCustomerByEmailAsync(email);
+                if (customer == null)
+                {
+                    return new List<BookingDTO>();
+                }
+
+                var allBookingLogs = await GetALLBookingBillsAsync();
                 var pendingBookings = GroupPendingBookings(allBookingLogs);
                 var result = await FilterAndMapAllBookingsAsync(pendingBookings, customer);
 
@@ -382,6 +404,15 @@ namespace DataAccessLayer
         public async Task<List<BookingLog>> GetAllBookingLogsAsync()
         {
             return await dbContext.BookingLogs
+                .Where(bl => bl.Status != (int)BookingStatusEnum.WaitingForPayment)
+                .GroupBy(bl => bl.BookingId)
+                .Select(g => g.OrderByDescending(bl => bl.CreatedDate).FirstOrDefault())
+                .ToListAsync();
+        }
+        public async Task<List<BookingLog>> GetALLBookingBillsAsync()
+        {
+            return await dbContext.BookingLogs
+                .Where(bl => bl.Status == (int)BookingStatusEnum.WaitingForPayment)
                 .GroupBy(bl => bl.BookingId)
                 .Select(g => g.OrderByDescending(bl => bl.CreatedDate).FirstOrDefault())
                 .ToListAsync();

@@ -25,18 +25,36 @@ namespace LumosSolution.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<PaymentResponse>> CreatePaymentLink([FromBody] PaymentRequest request)
+        public async Task<ActionResult<ApiResponse<PaymentResponse>>> CreatePaymentLink([FromBody] PaymentRequest request)
         {
+            ApiResponse<PaymentResponse> response = new ApiResponse<PaymentResponse>();
+
             try
             {
-                var  res = await _paymentService.CreatePaymentLink(request);
-                return Ok(res);
+                PaymentResponse paymentResponse = await _paymentService.CreatePaymentLink(request);
+
+                if (paymentResponse == null)
+                {
+                    response.message = MessagesResponse.Error.NotFound;
+                    response.StatusCode = ApiStatusCode.NotFound;
+                    return NotFound(response);
+                }
+                else
+                {
+                    response.data = paymentResponse;
+                    response.message = MessagesResponse.Success.Completed;
+                    response.StatusCode = ApiStatusCode.OK;
+                    return Ok(response);
+                }
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Error CreatePaymentLink: {ex.Message}");
+                Console.WriteLine(ex.Message);
+                response.message = ex.Message;
+                return StatusCode(500, response);
             }
         }
+
         [HttpGet("method")]
         [Authorize(Roles = "Admin,Customer,Partner")]
         public async Task<ActionResult<List<PaymentMethod>>> GetAllPaymentMethod()

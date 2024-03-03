@@ -12,20 +12,20 @@ namespace RequestEntity
         public string BuyerPhone { get; set; }
 
         public string BuyerAddress { get; set; }
+/*
+        public string? Signature { get; set; }*/
 
-        public string? Signature { get; set; }
+        public int BookingId { get; set; }
 
-        public int OrderId { get; set; }
+/*        public List<ItemRequest> Items { get; set; }*/
 
-        public List<ItemRequest> Items { get; set; }
-
-        public int TotalAmount { get; set; }
+/*        public int TotalAmount { get; set; }*/
 
         public string Description { get; set; }
 
-        public string? CancelUrl { get; set; }
+/*        public string? CancelUrl { get; set; }*/
 
-        public string? ReturnUrl { get; set; }
-        public int ExpiredAt { get; set; }
+/*        public string? ReturnUrl { get; set; }*/
+/*        public int ExpiredAt { get; set; }*/
     }
 }

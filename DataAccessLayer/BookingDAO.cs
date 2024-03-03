@@ -66,13 +66,13 @@ namespace DataAccessLayer
             {
                 using var _context = new LumosDBContext();
                 List<int> bookings = await (from sb in _context.ServiceBookings
-                                          join bd in _context.BookingDetails on sb.DetailId equals bd.DetailId
-                                          join mr in _context.MedicalReports on bd.ReportId equals mr.ReportId
-                                          join b in _context.Bookings on bd.BookingId equals b.BookingId
-                                          join ps in _context.PartnerServices on sb.ServiceId equals ps.ServiceId
-                                          join p in _context.Partners on ps.PartnerId equals p.PartnerId
-                                          where p.PartnerId == partnerId
-                                          select b.BookingId).Distinct().ToListAsync();
+                                            join bd in _context.BookingDetails on sb.DetailId equals bd.DetailId
+                                            join mr in _context.MedicalReports on bd.ReportId equals mr.ReportId
+                                            join b in _context.Bookings on bd.BookingId equals b.BookingId
+                                            join ps in _context.PartnerServices on sb.ServiceId equals ps.ServiceId
+                                            join p in _context.Partners on ps.PartnerId equals p.PartnerId
+                                            where p.PartnerId == partnerId
+                                            select b.BookingId).Distinct().ToListAsync();
                 return bookings;
             }
             catch
@@ -94,12 +94,13 @@ namespace DataAccessLayer
 
                 return await bookings;
 
-            }catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 throw new Exception();
             }
 
-        } 
+        }
 
 
         public async Task<BookingDTO?> GetLatestBookingByBookingIdAsync(int bookingId)
@@ -108,21 +109,21 @@ namespace DataAccessLayer
             {
                 using var _context = new LumosDBContext();
                 var booking = (from bl in _context.BookingLogs
-                                      join b in _context.Bookings on bl.BookingId equals b.BookingId
-                                      join pay in _context.PaymentMethods on b.PaymentId equals pay.PaymentId
-                                      where bl.BookingId == bookingId
-                                      orderby bl.CreatedDate descending
-                                      select new BookingDTO
-                                      {
-                                          Address = b.Address,
-                                          BookingDate = b.BookingDate,
-                                          BookingId = b.BookingId,
-                                          bookingTime = b.bookingTime,
-                                          PaymentMethod = pay.Name,
-                                          Status = bl.Status,
-                                          TotalPrice = b.TotalPrice,
-                                          Rating = b.Rating
-                                      }).Take(1).FirstOrDefaultAsync();
+                               join b in _context.Bookings on bl.BookingId equals b.BookingId
+                               join pay in _context.PaymentMethods on b.PaymentId equals pay.PaymentId
+                               where bl.BookingId == bookingId
+                               orderby bl.CreatedDate descending
+                               select new BookingDTO
+                               {
+                                   Address = b.Address,
+                                   BookingDate = b.BookingDate,
+                                   BookingId = b.BookingId,
+                                   bookingTime = b.bookingTime,
+                                   PaymentMethod = pay.Name,
+                                   Status = bl.Status,
+                                   TotalPrice = b.TotalPrice,
+                                   Rating = b.Rating
+                               }).Take(1).FirstOrDefaultAsync();
                 return await booking;
             }
             catch
@@ -302,7 +303,7 @@ namespace DataAccessLayer
             var bookingLog = new BookingLog
             {
                 BookingId = booking.BookingId,
-                Status = (int) BookingStatusEnum.WaitingForPayment, 
+                Status = (int)BookingStatusEnum.WaitingForPayment,
                 CreatedDate = booking.CreatedDate,
                 Note = null,
                 CreatedBy = email
@@ -323,18 +324,18 @@ namespace DataAccessLayer
                     throw new Exception($"Service with Id {serviceDTO.ServiceId} is not available");
                 }
 
-                    var serviceBooking = new ServiceBooking
-                     {
-                            ServiceId = serviceDTO.ServiceId,
-                            DetailId = bookingDetail.DetailId,
-                            Price = (int?)scheckervices.Price,
-                            Description = null,
-                            CreatedDate = booking.CreatedDate,
-                            LastUpdate = (DateTime)booking.CreatedDate,
-                            UpdatedBy = email
-                     };
+                var serviceBooking = new ServiceBooking
+                {
+                    ServiceId = serviceDTO.ServiceId,
+                    DetailId = bookingDetail.DetailId,
+                    Price = (int?)scheckervices.Price,
+                    Description = null,
+                    CreatedDate = booking.CreatedDate,
+                    LastUpdate = (DateTime)booking.CreatedDate,
+                    UpdatedBy = email
+                };
 
-                  _context.ServiceBookings.Add(serviceBooking);
+                _context.ServiceBookings.Add(serviceBooking);
             }
         }
 
@@ -517,14 +518,15 @@ namespace DataAccessLayer
                     .Where(r => r.BookingDate.Year == year)
                     .GroupBy(b => new { Month = b.BookingDate.Month, Year = b.BookingDate.Year })
                     .Select(g => new
-                    TotalBookingMonthlyStat {
+                    TotalBookingMonthlyStat
+                    {
                         Month = g.Key.Month,
                         totalBooking = g.Count()
                     })
                     .OrderBy(r => r.Month)
                     .ToListAsync();
 
-                return  result;
+                return result;
             }
             catch (Exception ex)
             {
@@ -550,7 +552,7 @@ namespace DataAccessLayer
                 throw;
             }
         }
-       
+
         public async Task<Customer?> GetCustomerByReportIdAsync(int? reportId)
         {
             using var _context = new LumosDBContext();
@@ -565,6 +567,75 @@ namespace DataAccessLayer
             catch (Exception ex)
             {
                 Console.WriteLine($"Error in GetCustomerByReportIdAsync: {ex.Message}", ex);
+                throw;
+            }
+        }
+        public async Task<List<(string ServiceName, int? Price, int Quantity)>> GetBookingServiceInfoAsync(int bookingId)
+        {
+            try
+            {
+                using var _context = new LumosDBContext();
+                var bookingServiceInfo = await (
+                        from bd in _context.BookingDetails
+                        join sb in _context.ServiceBookings on bd.DetailId equals sb.DetailId
+                        join ps in _context.PartnerServices on sb.ServiceId equals ps.ServiceId
+                        where bd.BookingId == bookingId
+                        group new { ps, sb } by new { ps.Name, sb.Price, sb.DetailId } into g
+                        select new
+                        {
+                            ServiceName = g.Key.Name,
+                            Price = g.Key.Price,
+                            Quantity = g.Count()
+                        }
+                    ).ToListAsync();
+
+                var result = bookingServiceInfo.Select(info => (info.ServiceName, info.Price, info.Quantity)).ToList();
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetBookingServiceInfoAsync: {ex.Message}", ex);
+                throw;
+            }
+        }
+        public async Task<int?> GetTotalPriceByBookingIdAsync(int bookingId)
+        {
+            try
+            {
+                using var _context = new LumosDBContext();
+
+                var booking = await _context.Bookings
+                    .FirstOrDefaultAsync(b => b.BookingId == bookingId);
+                return booking?.TotalPrice;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetTotalPriceByBookingIdAsync: {ex.Message}", ex);
+                throw;
+            }
+        }
+        public async Task UpdatePaymentLinkIdAsync(int bookingid, string newPaymentLinkId)
+        {
+            try
+            {
+                using (var _context = new LumosDBContext())
+                {
+                    var bookingToUpdate = await _context.Bookings.FirstOrDefaultAsync(b => b.BookingId == bookingid);
+
+                    if (bookingToUpdate != null)
+                    {
+                        bookingToUpdate.PaymentLinkId = newPaymentLinkId;
+                        await _context.SaveChangesAsync();
+                    }
+                    else
+                    {
+                        throw new Exception("Booking not found.");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error updating PaymentLinkId for BookingId {bookingid}: {ex.Message}", ex);
                 throw;
             }
         }
