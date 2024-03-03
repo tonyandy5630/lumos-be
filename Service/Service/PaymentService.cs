@@ -30,19 +30,22 @@ namespace Service.Service
                     ItemData item = new ItemData(itemRequest.Name, itemRequest.Quantity, itemRequest.Amount);
                     items.Add(item);
                 }
+                long currentTimeStamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
+                long expireTimeStamp = currentTimeStamp + (1 * 60 * 60);
                 PaymentData paymentData = new PaymentData(
                     request.OrderId,
                     request.TotalAmount,
                     request.Description,
                     items,
-                    null,
-                    null,
-                    request.buyerName,
-                    request.buyerEmail,
-                    request.buyerPhone,
-                    request.buyerAddress,
-                    request.expiredAt.ToString()
+                    request.CancelUrl,
+                    request.ReturnUrl,
+                    request.Signature,
+                    request.BuyerName,
+                    request.BuyerEmail,
+                    request.BuyerPhone,
+                    request.BuyerAddress,
+                    request.ExpiredAt = (int)expireTimeStamp
                 );
                 CreatePaymentResult createPayment = await payOS.createPaymentLink(paymentData);
 

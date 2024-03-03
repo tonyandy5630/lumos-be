@@ -1,22 +1,31 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 
 namespace RequestEntity
 {
     public class PaymentRequest
     {
-        public string buyerName { get; set; }
-        public string buyerEmail { get; set; }
-        public string buyerPhone { get; set; }
-        public string buyerAddress { get; set; }
+        public string BuyerName { get; set; }
+
+        public string BuyerEmail { get; set; }
+
+        public string BuyerPhone { get; set; }
+
+        public string BuyerAddress { get; set; }
+
+        public string? Signature { get; set; }
+
         public int OrderId { get; set; }
+
         public List<ItemRequest> Items { get; set; }
+
         public int TotalAmount { get; set; }
+
         public string Description { get; set; }
-        public int expiredAt { get; set; }
+
+        public string? CancelUrl { get; set; }
+
+        public string? ReturnUrl { get; set; }
+        public int ExpiredAt { get; set; }
     }
 }
