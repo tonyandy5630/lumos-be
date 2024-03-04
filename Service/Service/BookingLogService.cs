@@ -247,5 +247,19 @@ namespace Service.Service
                 throw;
             }
         }
+
+        public async Task<List<BillDetailDTO>> GetBookingsBillsByBookingidAsync(int bookingId)
+        {
+            try
+            {
+                var bookingbilldtail = await _unitOfWork.BookingLogRepo.GetBookingsBillsByBookingidAsync(bookingId);
+                return bookingbilldtail;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetBookingsBillsByCustomerIdAsync: {ex.Message}", ex);
+                throw;
+            }
+        }
     }
 }

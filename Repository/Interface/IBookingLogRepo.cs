@@ -18,5 +18,6 @@ namespace Repository.Interface
         Task<List<BookingDTO>> GetIncomingBookingsByCustomerIdAsync(int customerId);
         Task<List<BookingDTO>> GetBookingsByCustomerIdAsync(string email);
         Task<List<BillDTO>> GetBookingsBillsByCustomerIdAsync(string email);
+        Task<List<BillDetailDTO>> GetBookingsBillsByBookingidAsync(int bookingId);
     }
 }

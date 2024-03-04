@@ -43,7 +43,11 @@ namespace DataTransferObject
                 .ForMember(dto => dto.Description, act => act.MapFrom(src => src.Description))
                 .ForMember(dto => dto.Price, act => act.MapFrom(src => src.Price))
                 .ForMember(dto => dto.Rating, act => act.MapFrom(src => src.Rating));
-          
+
+            CreateMap<PartnerService, BillServiceDTO>()
+                .ForMember(dto => dto.Name, act => act.MapFrom(src => src.Name))
+                .ForMember(dto => dto.Price, act => act.MapFrom(src => src.Price));
+
 
             CreateMap<ServiceCategory, ServiceCategoryDTO>()
                 .ForMember(dto => dto.CategoryId, act => act.MapFrom(src => src.CategoryId))

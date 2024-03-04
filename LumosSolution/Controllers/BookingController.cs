@@ -59,6 +59,42 @@ namespace LumosSolution.Controllers
                 return BadRequest(response);
             }
         }
+        [HttpGet("bill/{bookingid}")]
+        [Authorize(Roles = "Customer")]
+        public async Task<ActionResult<ApiResponse<object>>> GetBookingBillByID(int bookingid)
+        {
+            ApiResponse<object> response = new ApiResponse<object>();
+            try
+            {
+                var userEmail = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+                var billDetail = await _bookingLogService.GetBookingsBillsByBookingidAsync(bookingid);
+
+                if (billDetail == null)
+                {
+                    response.message = MessagesResponse.Error.BookingNotFound;
+                    response.StatusCode = ApiStatusCode.NotFound;
+                    return NotFound(response);
+                }
+
+                response.data = billDetail;
+                response.message = MessagesResponse.Success.Completed;
+                response.StatusCode = ApiStatusCode.OK;
+
+                return Ok(response);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                response.message = MessagesResponse.Error.Unauthorized;
+                response.StatusCode = ApiStatusCode.Unauthorized;
+                return Unauthorized(response);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                response.message = ex.Message;
+                return BadRequest(response);
+            }
+        }
         [HttpGet("bill")]
         [Authorize(Roles = "Customer")]
         public async Task<ActionResult<ApiResponse<object>>> GetBookingBill()

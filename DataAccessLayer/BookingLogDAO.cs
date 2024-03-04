@@ -193,9 +193,120 @@ namespace DataAccessLayer
                 throw;
             }
         }
+        public async Task<List<BillDetailDTO>> GetBookingsBillsByBookingidAsync(int bookingId)
+        {
+            try
+            {
+                var allBookingLogs = await GetALLBookingBillsAsync();
+                var BillDetails = GroupPendingBookings(allBookingLogs);
+                var result = await FilterAndMapAllBillBookingsByBookingIdAsync(BillDetails, bookingId);
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetBookingsBillsByBookingidAsync: {ex.Message}", ex);
+                throw;
+            }
+        }
+
+        private async Task<List<BillDetailDTO>> FilterAndMapAllBillBookingsByBookingIdAsync(List<IGrouping<int, BookingLog>> BillDetails, int bookingId)
+        {
+            var result = new List<BillDetailDTO>();
+
+            foreach (var group in BillDetails)
+            {
+                if (group.Key == bookingId)
+                {
+                    var statuses = group.Select(bl => bl.Status).Distinct().ToList();
+                    var customer = await FindCustomerByBookingIdAsync(bookingId);
+                    if (customer == null)
+                    {
+                        return new List<BillDetailDTO>();
+                    }
+                    foreach (var status in statuses)
+                    {
+                        
+                        var isPay = await GetBookingStatusListAndCheckIsPayAsync(bookingId);
+                        if (await CheckStatusForGetAllBooking(bookingId, customer))
+                        {
+                            var partnerName = await GetPartnerIdFromBookingIdAsync(bookingId);
+                            var medicalServiceDTOs = await GetMedicalServiceBillDTOsAsync(bookingId);
+                            var bookingInfo = await GetBookingByBookidAsync(bookingId);
+                            result.Add(new BillDetailDTO
+                            {
+                                BookingId = bookingId,
+                                BookingCode = bookingInfo.Code,
+                                Status = status,
+                                Address = bookingInfo.Address,
+                                Partner = partnerName,
+                                PaymentMethod = await GetPaymentMethodAsync(bookingId),
+                                TotalPrice = bookingInfo.TotalPrice,
+                                BookingDate = (DateTime)bookingInfo.CreatedDate,
+                                bookingTime = bookingInfo.bookingTime,
+                                Note = await GetNoteFromBookingByidAsync(bookingId),
+                                IsPay = isPay,
+                                MedicalServices = medicalServiceDTOs,
+                            });
+                        }
+                    }
+                }
+            }
+
+            return result;
+        }
+        public async Task<string> GetBookingStatusListAndCheckIsPayAsync(int bookingId)
+        {
+            try
+            {
+                // Lấy danh sách trạng thái của booking dựa trên bookingId
+                var statuses = await dbContext.BookingLogs
+                    .Where(bl => bl.BookingId == bookingId)
+                    .Select(bl => bl.Status)
+                    .ToListAsync();
+
+                if (statuses.Count == 2 && (statuses.All(s => s == (int)BookingStatusEnum.WaitingForPayment) && statuses.All(s => s == (int)BookingStatusEnum.Canceled)))
+                {
+                    return "No";
+                }
+                // Nếu danh sách có đúng 2 phần tử nhưng không đều là 0 hoặc không đều là 1, hoặc nếu có nhiều hơn 2 phần tử và trong đó có ít nhất một phần tử là 0 hoặc 1, thì trả về "Yes"
+                else if ((statuses.Count == 2 && (statuses.All(s => s != (int)BookingStatusEnum.WaitingForPayment) || statuses.All(s => s != (int)BookingStatusEnum.Canceled))) || statuses.Count > 2 && (statuses.Contains((int)BookingStatusEnum.WaitingForPayment) || statuses.Contains((int)BookingStatusEnum.Canceled)))
+                {
+                    return "Yes";
+                }
+                // Trường hợp còn lại, trả về "No"
+                else
+                {
+                    return "No";
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetBookingStatusListAndCheckIsPayAsync: {ex.Message}", ex);
+                throw;
+            }
+        }
+        public async Task<Customer> FindCustomerByBookingIdAsync(int bookingId)
+        {
+            try
+            {
+                var customer = await (from bd in dbContext.BookingDetails
+                                      join mr in dbContext.MedicalReports on bd.ReportId equals mr.ReportId
+                                      where bd.BookingId == bookingId
+                                      select mr.Customer).FirstOrDefaultAsync();
+
+                return customer;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in FindCustomerByBookingIdAsync: {ex.Message}", ex);
+                throw;
+            }
+        }
+
         private async Task<Customer> FindCustomerByEmailAsync(string email)
         {
-            return await dbContext.Customers.FirstOrDefaultAsync(c => c.Email == email);
+            return await dbContext.Customers.FirstOrDefaultAsync(c => c.Email == email && c.Status == 1);
         }
 
         
@@ -345,6 +456,40 @@ namespace DataAccessLayer
 
             return medicalServiceDTOs;
         }
+        public async Task<List<BillMedicalDTO>> GetMedicalServiceBillDTOsAsync(int bookingId)
+        {
+            var medicalReports = await dbContext.BookingDetails
+                .Where(detail => detail.BookingId == bookingId)
+                .Select(detail => detail.ReportId)
+                .ToListAsync();
+
+            var medicalServiceDTOs = new List<BillMedicalDTO>();
+
+            foreach (var reportId in medicalReports)
+            {
+                var medicalName = await dbContext.MedicalReports
+                    .Where(mr => mr.ReportId == reportId)
+                    .Select(mr => mr.Fullname)
+                    .FirstOrDefaultAsync();
+
+                var serviceDTOs = await dbContext.BookingDetails
+                    .Where(detail => detail.BookingId == bookingId && detail.ReportId == reportId) // Filter by ReportId
+                    .SelectMany(detail => detail.ServiceBookings)
+                    .Select(serviceBooking => new BillServiceDTO
+                    {
+                        Name = serviceBooking.Service.Name,
+                        Price = serviceBooking.Service.Price,
+                    }).ToListAsync();
+
+                medicalServiceDTOs.Add(new BillMedicalDTO
+                {
+                    MedicalName = medicalName,
+                    Services = serviceDTOs
+                });
+            }
+
+            return medicalServiceDTOs;
+        }
 
         public async Task<string> GetPartnerNameAsync(int partnerId)
         {
@@ -424,13 +569,13 @@ namespace DataAccessLayer
                 .GroupBy(bl => bl.BookingId.Value)
                 .ToList();
         }
-        public async Task<int> GetPartnerIdFromBookingIdAsync(int bookingId)
+        public async Task<string> GetPartnerIdFromBookingIdAsync(int bookingId)
         {
             var partnerService = await dbContext.ServiceBookings
                 .Include(sb => sb.Service)
                     .ThenInclude(service => service.Partner)
                 .Where(sb => sb.Detail.BookingId == bookingId)
-                .Select(sb => sb.Service.PartnerId)
+                .Select(sb => sb.Service.Partner.DisplayName)
                 .FirstOrDefaultAsync();
 
             return partnerService;
@@ -497,7 +642,7 @@ namespace DataAccessLayer
                 {
                     if (await IsBookingStatusValidAsync(bookingId, customer))
                     {
-                        var partnerId = await GetPartnerIdFromBookingIdAsync(bookingId);
+                        var partnerName = await GetPartnerIdFromBookingIdAsync(bookingId);
                         var medicalServiceDTOs = await GetMedicalServiceDTOsAsync(bookingId);
                         var bookinginfor = await GetBookingByBookidAsync(bookingId);
                         result.Add(new BookingDTO
@@ -506,9 +651,9 @@ namespace DataAccessLayer
                             BookingCode = bookinginfor.Code,
                             Status = status,
                             PaymentLinkId = bookinginfor.PaymentLinkId,
-                            Partner = await GetPartnerNameAsync(partnerId),
+                            Partner = partnerName,
                             TotalPrice = bookinginfor.TotalPrice,
-                            BookingDate = bookinginfor.BookingDate,
+                            BookingDate = (DateTime)bookinginfor.CreatedDate,
                             bookingTime = bookinginfor.bookingTime,
                             Address = bookinginfor.Address,
                             PaymentMethod = await GetPaymentMethodAsync(bookingId),
@@ -542,7 +687,7 @@ namespace DataAccessLayer
                 {
                     if (await CheckStatusForGetAllBooking(bookingId, customer))
                     {
-                        var partnerId = await GetPartnerIdFromBookingIdAsync(bookingId);
+                        var partnerName = await GetPartnerIdFromBookingIdAsync(bookingId);
                         var medicalServiceDTOs = await GetMedicalServiceDTOsAsync(bookingId);
                         var bookinginfor = await GetBookingByBookidAsync(bookingId);
                         result.Add(new BookingDTO
@@ -550,7 +695,7 @@ namespace DataAccessLayer
                             BookingId = bookingId,
                             BookingCode = bookinginfor.Code,
                             Status = status,
-                            Partner = await GetPartnerNameAsync(partnerId),
+                            Partner = partnerName,
                             PaymentLinkId = bookinginfor.PaymentLinkId,
                             TotalPrice = bookinginfor.TotalPrice,
                             BookingDate = bookinginfor.BookingDate,
@@ -592,14 +737,15 @@ namespace DataAccessLayer
                 {
                     if (await CheckStatusForGetAllBooking(bookingId, customer))
                     {
-                        var partnerId = await GetPartnerIdFromBookingIdAsync(bookingId);
+                        var partnerName = await GetPartnerIdFromBookingIdAsync(bookingId);
                         var medicalServiceDTOs = await GetMedicalServiceDTOsAsync(bookingId);
                         var bookinginfor = await GetBookingByBookidAsync(bookingId);
                         result.Add(new BillDTO
                         {
+                            BookingId = bookingId,
                             BookingCode = bookinginfor.Code,
                             Status = status,
-                            PartnerName = await GetPartnerNameAsync(partnerId),
+                            PartnerName = partnerName,
                             TotalPrice = bookinginfor.TotalPrice,
                             BookingDate = bookinginfor.BookingDate,
                             bookingTime = bookinginfor.bookingTime,
