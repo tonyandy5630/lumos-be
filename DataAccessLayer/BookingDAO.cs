@@ -121,6 +121,7 @@ namespace DataAccessLayer
                                select new BookingDTO
                                {
                                    Address = b.Address,
+                                   BookingCode = b.Code,
                                    BookingDate = b.BookingDate,
                                    BookingId = b.BookingId,
                                    bookingTime = b.bookingTime,
