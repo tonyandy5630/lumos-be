@@ -234,7 +234,7 @@ namespace Service.Service
             }
         }
 
-        public async Task<List<BookingDTO>> GetBookingsBillsByCustomerIdAsync(string email)
+        public async Task<List<BillDTO>> GetBookingsBillsByCustomerIdAsync(string email)
         {
             try
             {

@@ -6,6 +6,7 @@ namespace DataTransferObject.DTO
     public class BookingDTO
     {
         public int BookingId { get; set; }
+        public string BookingCode { get; set; }
         public int Status { get; set; }
         public string? Partner { get; set; }
         public int? TotalPrice { get; set; }
