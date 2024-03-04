@@ -16,14 +16,19 @@ namespace DataAccessLayer
     {
         private static BookingDAO instance = null;
 
+        private readonly LumosDBContext _context;
 
+        public BookingDAO(LumosDBContext _context)
+        {
+            this._context = _context;
+        }
         public static BookingDAO Instance
         {
             get
             {
                 if (instance == null)
                 {
-                    instance = new BookingDAO();
+                    instance = new BookingDAO(new LumosDBContext());
                 }
                 return instance;
             }
@@ -152,7 +157,6 @@ namespace DataAccessLayer
         }
         public async Task<BookingCreationResultDTO> CreateBookingAsync(Booking booking, CreateBookingDTO createBookingDTO, string email)
         {
-            using var _context = new LumosDBContext();
             using (var transaction = _context.Database.BeginTransaction())
             {
                 try
@@ -176,6 +180,7 @@ namespace DataAccessLayer
                     booking.From = DateTime.Now;
                     booking.CreatedBy = email;
                     booking.PaymentLinkId = createBookingDTO.PaymentLinkId;
+                    booking.Rating = 0;
                     _context.Bookings.Add(booking);
                     await _context.SaveChangesAsync();
 
@@ -207,7 +212,6 @@ namespace DataAccessLayer
         }
         private async Task<int> CalculateTotalPriceAsync(int bookingId)
         {
-            using var _context = new LumosDBContext();
             int totalPrice = 0;
 
             // Lấy danh sách tất cả các chi tiết đặt hàng cho bookingId đã cho
@@ -233,7 +237,6 @@ namespace DataAccessLayer
 
         private async Task ValidatePartnerScheduleAsync(int partnerId, int dayOfWeek, int bookingTime)
         {
-            using var _context = new LumosDBContext();
             var partnerSchedules = await _context.Schedules
                 .Where(s => s.PartnerId == partnerId)
                 .ToListAsync();
@@ -250,7 +253,6 @@ namespace DataAccessLayer
 
         private async Task ValidatePartnerStatusAsync(int partnerId)
         {
-            using var _context = new LumosDBContext();
             var partner = await _context.Partners.FirstOrDefaultAsync(p => p.PartnerId == partnerId);
             if (partner == null || partner.Status != 1)
             {
@@ -260,7 +262,6 @@ namespace DataAccessLayer
 
         private async Task ValidateCustomerStatusAsync(string email)
         {
-            using var _context = new LumosDBContext();
             var customer = await _context.Customers.FirstOrDefaultAsync(c => c.Email == email);
             if (customer == null || customer.Status != 1)
             {
@@ -270,36 +271,43 @@ namespace DataAccessLayer
 
         private async Task ProcessPaymentMethodAsync(Booking booking)
         {
-            using var _context = new LumosDBContext();
             if (booking.PaymentId.HasValue)
             {
-                var paymentMethod = await _context.PaymentMethods.FindAsync(booking.PaymentId);
+                var paymentMethod = await _context.PaymentMethods
+                                .Where(p => p.PaymentId == booking.PaymentId && p.Status == 1)
+                                .FirstOrDefaultAsync();
                 if (paymentMethod == null)
                 {
                     throw new ArgumentException($"Payment method with ID {booking.PaymentId} not found");
                 }
-                booking.Payment = paymentMethod;
             }
         }
 
         private async Task ProcessBookingDetailAsync(Booking booking, string note, int reportId, string email)
         {
-            using var _context = new LumosDBContext();
-            var bookingDetail = new BookingDetail
+            try
             {
-                BookingId = booking.BookingId,
-                Note = note,
-                ReportId = reportId,
-                CreatedDate = booking.CreatedDate,
-                CreatedBy = email
-            };
-            _context.BookingDetails.Add(bookingDetail);
-            await _context.SaveChangesAsync();
+                var bookingDetail = new BookingDetail
+                {
+                    BookingId = booking.BookingId,
+                    Note = note,
+                    ReportId = reportId,
+                    CreatedDate = booking.CreatedDate,
+                    CreatedBy = email
+                };
+                _context.BookingDetails.Add(bookingDetail);
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in ProcessBookingDetailAsync: {ex.Message}", ex);
+                throw;
+            }
         }
+
 
         private async Task ProcessBookingLogAsync(Booking booking, string email)
         {
-            using var _context = new LumosDBContext();
             var bookingLog = new BookingLog
             {
                 BookingId = booking.BookingId,
@@ -314,7 +322,6 @@ namespace DataAccessLayer
 
         private async Task ProcessServiceBookingsAsync(IEnumerable<ServiceDTO> services, Booking booking, string email, int reportid)
         {
-            using var _context = new LumosDBContext();
             foreach (var serviceDTO in services)
             {
                 var bookingDetail = booking.BookingDetails.FirstOrDefault(bd => bd.ReportId == reportid);
