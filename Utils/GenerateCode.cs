@@ -62,6 +62,9 @@ namespace Utils
                 case "medicalreport":
                     codePrefix = "MDR";
                     break;
+                case "partnerservice":
+                    codePrefix = "SER";
+                    break;
                 default:
                     throw new ArgumentException("Invalid table name");
             }

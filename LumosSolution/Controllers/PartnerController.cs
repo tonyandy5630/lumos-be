@@ -377,7 +377,7 @@ namespace LumosSolution.Controllers
                 Console.WriteLine(ex.Message);
                 response.message = ex.Message;
                 response.StatusCode = ApiStatusCode.InternalServerError;
-                return StatusCode(500, response);
+                return BadRequest(response);
             }
         }
 
