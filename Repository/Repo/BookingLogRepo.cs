@@ -38,7 +38,7 @@ namespace Repository.Repo
                 if (group.Key == bookingId)
                 {
                     var statuses = group.Select(bl => bl.Status).Distinct().ToList();
-                    var bookingInfo = await GetBookingDetailsByIdAsync(bookingId);
+                    var bookingInfo = await GetBookingDetailsBillsByIdAsync(bookingId);
                     if (bookingInfo == null)
                     {
                         return new BillDetailDTO();
