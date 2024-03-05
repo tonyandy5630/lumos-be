@@ -87,7 +87,6 @@ namespace DataTransferObject
 
             CreateMap<AddPartnerServiceResquest, PartnerService>()
                 .ForMember(dto => dto.Name, act => act.MapFrom(src => src.Name))
-                .ForMember(dto => dto.Code, act => act.MapFrom(src => src.Code))
                 .ForMember(dto => dto.Duration, act => act.MapFrom(src => src.Duration))
                 .ForMember(dto => dto.Description, act => act.MapFrom(src => src.Description))
                 .ForMember(dto => dto.Price, act => act.MapFrom(src => src.Price));

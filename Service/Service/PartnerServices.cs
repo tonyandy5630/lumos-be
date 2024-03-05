@@ -56,6 +56,7 @@ namespace Service.Service
 
                 PartnerService partnerService = _mapper.Map<PartnerService>(service);
                 partnerService.PartnerId = partner.PartnerId;
+                partnerService.Code = GenerateCode.GenerateTableCode("partnerservice");
                 partnerService.Status = 1;
                 partnerService.CreatedDate = DateTime.Now;
                 partnerService.LastUpdate = DateTime.Now;
