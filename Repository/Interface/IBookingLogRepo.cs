@@ -29,5 +29,6 @@ namespace Repository.Interface
         Task<List<BookingLog>> GetAllPendingBookingLogsAsync();
         Task<List<BookingDTO>> FilterAndMapAllBookingsAsync(List<IGrouping<int, BookingLog>> pendingBookings, Customer customer);
         Task<List<BookingLog>> GetAllBookingLogsAsync();
+        Task<BookingInfoDTO> GetBookingDetailsBillsByIdAsync(int bookingId);
     }
 }

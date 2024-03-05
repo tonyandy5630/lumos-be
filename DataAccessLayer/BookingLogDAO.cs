@@ -408,6 +408,34 @@ namespace DataAccessLayer
             return totalprice;
         }
 
+        public async Task<BookingInfoDTO> GetBookingDetailsBillsByIdAsync(int bookingId)
+        {
+            try
+            {
+                using var dbContext = new LumosDBContext();
+
+                var bookingDetailsAndCustomer = await (from b in dbContext.Bookings
+                                                       join pay in dbContext.PaymentMethods on b.PaymentId equals pay.PaymentId
+                                                       join bd in dbContext.BookingDetails on b.BookingId equals bd.BookingId
+                                                       join mr in dbContext.MedicalReports on bd.ReportId equals mr.ReportId
+                                                       join sb in dbContext.ServiceBookings on bd.DetailId equals sb.DetailId
+                                                       where b.BookingId == bookingId
+                                                       select new BookingInfoDTO
+                                                       {
+                                                           PaymentMethod = pay.Name,
+                                                           Note = bd.Note,
+                                                           Booking = b,
+                                                           Customer = mr.Customer,
+                                                           PartnerName = sb.Service.Partner.DisplayName // Add partner name here
+                                                       }).FirstOrDefaultAsync();
+
+                return bookingDetailsAndCustomer;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error in GetBookingDetailsByIdAsync", ex);
+            }
+        }
         public async Task<BookingInfoDTO> GetBookingDetailsByIdAsync(int bookingId)
         {
             try

@@ -135,7 +135,7 @@ namespace Repository.Repo
             {
                 var bookingId = group.Key;
                 var statuses = group.Select(bl => bl.Status).Distinct().ToList();
-                var bookingInfo = await GetBookingDetailsByIdAsync(bookingId);
+                var bookingInfo = await GetBookingDetailsBillsByIdAsync(bookingId);
                 if (bookingInfo == null)
                 {
                     return new List<BillDTO>();
@@ -215,5 +215,7 @@ namespace Repository.Repo
         }
 
         public Task<List<BookingLog>> GetAllBookingLogsAsync() =>BookingLogDAO.Instance.GetAllBookingLogsAsync();
+
+        public Task<BookingInfoDTO> GetBookingDetailsBillsByIdAsync(int bookingId) => BookingLogDAO.Instance.GetBookingDetailsBillsByIdAsync(bookingId);
     }
 }
