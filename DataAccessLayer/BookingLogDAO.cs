@@ -245,7 +245,7 @@ namespace DataAccessLayer
                         Duration = serviceBooking.Service.Duration,
                         Status = serviceBooking.Service.Status,
                         Description = serviceBooking.Service.Description,
-                        Price = serviceBooking.Service.Price,
+                        Price = serviceBooking.Price,
                         BookedQuantity = serviceBooking.Service.ServiceBookings.Count,
                         Rating = serviceBooking.Service.Rating,
                     }).ToListAsync();
@@ -282,7 +282,7 @@ namespace DataAccessLayer
                     .Select(serviceBooking => new BillServiceDTO
                     {
                         Name = serviceBooking.Service.Name,
-                        Price = serviceBooking.Service.Price,
+                        Price = serviceBooking.Price,
                     }).ToListAsync();
 
                 medicalServiceDTOs.Add(new BillMedicalDTO
