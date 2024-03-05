@@ -286,7 +286,7 @@ namespace Service.Service
             }
         }
 
-        public async Task<List<BillDetailDTO>> GetBookingsBillsByBookingidAsync(int bookingId)
+        public async Task<BillDetailDTO> GetBookingsBillsByBookingidAsync(int bookingId)
         {
             try
             {

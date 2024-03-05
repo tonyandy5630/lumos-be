@@ -29,9 +29,9 @@ namespace Repository.Repo
         public Task<List<BookingLog>> GetALLBookingBillsAsync() => BookingLogDAO.Instance.GetALLBookingBillsAsync();
 
 
-        public async Task<List<BillDetailDTO>> FilterAndMapAllBillBookingsByBookingIdAsync(List<IGrouping<int, BookingLog>> BillDetails, int bookingId)
+        public async Task<BillDetailDTO> FilterAndMapAllBillBookingsByBookingIdAsync(List<IGrouping<int, BookingLog>> BillDetails, int bookingId)
         {
-            var result = new List<BillDetailDTO>();
+            var result = new BillDetailDTO();
 
             foreach (var group in BillDetails)
             {
@@ -41,7 +41,7 @@ namespace Repository.Repo
                     var bookingInfo = await GetBookingDetailsByIdAsync(bookingId);
                     if (bookingInfo == null)
                     {
-                        return new List<BillDetailDTO>();
+                        return new BillDetailDTO();
                     }
                     foreach (var status in statuses)
                     {
@@ -50,7 +50,7 @@ namespace Repository.Repo
                         if (await CheckStatusForGetAllBooking(bookingId, bookingInfo.Customer))
                         {
                             var medicalServiceDTOs = await GetMedicalServiceBillDTOsAsync(bookingId);
-                            result.Add(new BillDetailDTO
+                            result = new BillDetailDTO
                             {
                                 BookingId = bookingId,
                                 BookingCode = bookingInfo.Booking.Code,
@@ -64,7 +64,7 @@ namespace Repository.Repo
                                 Note = bookingInfo.Note,
                                 IsPay = isPay,
                                 MedicalServices = medicalServiceDTOs,
-                            });
+                            };
                         }
                     }
                 }

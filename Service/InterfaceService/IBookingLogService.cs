@@ -21,6 +21,6 @@ namespace Service.InterfaceService
         Task<List<BookingDTO>> GetBookingsByCustomerIdAsync(string email);
         Task<bool> ChangeStatusToPending(BookingLogAcceptRequest updateBookingStatus, string email);
         Task<List<BillDTO>> GetBookingsBillsByCustomerIdAsync(string email);
-        Task<List<BillDetailDTO>> GetBookingsBillsByBookingidAsync(int bookingId);
+        Task<BillDetailDTO> GetBookingsBillsByBookingidAsync(int bookingId);
     }
 }

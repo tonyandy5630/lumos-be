@@ -17,7 +17,7 @@ namespace Repository.Interface
 
         List<IGrouping<int, BookingLog>> GroupBookings(List<BookingLog> allBookingLogs);
         Task<List<BookingLog>> GetALLBookingBillsAsync();
-        Task<List<BillDetailDTO>> FilterAndMapAllBillBookingsByBookingIdAsync(List<IGrouping<int, BookingLog>> BillDetails, int bookingId);
+        Task<BillDetailDTO> FilterAndMapAllBillBookingsByBookingIdAsync(List<IGrouping<int, BookingLog>> BillDetails, int bookingId);
         Task<string> GetBookingStatusListAndCheckIsPayAsync(int bookingId);
         Task<BookingInfoDTO> GetBookingDetailsByIdAsync(int bookingId);
         Task<bool> CheckStatusForGetAllBooking(int bookingId, Customer customer);
