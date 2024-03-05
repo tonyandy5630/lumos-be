@@ -295,49 +295,6 @@ namespace DataAccessLayer
             return medicalServiceDTOs;
         }
 
-        public async Task<DateTime> GetBookingDateAsync(int bookingId)
-        {
-            using var dbContext = new LumosDBContext();
-            var bookingDate = await dbContext.Bookings
-                .Where(b => b.BookingId == bookingId)
-                .Select(b => b.CreatedDate)
-                .FirstOrDefaultAsync();
-
-            return bookingDate != null ? (DateTime)bookingDate : DateTime.MinValue;
-        }
-
-        public async Task<int?> GetBookingTimeAsync(int bookingId)
-        {
-            using var dbContext = new LumosDBContext();
-            var bookingTime = await dbContext.Bookings
-                .Where(b => b.BookingId == bookingId)
-                .Select(b => b.bookingTime)
-                .FirstOrDefaultAsync();
-
-            return bookingTime;
-        }
-
-        public async Task<string> GetBookingAddressAsync(int bookingId)
-        {
-            using var dbContext = new LumosDBContext();
-            var address = await dbContext.Bookings
-                .Where(b => b.BookingId == bookingId)
-                .Select(b => b.Address)
-                .FirstOrDefaultAsync();
-
-            return address ?? "Unknown Address";
-        }
-
-        public async Task<string> GetPaymentMethodAsync(int bookingId)
-        {
-            using var dbContext = new LumosDBContext();
-            var paymentName = (from b in dbContext.Bookings
-                               join pay in dbContext.PaymentMethods on b.PaymentId equals pay.PaymentId
-                               where b.BookingId == bookingId
-                               select pay.Name).FirstOrDefaultAsync();
-
-            return await paymentName;
-        }
         public async Task<List<BookingLog>> GetAllLogAsync()
         {
             using var dbContext = new LumosDBContext();
@@ -414,27 +371,6 @@ namespace DataAccessLayer
             var totalprice = await dbContext.Bookings
                 .Where(sb => sb.BookingId == bookingId)
                 .Select(sb => sb.TotalPrice)
-                .FirstOrDefaultAsync();
-
-            return totalprice;
-        }
-        public async Task<string> GetNoteFromBookingByidAsync(int bookingId)
-        {
-            using var dbContext = new LumosDBContext();
-            var totalprice = await dbContext.BookingLogs
-                .Where(sb => sb.BookingId == bookingId)
-                .OrderByDescending(sb => sb.CreatedDate)
-                .Select(sb => sb.Note)
-                .FirstOrDefaultAsync();
-
-            return totalprice;
-        }
-        public async Task<string> GetPaymentLinkIdFromBookingByidAsync(int bookingId)
-        {
-            using var dbContext = new LumosDBContext();
-            var totalprice = await dbContext.Bookings
-                .Where(sb => sb.BookingId == bookingId)
-                .Select(sb => sb.PaymentLinkId)
                 .FirstOrDefaultAsync();
 
             return totalprice;
