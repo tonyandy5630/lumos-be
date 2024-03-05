@@ -258,7 +258,7 @@ namespace LumosSolution.Controllers
                     return BadRequest(response);
                 }
 
-                response.message = "Booking log with new status created successfully.";
+                response.message = "Đâ cập nhật sáng Cancel Status.";
                 response.StatusCode = ApiStatusCode.OK;
 
                 return Ok(response);
@@ -286,7 +286,36 @@ namespace LumosSolution.Controllers
                     return BadRequest(response);
                 }
 
-                response.message = "Booking log with new status created successfully.";
+                response.message = "Đâ cập nhật sáng Status mới.";
+                response.StatusCode = ApiStatusCode.OK;
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                response.message = ex.Message;
+                return BadRequest(response);
+            }
+        }
+        [HttpPost("{bookingId}/complete")]
+        [Authorize(Roles = "Customer")]
+        public async Task<ActionResult<ApiResponse<object>>> UpdateStatusToCmplete([FromBody] ChangToCompleteRequest completerequest, int bookingId)
+        {
+            ApiResponse<object> response = new ApiResponse<object>();
+            try
+            {
+                string? email = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+                completerequest.BookingId = bookingId;
+                bool result = await _bookingLogService.ChangeStatusToComplete(completerequest, email);
+                if (!result)
+                {
+                    response.message = "Failed to create booking log with new status.";
+                    response.StatusCode = ApiStatusCode.BadRequest;
+                    return BadRequest(response);
+                }
+
+                response.message = "Đâ cập nhật sang Complete Status.";
                 response.StatusCode = ApiStatusCode.OK;
 
                 return Ok(response);
@@ -315,7 +344,7 @@ namespace LumosSolution.Controllers
                     return BadRequest(response);
                 }
 
-                response.message = "Booking log with new status created successfully.";
+                response.message = "Đâ cập nhật sang Pending Status.";
                 response.StatusCode = ApiStatusCode.OK;
 
                 return Ok(response);

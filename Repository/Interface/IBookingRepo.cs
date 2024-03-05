@@ -1,6 +1,7 @@
 ﻿using BussinessObject;
 using DataTransferObject.DTO;
 using Enum;
+using RequestEntity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,5 +31,6 @@ namespace Repository.Interface
         Task<List<(string ServiceName, int? Price, int Quantity)>> GetBookingServiceInfoAsync(int bookingId);
         Task<int?> GetTotalPriceByBookingIdAsync(int bookingId);
         Task UpdatePaymentLinkIdAsync(int bookingid, string newPaymentLinkId);
+        Task UpdateBookingComplete(int bookingid, FeedbackRequest feedback);
     }
 }

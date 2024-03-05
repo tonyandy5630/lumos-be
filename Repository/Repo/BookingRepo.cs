@@ -4,6 +4,7 @@ using DataTransferObject.DTO;
 using Enum;
 using Repository.Interface;
 using Repository.Interface.IUnitOfWork;
+using RequestEntity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -67,5 +68,7 @@ namespace Repository.Repo
         public Task<int?> GetTotalPriceByBookingIdAsync(int bookingId) => BookingDAO.Instance.GetTotalPriceByBookingIdAsync(bookingId);
 
         public Task UpdatePaymentLinkIdAsync(int bookingid, string newPaymentLinkId) => BookingDAO.Instance.UpdatePaymentLinkIdAsync(bookingid,newPaymentLinkId);
+
+        public Task UpdateBookingComplete(int bookingid, FeedbackRequest feedback) =>BookingDAO.Instance.UpdateBookingComplete(bookingid, feedback);
     }
 }

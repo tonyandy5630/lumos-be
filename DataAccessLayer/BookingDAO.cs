@@ -2,6 +2,7 @@
 using DataTransferObject.DTO;
 using Enum;
 using Microsoft.EntityFrameworkCore;
+using RequestEntity;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -633,6 +634,34 @@ namespace DataAccessLayer
                     if (bookingToUpdate != null)
                     {
                         bookingToUpdate.PaymentLinkId = newPaymentLinkId;
+                        await _context.SaveChangesAsync();
+                    }
+                    else
+                    {
+                        throw new Exception("Booking not found.");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error updating PaymentLinkId for BookingId {bookingid}: {ex.Message}", ex);
+                throw;
+            }
+        }
+        public async Task UpdateBookingComplete(int bookingid, FeedbackRequest feedback)
+        {
+            try
+            {
+                using (var _context = new LumosDBContext())
+                {
+                    var bookingToUpdate = await _context.Bookings.FirstOrDefaultAsync(b => b.BookingId == bookingid);
+
+                    if (bookingToUpdate != null)
+                    {
+                        bookingToUpdate.Rating = feedback.rating;
+                        bookingToUpdate.FeedbackLumos = feedback.feedbackLumos;
+                        bookingToUpdate.FeedbackPartner = feedback.feedbackPartner;
+                        bookingToUpdate.FeedbackImage = feedback.feedbackImage;
                         await _context.SaveChangesAsync();
                     }
                     else
