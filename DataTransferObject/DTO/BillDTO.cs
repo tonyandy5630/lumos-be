@@ -15,6 +15,7 @@ namespace DataTransferObject.DTO
         public string? PartnerName { get; set; }
         public int? TotalPrice { get; set; }
         public DateTime BookingDate { get; set; }
+        public DateTime CreateDate { get; set; }
         public int bookingTime { get; set; } // workshift
         public string? Note { get; set; }
     }

@@ -433,7 +433,7 @@ namespace DataAccessLayer
             }
             catch (Exception ex)
             {
-                throw new Exception("Error in GetBookingDetailsByIdAsync", ex);
+                throw new Exception("Error in GetBookingDetailsBillsByIdAsync", ex);
             }
         }
         public async Task<BookingInfoDTO> GetBookingDetailsByIdAsync(int bookingId)
