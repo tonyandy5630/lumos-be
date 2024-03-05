@@ -14,10 +14,20 @@ namespace Repository.Interface
         Task<bool> UpdateBookingLogStatusForCustomerAsync(int bookingLogId, int newStatus);
         Task<BookingLog> GetLatestBookingLogAsync(int bookingId);
         Task<bool> CreateBookingLogAsync(BookingLog bookingLog);
-        Task<List<BookingDTO>> GetIncomingBookingsByEmailAsync(string email);
-        Task<List<BookingDTO>> GetIncomingBookingsByCustomerIdAsync(int customerId);
-        Task<List<BookingDTO>> GetBookingsByCustomerIdAsync(string email);
-        Task<List<BillDTO>> GetBookingsBillsByCustomerIdAsync(string email);
-        Task<List<BillDetailDTO>> GetBookingsBillsByBookingidAsync(int bookingId);
+
+        List<IGrouping<int, BookingLog>> GroupBookings(List<BookingLog> allBookingLogs);
+        Task<List<BookingLog>> GetALLBookingBillsAsync();
+        Task<List<BillDetailDTO>> FilterAndMapAllBillBookingsByBookingIdAsync(List<IGrouping<int, BookingLog>> BillDetails, int bookingId);
+        Task<string> GetBookingStatusListAndCheckIsPayAsync(int bookingId);
+        Task<BookingInfoDTO> GetBookingDetailsByIdAsync(int bookingId);
+        Task<bool> CheckStatusForGetAllBooking(int bookingId, Customer customer);
+        Task<List<BillMedicalDTO>> GetMedicalServiceBillDTOsAsync(int bookingId);
+        Task<List<BookingDTO>> FilterAndMapIncomingBookingsAsync(List<IGrouping<int, BookingLog>> incoming, Customer customer);
+        Task<List<MedicalServiceDTO>> GetMedicalServiceDTOsAsync(int bookingId);
+        Task<bool> IsBookingStatusValidAsync(int bookingId, Customer customer);
+        Task<List<BillDTO>> FilterAndMapAllBillBookingsAsync(List<IGrouping<int, BookingLog>> pendingBookings, Customer customer);
+        Task<List<BookingLog>> GetAllPendingBookingLogsAsync();
+        Task<List<BookingDTO>> FilterAndMapAllBookingsAsync(List<IGrouping<int, BookingLog>> pendingBookings, Customer customer);
+        Task<List<BookingLog>> GetAllBookingLogsAsync();
     }
 }

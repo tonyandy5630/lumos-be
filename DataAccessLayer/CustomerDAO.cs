@@ -137,7 +137,7 @@ namespace DataAccessLayer
         {
             try
             {
-                return await dbContext.Customers.SingleOrDefaultAsync(u => u.CustomerId == id);
+                return await dbContext.Customers.SingleOrDefaultAsync(u => u.CustomerId == id && u.Status == 1);
             }
             catch (Exception ex)
             {

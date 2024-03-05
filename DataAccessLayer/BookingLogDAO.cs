@@ -103,159 +103,7 @@ namespace DataAccessLayer
                 return false;
             }
         }
-        public async Task<List<BookingDTO>> GetIncomingBookingsByEmailAsync(string email)
-        {
-            try
-            {
-                using var dbContext = new LumosDBContext();
-                var customer = await dbContext.Customers.FirstOrDefaultAsync(c => c.Email == email);
-                if (customer == null)
-                {
-                    return new List<BookingDTO>();
-                }
 
-                var allbookingbill = await GetAllPendingBookingLogsAsync();
-                var bookingbill = GroupPendingBookings(allbookingbill);
-                var result = await FilterAndMapIncomingBookingsAsync(bookingbill, customer);
-
-                return result;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error in GetIncomingBookingsByEmailAsync: {ex.Message}", ex);
-                throw;
-            }
-        }
-
-        public async Task<List<BookingDTO>> GetIncomingBookingsByCustomerIdAsync(int customerId)
-        {
-            try
-            {
-                using var dbContext = new LumosDBContext();
-                var customer = await dbContext.Customers.FirstOrDefaultAsync(c => c.CustomerId == customerId);
-                if (customer == null)
-                {
-                    return new List<BookingDTO>();
-                }
-
-                var allBookingLogs = await GetAllPendingBookingLogsAsync();
-                var pendingBookings = GroupPendingBookings(allBookingLogs);
-                var result = await FilterAndMapIncomingBookingsAsync(pendingBookings, customer);
-
-                return result;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error in GetIncomingBookingsByCustomerIdAsync: {ex.Message}", ex);
-                throw;
-            }
-        } 
-        public async Task<List<BookingDTO>> GetBookingsByCustomerIdAsync(string email)
-        {
-            try
-            {
-                var customer = await FindCustomerByEmailAsync(email);
-                if (customer == null)
-                {
-                    return new List<BookingDTO>();
-                }
-
-                var allBookingLogs = await GetAllBookingLogsAsync();
-                var pendingBookings = GroupPendingBookings(allBookingLogs);
-                var result = await FilterAndMapAllBookingsAsync(pendingBookings, customer);
-
-                return result;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error in GetBookingsByCustomerIdAsync: {ex.Message}", ex);
-                throw;
-            }
-        }
-        public async Task<List<BillDTO>> GetBookingsBillsByCustomerIdAsync(string email)
-        {
-            try
-            {
-                var customer = await FindCustomerByEmailAsync(email);
-                if (customer == null)
-                {
-                    return new List<BillDTO>();
-                }
-
-                var allBookingLogs = await GetALLBookingBillsAsync();
-                var pendingBookings = GroupPendingBookings(allBookingLogs);
-                var result = await FilterAndMapAllBillBookingsAsync(pendingBookings, customer);
-
-                return result;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error in GetBookingsByCustomerIdAsync: {ex.Message}", ex);
-                throw;
-            }
-        }
-        public async Task<List<BillDetailDTO>> GetBookingsBillsByBookingidAsync(int bookingId)
-        {
-            try
-            {
-                var allBookingLogs = await GetALLBookingBillsAsync();
-                var BillDetails = GroupPendingBookings(allBookingLogs);
-                var result = await FilterAndMapAllBillBookingsByBookingIdAsync(BillDetails, bookingId);
-
-                return result;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error in GetBookingsBillsByBookingidAsync: {ex.Message}", ex);
-                throw;
-            }
-        }
-
-        private async Task<List<BillDetailDTO>> FilterAndMapAllBillBookingsByBookingIdAsync(List<IGrouping<int, BookingLog>> BillDetails, int bookingId)
-        {
-            var result = new List<BillDetailDTO>();
-
-            foreach (var group in BillDetails)
-            {
-                if (group.Key == bookingId)
-                {
-                    var statuses = group.Select(bl => bl.Status).Distinct().ToList();
-                    var customer = await FindCustomerByBookingIdAsync(bookingId);
-                    if (customer == null)
-                    {
-                        return new List<BillDetailDTO>();
-                    }
-                    foreach (var status in statuses)
-                    {
-                        
-                        var isPay = await GetBookingStatusListAndCheckIsPayAsync(bookingId);
-                        if (await CheckStatusForGetAllBooking(bookingId, customer))
-                        {
-                            var partnerName = await GetPartnerIdFromBookingIdAsync(bookingId);
-                            var medicalServiceDTOs = await GetMedicalServiceBillDTOsAsync(bookingId);
-                            var bookingInfo = await GetBookingByBookidAsync(bookingId);
-                            result.Add(new BillDetailDTO
-                            {
-                                BookingId = bookingId,
-                                BookingCode = bookingInfo.Code,
-                                Status = status,
-                                Address = bookingInfo.Address,
-                                Partner = partnerName,
-                                PaymentMethod = await GetPaymentMethodAsync(bookingId),
-                                TotalPrice = bookingInfo.TotalPrice,
-                                BookingDate = (DateTime)bookingInfo.CreatedDate,
-                                bookingTime = bookingInfo.bookingTime,
-                                Note = await GetNoteFromBookingByidAsync(bookingId),
-                                IsPay = isPay,
-                                MedicalServices = medicalServiceDTOs,
-                            });
-                        }
-                    }
-                }
-            }
-
-            return result;
-        }
         public async Task<string> GetBookingStatusListAndCheckIsPayAsync(int bookingId)
         {
             try
@@ -288,32 +136,7 @@ namespace DataAccessLayer
                 throw;
             }
         }
-        public async Task<Customer> FindCustomerByBookingIdAsync(int bookingId)
-        {
-            try
-            {
-                using var dbContext = new LumosDBContext();
-                var customer = await (from bd in dbContext.BookingDetails
-                                      join mr in dbContext.MedicalReports on bd.ReportId equals mr.ReportId
-                                      where bd.BookingId == bookingId
-                                      select mr.Customer).FirstOrDefaultAsync();
-
-                return customer;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error in FindCustomerByBookingIdAsync: {ex.Message}", ex);
-                throw;
-            }
-        }
-
-        public async Task<Customer> FindCustomerByEmailAsync(string email)
-        {
-            using var dbContext = new LumosDBContext();
-            return await dbContext.Customers.FirstOrDefaultAsync(c => c.Email == email && c.Status == 1);
-        }
-
-        
+       
         public async Task<bool> IsBookingStatusValidAsync(int bookingId, Customer customer)
         {
             using var dbContext = new LumosDBContext();
@@ -322,45 +145,19 @@ namespace DataAccessLayer
             {
                 return false;
             }
-
             var bookingDetail = await dbContext.BookingDetails.FirstOrDefaultAsync(bd => bd.BookingId == bookingId);
-            if (bookingDetail == null)
-            {
-                return false;
-            }
-
             var medicalReport = await dbContext.MedicalReports.FirstOrDefaultAsync(mr => mr.ReportId == bookingDetail.ReportId && mr.CustomerId == customer.CustomerId);
-            if (medicalReport == null)
-            {
-                return false;
-            }
-
             var booking = await dbContext.Bookings.FirstOrDefaultAsync(b => b.BookingId == bookingId);
-            if (booking == null)
-            {
-                return false;
-            }
-
             var serviceBooking = await dbContext.ServiceBookings.FirstOrDefaultAsync(sb => sb.DetailId == bookingDetail.DetailId);
-            if (serviceBooking == null)
-            {
-                return false;
-            }
-
             var partnerService = await dbContext.PartnerServices.FirstOrDefaultAsync(ps => ps.ServiceId == serviceBooking.ServiceId);
-            if (partnerService == null)
-            {
-                return false;
-            }
-
             var partner = await dbContext.Partners.FirstOrDefaultAsync(p => p.PartnerId == partnerService.PartnerId);
-            if (partner == null)
+
+            if (bookingDetail == null || medicalReport == null || booking == null || serviceBooking == null || partnerService == null || partner == null)
             {
                 return false;
             }
 
             var serviceStatus = partnerService.Status;
-            /*            var partnerStatus = partner.Status;*/
             var customerStatus = customer.Status;
 
             if (serviceStatus != 1 || customerStatus != 1)
@@ -375,43 +172,18 @@ namespace DataAccessLayer
         {
             using var dbContext = new LumosDBContext();
             var bookingDetail = await dbContext.BookingDetails.FirstOrDefaultAsync(bd => bd.BookingId == bookingId);
-            if (bookingDetail == null)
-            {
-                return false;
-            }
-
             var medicalReport = await dbContext.MedicalReports.FirstOrDefaultAsync(mr => mr.ReportId == bookingDetail.ReportId && mr.CustomerId == customer.CustomerId);
-            if (medicalReport == null)
-            {
-                return false;
-            }
-
             var booking = await dbContext.Bookings.FirstOrDefaultAsync(b => b.BookingId == bookingId);
-            if (booking == null)
-            {
-                return false;
-            }
-
             var serviceBooking = await dbContext.ServiceBookings.FirstOrDefaultAsync(sb => sb.DetailId == bookingDetail.DetailId);
-            if (serviceBooking == null)
-            {
-                return false;
-            }
-
             var partnerService = await dbContext.PartnerServices.FirstOrDefaultAsync(ps => ps.ServiceId == serviceBooking.ServiceId);
-            if (partnerService == null)
-            {
-                return false;
-            }
-
             var partner = await dbContext.Partners.FirstOrDefaultAsync(p => p.PartnerId == partnerService.PartnerId);
-            if (partner == null)
+
+            if (bookingDetail == null || medicalReport == null || booking == null || serviceBooking == null || partnerService == null || partner == null)
             {
                 return false;
             }
 
             var serviceStatus = partnerService.Status;
-            /*            var partnerStatus = partner.Status;*/
             var customerStatus = customer.Status;
 
             if (serviceStatus != 1 || customerStatus != 1)
@@ -499,14 +271,6 @@ namespace DataAccessLayer
             return medicalServiceDTOs;
         }
 
-        public async Task<string> GetPartnerNameAsync(int partnerId)
-        {
-            using var dbContext = new LumosDBContext();
-            var partner = await dbContext.Partners.FirstOrDefaultAsync(p => p.PartnerId == partnerId);
-            return partner?.DisplayName ?? "Partner status là 0";
-        }
-
-
         public async Task<DateTime> GetBookingDateAsync(int bookingId)
         {
             using var dbContext = new LumosDBContext();
@@ -545,7 +309,7 @@ namespace DataAccessLayer
             using var dbContext = new LumosDBContext();
             var paymentName = (from b in dbContext.Bookings
                                join pay in dbContext.PaymentMethods on b.PaymentId equals pay.PaymentId
-                               where b.BookingId == 3
+                               where b.BookingId == bookingId
                                select pay.Name).FirstOrDefaultAsync();
 
             return await paymentName;
@@ -644,148 +408,38 @@ namespace DataAccessLayer
             return totalprice;
         }
 
-        private async Task<List<BookingDTO>> FilterAndMapIncomingBookingsAsync(List<IGrouping<int, BookingLog>> pendingBookings, Customer customer)
+        public async Task<BookingInfoDTO> GetBookingDetailsByIdAsync(int bookingId)
         {
-            using var dbContext = new LumosDBContext();
-            var result = new List<BookingDTO>();
-
-            foreach (var group in pendingBookings)
+            try
             {
-                var bookingId = group.Key;
-                var statuses = group.Select(bl => bl.Status).Distinct().ToList();
-                var bookingDetail = await dbContext.BookingDetails
-                .FirstOrDefaultAsync(bd => bd.BookingId == bookingId);
-                if (bookingDetail == null)
-                {
-                    // Xử lý khi không tìm thấy BookingDetail
-                    continue;
-                }
-                var reportId = bookingDetail.ReportId;
-                foreach (var status in statuses)
-                {
-                    if (await IsBookingStatusValidAsync(bookingId, customer))
-                    {
-                        var partnerName = await GetPartnerIdFromBookingIdAsync(bookingId);
-                        var medicalServiceDTOs = await GetMedicalServiceDTOsAsync(bookingId);
-                        var bookinginfor = await GetBookingByBookidAsync(bookingId);
-                        result.Add(new BookingDTO
-                        {
-                            BookingId = bookingId,
-                            BookingCode = bookinginfor.Code,
-                            Status = status,
-                            PaymentLinkId = bookinginfor.PaymentLinkId,
-                            Partner = partnerName,
-                            TotalPrice = bookinginfor.TotalPrice,
-                            BookingDate = (DateTime)bookinginfor.CreatedDate,
-                            bookingTime = bookinginfor.bookingTime,
-                            Address = bookinginfor.Address,
-                            PaymentMethod = await GetPaymentMethodAsync(bookingId),
-                            Note = await GetNoteFromBookingByidAsync(bookingId),
-                            Customer = customer,
-                            MedicalServices = medicalServiceDTOs
-                        });
-                    }
-                }
-            }
+                using var dbContext = new LumosDBContext();
 
-            return result;
+                var bookingDetailsAndCustomer = await (from b in dbContext.Bookings
+                                                       join pay in dbContext.PaymentMethods on b.PaymentId equals pay.PaymentId
+                                                       join bd in dbContext.BookingDetails on b.BookingId equals bd.BookingId
+                                                       join mr in dbContext.MedicalReports on bd.ReportId equals mr.ReportId
+                                                       join sb in dbContext.ServiceBookings on bd.DetailId equals sb.DetailId
+                                                       where b.BookingId == bookingId
+                                                       select new BookingInfoDTO
+                                                       {
+                                                           PaymentMethod = pay.Name,
+                                                           Note = dbContext.BookingLogs
+                                                               .Where(bl => bl.BookingId == bookingId)
+                                                               .OrderByDescending(bl => bl.CreatedDate)
+                                                               .Select(bl => bl.Note)
+                                                               .FirstOrDefault(),
+                                                           Booking = b,
+                                                           Customer = mr.Customer,
+                                                           PartnerName = sb.Service.Partner.DisplayName // Add partner name here
+                                                       }).FirstOrDefaultAsync();
+
+                return bookingDetailsAndCustomer;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error in GetBookingDetailsByIdAsync", ex);
+            }
         }
-        private async Task<List<BookingDTO>> FilterAndMapAllBookingsAsync(List<IGrouping<int, BookingLog>> pendingBookings, Customer customer)
-        {
-            using var dbContext = new LumosDBContext();
-            var result = new List<BookingDTO>();
 
-            foreach (var group in pendingBookings)
-            {
-                var bookingId = group.Key;
-                var statuses = group.Select(bl => bl.Status).Distinct().ToList();
-                var bookingDetail = await dbContext.BookingDetails
-                .FirstOrDefaultAsync(bd => bd.BookingId == bookingId);
-                if (bookingDetail == null)
-                {
-                    // Xử lý khi không tìm thấy BookingDetail
-                    continue;
-                }
-                var reportId = bookingDetail.ReportId;
-                foreach (var status in statuses)
-                {
-                    if (await CheckStatusForGetAllBooking(bookingId, customer))
-                    {
-                        var partnerName = await GetPartnerIdFromBookingIdAsync(bookingId);
-                        var medicalServiceDTOs = await GetMedicalServiceDTOsAsync(bookingId);
-                        var bookinginfor = await GetBookingByBookidAsync(bookingId);
-                        result.Add(new BookingDTO
-                        {
-                            BookingId = bookingId,
-                            BookingCode = bookinginfor.Code,
-                            Status = status,
-                            Partner = partnerName,
-                            PaymentLinkId = bookinginfor.PaymentLinkId,
-                            TotalPrice = bookinginfor.TotalPrice,
-                            BookingDate = bookinginfor.BookingDate,
-                            bookingTime = bookinginfor.bookingTime,
-                            Address = bookinginfor.Address,
-                            PaymentMethod = await GetPaymentMethodAsync(bookingId),
-                            Note = await GetNoteFromBookingByidAsync(bookingId),
-                            Customer = customer,
-                            MedicalServices = medicalServiceDTOs
-                        });
-                    }
-                }
-            }
-            var waitingForPaymentBookings = result.Where(b => b.Status == (int)BookingStatusEnum.WaitingForPayment).ToList();
-            if (waitingForPaymentBookings.Any())
-            {
-                result = waitingForPaymentBookings.Concat(result.Except(waitingForPaymentBookings)).ToList();
-            }
-
-            return result;
-        }
-        private async Task<List<BillDTO>> FilterAndMapAllBillBookingsAsync(List<IGrouping<int, BookingLog>> pendingBookings, Customer customer)
-        {
-            using var dbContext = new LumosDBContext();
-            var result = new List<BillDTO>();
-
-            foreach (var group in pendingBookings)
-            {
-                var bookingId = group.Key;
-                var statuses = group.Select(bl => bl.Status).Distinct().ToList();
-                var bookingDetail = await dbContext.BookingDetails
-                .FirstOrDefaultAsync(bd => bd.BookingId == bookingId);
-                if (bookingDetail == null)
-                {
-                    // Xử lý khi không tìm thấy BookingDetail
-                    continue;
-                }
-                var reportId = bookingDetail.ReportId;
-                foreach (var status in statuses)
-                {
-                    if (await CheckStatusForGetAllBooking(bookingId, customer))
-                    {
-                        var partnerName = await GetPartnerIdFromBookingIdAsync(bookingId);
-                        var medicalServiceDTOs = await GetMedicalServiceDTOsAsync(bookingId);
-                        var bookinginfor = await GetBookingByBookidAsync(bookingId);
-                        result.Add(new BillDTO
-                        {
-                            BookingId = bookingId,
-                            BookingCode = bookinginfor.Code,
-                            Status = status,
-                            PartnerName = partnerName,
-                            TotalPrice = bookinginfor.TotalPrice,
-                            BookingDate = bookinginfor.BookingDate,
-                            bookingTime = bookinginfor.bookingTime,
-                            Note = await GetNoteFromBookingByidAsync(bookingId),
-                        });
-                    }
-                }
-            }
-            var waitingForPaymentBookings = result.Where(b => b.Status == (int)BookingStatusEnum.WaitingForPayment).ToList();
-            if (waitingForPaymentBookings.Any())
-            {
-                result = waitingForPaymentBookings.Concat(result.Except(waitingForPaymentBookings)).ToList();
-            }
-
-            return result;
-        }
     }
 }

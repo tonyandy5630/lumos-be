@@ -12,6 +12,8 @@ using static Google.Apis.Requests.BatchRequest;
 using Utils;
 using Enum;
 using RequestEntity;
+using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks.Dataflow;
 
 namespace Service.Service
 {
@@ -197,8 +199,17 @@ namespace Service.Service
         {
             try
             {
-                var pendingBookings = await _unitOfWork.BookingLogRepo.GetIncomingBookingsByEmailAsync(email);
-                return pendingBookings;
+                var customer = await _unitOfWork.CustomerRepo.GetCustomerByEmailAsync(email);
+                if (customer == null)
+                {
+                    return new List<BookingDTO>();
+                }
+
+                var allbookingbill = await _unitOfWork.BookingLogRepo.GetAllPendingBookingLogsAsync();
+                var booking = _unitOfWork.BookingLogRepo.GroupBookings(allbookingbill);
+                var result = await _unitOfWork.BookingLogRepo.FilterAndMapIncomingBookingsAsync(booking, customer);
+
+                return result;
             }
             catch (Exception ex)
             {
@@ -211,8 +222,17 @@ namespace Service.Service
         {
             try
             {
-                var pendingBookings = await _unitOfWork.BookingLogRepo.GetIncomingBookingsByCustomerIdAsync(customerId);
-                return pendingBookings;
+                var customer = await _unitOfWork.CustomerRepo.GetCustomerByIDAsync(customerId);
+                if (customer == null)
+                {
+                    return new List<BookingDTO>();
+                }
+
+                var allBookingLogs = await _unitOfWork.BookingLogRepo.GetAllPendingBookingLogsAsync();
+                var booking = _unitOfWork.BookingLogRepo.GroupBookings(allBookingLogs);
+                var result = await _unitOfWork.BookingLogRepo.FilterAndMapIncomingBookingsAsync(booking, customer);
+
+                return result;
             }
             catch (Exception ex)
             {
@@ -224,8 +244,17 @@ namespace Service.Service
         {
             try
             {
-                var pendingBookings = await _unitOfWork.BookingLogRepo.GetBookingsByCustomerIdAsync(email);
-                return pendingBookings;
+                var customer = await _unitOfWork.CustomerRepo.GetCustomerByEmailAsync(email);
+                if (customer == null)
+                {
+                    return new List<BookingDTO>();
+                }
+
+                var allBookingLogs = await _unitOfWork.BookingLogRepo.GetAllBookingLogsAsync();
+                var pendingBookings = _unitOfWork.BookingLogRepo.GroupBookings(allBookingLogs);
+                var result = await _unitOfWork.BookingLogRepo.FilterAndMapAllBookingsAsync(pendingBookings, customer);
+
+                return result;
             }
             catch (Exception ex)
             {
@@ -238,8 +267,17 @@ namespace Service.Service
         {
             try
             {
-                var bookingbill = await _unitOfWork.BookingLogRepo.GetBookingsBillsByCustomerIdAsync(email);
-                return bookingbill;
+                var customer = await _unitOfWork.CustomerRepo.GetCustomerByEmailAsync(email);
+                if (customer == null)
+                {
+                    return new List<BillDTO>();
+                }
+
+                var allBookingLogs = await _unitOfWork.BookingLogRepo.GetALLBookingBillsAsync();
+                var Bill = _unitOfWork.BookingLogRepo.GroupBookings(allBookingLogs);
+                var result = await _unitOfWork.BookingLogRepo.FilterAndMapAllBillBookingsAsync(Bill, customer);
+
+                return result;
             }
             catch (Exception ex)
             {
@@ -252,8 +290,12 @@ namespace Service.Service
         {
             try
             {
-                var bookingbilldtail = await _unitOfWork.BookingLogRepo.GetBookingsBillsByBookingidAsync(bookingId);
-                return bookingbilldtail;
+                var allBookingLogs = await _unitOfWork.BookingLogRepo.GetALLBookingBillsAsync();
+                var BillDetails = _unitOfWork.BookingLogRepo.GroupBookings(allBookingLogs);
+
+                var result = await _unitOfWork.BookingLogRepo.FilterAndMapAllBillBookingsByBookingIdAsync(BillDetails, bookingId);
+
+                return result;
             }
             catch (Exception ex)
             {
