@@ -78,7 +78,7 @@ namespace Service.Service
                     response.StatusCode = ApiStatusCode.BadRequest;
                 }
 
-                if (latestBookingLog.Status != (int)BookingStatusEnum.Pending)
+                if (latestBookingLog.Status != (int)BookingStatusEnum.Pending || latestBookingLog.Status != (int)BookingStatusEnum.WaitingForPayment)
                 {
                     response.message = $"The status of the latest booking log is not {((BookingStatusEnum)latestBookingLog.Status).ToString()}." +
                                        " Cannot update.";

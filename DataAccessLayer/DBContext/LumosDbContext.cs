@@ -230,7 +230,7 @@ namespace BussinessObject
 
                 entity.Property(e => e.CreatedDate).HasColumnType("datetime");
 
-                entity.Property(e => e.Note).HasColumnType("text");
+                entity.Property(e => e.Note).IsUnicode(true).HasColumnType("nvarchar");
 
                 entity.HasOne(d => d.Booking)
                     .WithMany(p => p.BookingLogs)
@@ -318,7 +318,7 @@ namespace BussinessObject
 
                 entity.Property(e => e.Date).HasColumnType("date");
 
-                entity.Property(e => e.Message).HasColumnType("text");
+                entity.Property(e => e.Message).IsUnicode(true).HasColumnType("nvarchar");
             });
 
             modelBuilder.Entity<MedicalReport>(entity =>
@@ -344,7 +344,7 @@ namespace BussinessObject
 
                 entity.Property(e => e.LastUpdate).HasColumnType("datetime");
 
-                entity.Property(e => e.Note).HasColumnType("text");
+                entity.Property(e => e.Note).IsUnicode(true).HasColumnType("nvarchar");
 
                 entity.Property(e => e.Phone)
                     .HasMaxLength(20)
@@ -653,7 +653,7 @@ namespace BussinessObject
 
                 entity.Property(e => e.ConfigId).ValueGeneratedOnAdd();
 
-                entity.Property(e => e.Config).IsUnicode(true).HasColumnType("text");
+                entity.Property(e => e.Config).IsUnicode(true).HasColumnType("nvarchar");
 
                 entity.Property(e => e.Field).HasMaxLength(50)
                     .IsUnicode(true);

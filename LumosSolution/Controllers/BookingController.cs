@@ -241,14 +241,15 @@ namespace LumosSolution.Controllers
                 return BadRequest(response);
             }
         }
-        [HttpPost("decline-booking")]
-        [Authorize(Roles = "Partner")]
-        public async Task<ActionResult<ApiResponse<object>>> DeclineBooking([FromBody] BookingLogDeclineRequest updateBookingStatusDTO)
+        [HttpPost("{bookingId}/cancel")]
+        [Authorize(Roles = "Partner,Customer")]
+        public async Task<ActionResult<ApiResponse<object>>> DeclineBooking([FromBody] BookingLogDeclineRequest updateBookingStatusDTO ,int bookingId)
         {
             ApiResponse<object> response = new ApiResponse<object>();
             try
             {
                 string? email = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+                updateBookingStatusDTO.BookingId = bookingId;
                 bool result = await _bookingLogService.DeclineBooking(updateBookingStatusDTO,email);
                 if (!result)
                 {
@@ -297,14 +298,15 @@ namespace LumosSolution.Controllers
                 return BadRequest(response);
             }
         }
-        [HttpPost("update-status-after-payment")]
+        [HttpPost("{bookingId}/pending")]
         [Authorize(Roles = "Partner")]
-        public async Task<ActionResult<ApiResponse<object>>> UpdateStatusAfterPayment([FromBody] BookingLogAcceptRequest updateBookingStatusDTO)
+        public async Task<ActionResult<ApiResponse<object>>> UpdateStatusAfterPayment([FromBody] BookingLogAcceptRequest updateBookingStatusDTO, int bookingId)
         {
             ApiResponse<object> response = new ApiResponse<object>();
             try
             {
                 string? email = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+                updateBookingStatusDTO.BookingId = bookingId;
                 bool result = await _bookingLogService.ChangeStatusToPending(updateBookingStatusDTO, email);
                 if (!result)
                 {

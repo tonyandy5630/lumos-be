@@ -307,14 +307,14 @@ namespace DataAccessLayer
             }
         }
 
-        private async Task<Customer> FindCustomerByEmailAsync(string email)
+        public async Task<Customer> FindCustomerByEmailAsync(string email)
         {
             using var dbContext = new LumosDBContext();
             return await dbContext.Customers.FirstOrDefaultAsync(c => c.Email == email && c.Status == 1);
         }
 
         
-        private async Task<bool> IsBookingStatusValidAsync(int bookingId, Customer customer)
+        public async Task<bool> IsBookingStatusValidAsync(int bookingId, Customer customer)
         {
             using var dbContext = new LumosDBContext();
             var hasStatusGreaterThan2 = await dbContext.BookingLogs.AnyAsync(bl => bl.BookingId == bookingId && bl.Status > (int)BookingStatusEnum.Doing);
@@ -371,7 +371,7 @@ namespace DataAccessLayer
             return true;
         }
 
-        private async Task<bool> CheckStatusForGetAllBooking(int bookingId, Customer customer)
+        public async Task<bool> CheckStatusForGetAllBooking(int bookingId, Customer customer)
         {
             using var dbContext = new LumosDBContext();
             var bookingDetail = await dbContext.BookingDetails.FirstOrDefaultAsync(bd => bd.BookingId == bookingId);
@@ -625,8 +625,9 @@ namespace DataAccessLayer
         public async Task<string> GetNoteFromBookingByidAsync(int bookingId)
         {
             using var dbContext = new LumosDBContext();
-            var totalprice = await dbContext.BookingDetails
+            var totalprice = await dbContext.BookingLogs
                 .Where(sb => sb.BookingId == bookingId)
+                .OrderByDescending(sb => sb.CreatedDate)
                 .Select(sb => sb.Note)
                 .FirstOrDefaultAsync();
 
