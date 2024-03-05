@@ -68,8 +68,7 @@ namespace Utils
                 default:
                     throw new ArgumentException("Invalid table name");
             }
-
-            codePrefix += codePrefix + year.Substring(2, 2);
+            codePrefix = codePrefix + year.Substring(2, 2);
 
             return $"{codePrefix}{Guid.NewGuid().ToString("N").Substring(0, 5).ToUpper()}";
         }
