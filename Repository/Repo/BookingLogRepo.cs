@@ -24,7 +24,7 @@ namespace Repository.Repo
 
         public Task<bool> UpdateBookingLogStatusForPartnerAsync(int bookingLogId, int newStatus) => BookingLogDAO.Instance.UpdateBookingLogStatusForPartnerAsync(bookingLogId, newStatus);
 
-        public List<IGrouping<int, BookingLog>> GroupBookings(List<BookingLog> allBookingLogs) => BookingLogDAO.Instance.GroupPendingBookings(allBookingLogs);
+        public List<IGrouping<int, BookingLog>> GroupBookings(List<BookingLog> allBookingLogs) => BookingLogDAO.Instance.GroupBookings(allBookingLogs);
 
         public Task<List<BookingLog>> GetALLBookingBillsAsync() => BookingLogDAO.Instance.GetALLBookingBillsAsync();
 
@@ -219,5 +219,48 @@ namespace Repository.Repo
         public Task<List<BookingLog>> GetAllBookingLogsAsync() =>BookingLogDAO.Instance.GetAllBookingLogsAsync();
 
         public Task<BookingInfoDTO> GetBookingDetailsBillsByIdAsync(int bookingId) => BookingLogDAO.Instance.GetBookingDetailsBillsByIdAsync(bookingId);
+        public async Task<List<BookingDTO>> FilterAndMapBookingsAsync(List<IGrouping<int, BookingLog>> bookings, Partner partner)
+        {
+            var result = new List<BookingDTO>();
+
+            foreach (var group in bookings)
+            {
+                var bookingId = group.Key;
+                var statuses = group.Select(bl => bl.Status).Distinct().ToList();
+                var bookingInfo = await GetBookingDetailsBillsByIdAsync(bookingId);
+                if (bookingInfo == null)
+                {
+                    return new List<BookingDTO>();
+                }
+                foreach (var status in statuses)
+                {
+                    if (await BookingLogDAO.Instance.CheckStatusForGetAllBookingWithPartner(bookingId, partner))
+                    {
+                        var medicalServiceDTOs = await GetMedicalServiceDTOsAsync(bookingId);
+
+                        result.Add(new BookingDTO
+                        {
+                            BookingId = bookingId,
+                            BookingCode = bookingInfo.Booking.Code,
+                            TotalPrice = bookingInfo.Booking.TotalPrice,
+                            Status = status,
+                            Partner = partner.DisplayName,
+                            Note = bookingInfo.Note,
+                            Rating = bookingInfo.Booking.Rating,
+                            PaymentLinkId = bookingInfo.Booking.PaymentLinkId,
+                            BookingDate = bookingInfo.Booking.BookingDate,
+                            bookingTime = bookingInfo.Booking.bookingTime,
+                            Address = bookingInfo.Booking.Address,
+                            PaymentMethod = bookingInfo.PaymentMethod,
+                            MedicalServices = medicalServiceDTOs
+                        });
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        public Task<List<BookingLog>> GetAllLogAsync() => BookingLogDAO.Instance.GetAllLogAsync();
     }
 }

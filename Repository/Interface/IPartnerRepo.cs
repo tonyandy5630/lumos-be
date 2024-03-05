@@ -35,7 +35,6 @@ namespace Repository.Interface
         Task<ListDataDTO> CalculateMonthlyRevenueAsync(int year);
         Task<List<PartnerServiceDTO>> GetPartnerServicesWithBookingCountAsync(int partnerId);
         Task<StatPartnerServiceDTO> CalculateServicesAndRevenueAsync(string? email);
-        Task<List<BookingDTO>> GetPartnerBookingsAsync(string partnerEmail, int page, int pageSize);
         Task<List<ChartStatDTO>> GetNewPartnerMonthlyAsync(int year);
         Task<List<int>> GetRevenuePerWeekInMonthAsync(string email,int month, int year);
     }

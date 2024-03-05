@@ -19,6 +19,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Repository.Interface;
 using Service.ErrorObject;
 using static Utils.MessagesResponse;
+using DataAccessLayer;
 
 namespace Service.Service
 {
@@ -26,6 +27,7 @@ namespace Service.Service
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private List<BookingDTO> _filteredBookings;
         public PartnerServices(IUnitOfWork unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
@@ -543,7 +545,23 @@ namespace Service.Service
         {
             try
             {
-                return await _unitOfWork.PartnerRepo.GetPartnerBookingsAsync(partnerEmail, page, pageSize);
+                var partner = await GetPartnerByEmailAsync(partnerEmail);
+                if (partner == null)
+                {
+                    return new List<BookingDTO>();
+                }
+
+                if (_filteredBookings == null)
+                {
+                    var allBookingLogs = await _unitOfWork.BookingLogRepo.GetAllLogAsync();
+                    var bookings = _unitOfWork.BookingLogRepo.GroupBookings(allBookingLogs);
+                    _filteredBookings = await _unitOfWork.BookingLogRepo.FilterAndMapBookingsAsync(bookings, partner);
+                }
+                var skipAmount = (page - 1) * pageSize;
+                var bookingsForPage = _filteredBookings.Skip(skipAmount).Take(pageSize).ToList();
+
+
+                return bookingsForPage;
             }
             catch (Exception ex)
             {

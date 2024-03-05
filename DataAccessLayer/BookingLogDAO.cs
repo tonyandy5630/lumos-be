@@ -193,6 +193,30 @@ namespace DataAccessLayer
 
             return true;
         }
+        public async Task<bool> CheckStatusForGetAllBookingWithPartner(int bookingId, Partner inputPartner)
+        {
+            using var dbContext = new LumosDBContext();
+            var bookingDetail = await dbContext.BookingDetails.FirstOrDefaultAsync(bd => bd.BookingId == bookingId);
+            var medicalReport = await dbContext.MedicalReports.FirstOrDefaultAsync(mr => mr.ReportId == bookingDetail.ReportId);
+            var booking = await dbContext.Bookings.FirstOrDefaultAsync(b => b.BookingId == bookingId);
+            var serviceBooking = await dbContext.ServiceBookings.FirstOrDefaultAsync(sb => sb.DetailId == bookingDetail.DetailId);
+            var partnerService = await dbContext.PartnerServices.FirstOrDefaultAsync(ps => ps.ServiceId == serviceBooking.ServiceId && ps.PartnerId == inputPartner.PartnerId);
+
+            if (bookingDetail == null || medicalReport == null || booking == null || serviceBooking == null || partnerService == null || inputPartner == null)
+            {
+                return false;
+            }
+
+            var serviceStatus = partnerService.Status;
+            var partnerStatus = inputPartner.Status;
+
+            if (serviceStatus != 1)
+            {
+                return false;
+            }
+
+            return true;
+        }
         public async Task<List<MedicalServiceDTO>> GetMedicalServiceDTOsAsync(int bookingId)
         {
             using var dbContext = new LumosDBContext();
@@ -314,6 +338,14 @@ namespace DataAccessLayer
 
             return await paymentName;
         }
+        public async Task<List<BookingLog>> GetAllLogAsync()
+        {
+            using var dbContext = new LumosDBContext();
+            return await dbContext.BookingLogs
+                .GroupBy(bl => bl.BookingId)
+                .Select(g => g.OrderByDescending(bl => bl.CreatedDate).FirstOrDefault())
+                .ToListAsync();
+        }
         public async Task<List<BookingLog>> GetAllPendingBookingLogsAsync()
         {
             using var dbContext = new LumosDBContext();
@@ -342,7 +374,7 @@ namespace DataAccessLayer
                 .ToListAsync();
         }
 
-        public List<IGrouping<int, BookingLog>> GroupPendingBookings(List<BookingLog> allBookingLogs)
+        public List<IGrouping<int, BookingLog>> GroupBookings(List<BookingLog> allBookingLogs)
         {
             return allBookingLogs
                  .Where(bl => bl.BookingId != null)
