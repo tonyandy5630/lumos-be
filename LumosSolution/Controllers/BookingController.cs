@@ -59,6 +59,7 @@ namespace LumosSolution.Controllers
                 return BadRequest(response);
             }
         }
+
         [HttpGet("bill/{bookingid}")]
         [Authorize(Roles = "Customer")]
         public async Task<ActionResult<ApiResponse<object>>> GetBookingBillByID(int bookingid)
@@ -95,6 +96,7 @@ namespace LumosSolution.Controllers
                 return BadRequest(response);
             }
         }
+
         [HttpGet("bill")]
         [Authorize(Roles = "Customer")]
         public async Task<ActionResult<ApiResponse<object>>> GetBookingBill()
@@ -241,6 +243,7 @@ namespace LumosSolution.Controllers
                 return BadRequest(response);
             }
         }
+
         [HttpPost("{bookingId}/cancel")]
         [Authorize(Roles = "Partner,Customer")]
         public async Task<ActionResult<ApiResponse<object>>> DeclineBooking([FromBody] BookingLogDeclineRequest updateBookingStatusDTO ,int bookingId)
@@ -270,6 +273,7 @@ namespace LumosSolution.Controllers
                 return BadRequest(response);
             }
         }
+
         [HttpPost("log")]
         [Authorize(Roles = "Partner")]
         public async Task<ActionResult<ApiResponse<object>>> UpdateBookingStatusAndCreateLog([FromBody] BookingLogRequest updateBookingStatusDTO)
@@ -298,6 +302,7 @@ namespace LumosSolution.Controllers
                 return BadRequest(response);
             }
         }
+
         [HttpPost("{bookingId}/complete")]
         [Authorize(Roles = "Customer")]
         public async Task<ActionResult<ApiResponse<object>>> UpdateStatusToCmplete([FromBody] ChangToCompleteRequest completerequest, int bookingId)
@@ -327,6 +332,7 @@ namespace LumosSolution.Controllers
                 return BadRequest(response);
             }
         }
+
         [HttpPost("{bookingId}/pending")]
         [Authorize(Roles = "Partner")]
         public async Task<ActionResult<ApiResponse<object>>> UpdateStatusAfterPayment([FromBody] BookingLogAcceptRequest updateBookingStatusDTO, int bookingId)
@@ -410,6 +416,7 @@ namespace LumosSolution.Controllers
                 return BadRequest(response);
             }
         }
+
         [HttpGet("stats/bookings/monthly/{year}")]
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult<ApiResponse<object>>> GetMonthlyBookingStats(int year)
@@ -622,6 +629,7 @@ namespace LumosSolution.Controllers
                 return BadRequest(response);
             }
         }
+
         [HttpGet("incomplete")]
         [Authorize(Roles = "Admin, Customer")]
         public async Task<ActionResult<ApiResponse<object>>> GetIncompleteBookings(int? customerId = null, int? reportId = null)
