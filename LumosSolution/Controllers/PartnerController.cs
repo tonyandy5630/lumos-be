@@ -346,9 +346,9 @@ namespace LumosSolution.Controllers
 
         [HttpPost("service")]
         [Authorize(Roles = "Partner")]
-        public async Task<ActionResult<PartnerService>> AddPartnerService([FromBody] AddPartnerServiceResquest service)
+        public async Task<ActionResult<object>> AddPartnerService([FromBody] AddPartnerServiceResquest service)
         {
-            ApiResponse<PartnerService> response = new ApiResponse<PartnerService>
+            ApiResponse<object> response = new ApiResponse<object>
             {
                 StatusCode = 500
             };
@@ -362,7 +362,14 @@ namespace LumosSolution.Controllers
                 }
 
                 string? email = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
-                PartnerService newService = await _partnerService.AddPartnerServiceAsync(service, email);
+                (PartnerService? newService, PartnerServiceError? error) = await _partnerService.AddPartnerServiceAsync(service, email);
+                if(error != null)
+                {
+                    response.message = MessagesResponse.Error.DuplicateResource;
+                    response.StatusCode = 422;
+                    response.data = error;
+                    return UnprocessableEntity(response);
+                }
 
                 if (newService == null)
                     throw new Exception("Added sevice failed");

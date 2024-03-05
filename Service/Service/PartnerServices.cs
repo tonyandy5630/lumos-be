@@ -18,6 +18,7 @@ using Utils;
 using Microsoft.Extensions.DependencyInjection;
 using Repository.Interface;
 using Service.ErrorObject;
+using static Utils.MessagesResponse;
 
 namespace Service.Service
 {
@@ -31,7 +32,7 @@ namespace Service.Service
             _mapper = mapper;
         }
 
-        public async Task<PartnerService?> AddPartnerServiceAsync(AddPartnerServiceResquest service, string? partnerEmail)
+        public async Task<(PartnerService?, PartnerServiceError?)> AddPartnerServiceAsync(AddPartnerServiceResquest service, string? partnerEmail)
         {
             const string TRANSACTION = "add-parner-service";
             IDbContextTransaction commit = await _unitOfWork.StartTransactionAsync(TRANSACTION);
@@ -45,14 +46,20 @@ namespace Service.Service
                     throw new Exception("Not found partner email");
 
 
-                Partner partner = await _unitOfWork.PartnerRepo.GetPartnerByEmailAsync(partnerEmail);
+                Partner? partner = await _unitOfWork.PartnerRepo.GetPartnerByEmailAsync(partnerEmail);
 
                 if (partner == null)
                     throw new Exception("Not found partner");
 
                 PartnerService? existedService = await _unitOfWork.PartnerServiceRepo.GetPartnerServiceByServiceNameAsync(service.Name, partner.PartnerId);
                 if (existedService != null)
-                    throw new Exception("Service with same name has existed");
+                {
+                    PartnerServiceError error = new()
+                    {
+                        Name = "Service with same name has existed"
+                    };
+                    return (null, error);
+                };
 
                 PartnerService partnerService = _mapper.Map<PartnerService>(service);
                 partnerService.PartnerId = partner.PartnerId;
@@ -99,7 +106,7 @@ namespace Service.Service
                 }
 
                 await _unitOfWork.CommitTransactionAsync(commit);
-                return newService;
+                return (newService, null);
             }
             catch (Exception ex)
             {
@@ -135,19 +142,19 @@ namespace Service.Service
             {
                 PartnerError? errorPartner = null;
 
-                Task<Partner?> existedPartnerName =  _unitOfWork.PartnerRepo.GetPartnerByPartnerNameAsync(partner.PartnerName.Trim());
-                Task<Partner?> existedLicense =  _unitOfWork.PartnerRepo.GetPartnerByBussinessLicenseAsync(partner.BusinessLicenseNumber.Trim());
-                Task<Partner?> existedDisplayName =  _unitOfWork.PartnerRepo.GetPartnerByDisplayNameAsync(partner.DisplayName.Trim());
-                Task<Partner?> existedEmail =  _unitOfWork.PartnerRepo.GetPartnerByEmailAsync(partner.Email.Trim());
+                Task<Partner?> existedPartnerName = _unitOfWork.PartnerRepo.GetPartnerByPartnerNameAsync(partner.PartnerName.Trim());
+                Task<Partner?> existedLicense = _unitOfWork.PartnerRepo.GetPartnerByBussinessLicenseAsync(partner.BusinessLicenseNumber.Trim());
+                Task<Partner?> existedDisplayName = _unitOfWork.PartnerRepo.GetPartnerByDisplayNameAsync(partner.DisplayName.Trim());
+                Task<Partner?> existedEmail = _unitOfWork.PartnerRepo.GetPartnerByEmailAsync(partner.Email.Trim());
 
                 Task.WhenAll(existedPartnerName, existedLicense, existedDisplayName, existedEmail).Wait();
 
-                bool partnerNameError =  existedPartnerName.Result != null;
+                bool partnerNameError = existedPartnerName.Result != null;
                 bool licenseError = existedLicense.Result != null;
                 bool displayNameError = existedDisplayName.Result != null;
                 bool emailError = existedEmail.Result != null;
 
-                bool hasError = partnerNameError|| licenseError|| displayNameError|| emailError;
+                bool hasError = partnerNameError || licenseError || displayNameError || emailError;
                 if (hasError)
                 {
                     errorPartner = new PartnerError();
@@ -163,12 +170,12 @@ namespace Service.Service
                     if (emailError)
                         errorPartner.Email = "Existed Email";
 
-                    return  (null,  errorPartner);
+                    return (null, errorPartner);
                 }
 
                 PartnerType? partnerType = await _unitOfWork.PartnerTypeRepo.GetPartnerTypeByIdAsync(partner.TypeId);
 
-                if(partnerType == null)
+                if (partnerType == null)
                     throw new NullReferenceException("Partner Type is not existed");
 
                 Partner addPartner = _mapper.Map<Partner>(partner);
@@ -178,15 +185,15 @@ namespace Service.Service
                 // Hash password
                 IUserManagerRepo<AddPartnerRequest> userManager = new UserManagerRepo<AddPartnerRequest>();
                 addPartner.Password = userManager.HashPassword(partner, partner.Email.Trim());
-                
+
                 Partner? part = await _unitOfWork.PartnerRepo.AddPartnereAsync(addPartner);
 
-                if(part == null)
+                if (part == null)
                 {
                     Console.WriteLine("Failed to add partner!");
                     throw new Exception("Something went wrong when adding partner");
-                } 
-                return (part,null);
+                }
+                return (part, null);
             }
             catch (Exception ex)
             {
@@ -370,7 +377,7 @@ namespace Service.Service
                 foreach (var partner in results)
                 {
                     // empty old  partner servicelist for new partner
-                    if(serviceDetails.Count > 0)
+                    if (serviceDetails.Count > 0)
                         serviceDetails.Clear();
                     foreach (var service in partner.PartnerServices)
                     {
@@ -386,7 +393,7 @@ namespace Service.Service
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error in SearchPartnerByPartnerOrServiceName: { ex.Message}", ex);
+                Console.WriteLine($"Error in SearchPartnerByPartnerOrServiceName: {ex.Message}", ex);
                 throw new Exception(ex.Message);
             }
         }
@@ -394,10 +401,12 @@ namespace Service.Service
         public async Task<List<PartnerType>> GetPartnerTypesAsync(string? keyword)
         {
             try
-            {   List<PartnerType> partnerTypes =  await _unitOfWork.PartnerTypeRepo.GetPartnerTypesAsync(keyword);
+            {
+                List<PartnerType> partnerTypes = await _unitOfWork.PartnerTypeRepo.GetPartnerTypesAsync(keyword);
                 Console.WriteLine("GetPartnerTypesAsync: " + partnerTypes.Count);
                 return partnerTypes;
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 Console.WriteLine($"Error in GetPartnerTypesAsync: {ex.Message}", ex);
                 throw new Exception(ex.Message);
@@ -443,7 +452,8 @@ namespace Service.Service
                     Console.WriteLine("Schedule added successfully");
                 }
                 return addedSchedule;
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 Console.WriteLine($"Error in AddPartnerScheduleAsync: {ex.Message}", ex);
                 throw new Exception(ex.Message);
@@ -472,15 +482,15 @@ namespace Service.Service
                 throw new Exception("Partner not found");
             stat = await CalculateServicesAndRevenueAsync(email);
 
-            return  await Task.FromResult(stat);
+            return await Task.FromResult(stat);
         }
 
 
-        public async Task<ListDataDTO> CalculatePartnerRevenueInMonthAsync(string email,int month, int year)
+        public async Task<ListDataDTO> CalculatePartnerRevenueInMonthAsync(string email, int month, int year)
         {
             try
             {
-                var revenuePerWeek = await _unitOfWork.PartnerRepo.GetRevenuePerWeekInMonthAsync(email,month, year);
+                var revenuePerWeek = await _unitOfWork.PartnerRepo.GetRevenuePerWeekInMonthAsync(email, month, year);
 
                 List<int?> result = revenuePerWeek.Select(revenue => (int?)revenue).ToList();
 

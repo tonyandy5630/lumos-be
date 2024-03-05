@@ -214,7 +214,7 @@ namespace DataAccessLayer
             try
             {
                 using var _context = new LumosDBContext();
-                Partner partner = await _context.Partners.SingleOrDefaultAsync(u => u.Email.ToLower().Equals(email.ToLower()) && u.Status == 1);
+                Partner? partner = await _context.Partners.SingleOrDefaultAsync(u => u.Email.ToLower().Equals(email.ToLower()) && u.Status == 1);
                 if (partner != null)
                 {
                     partner.PartnerServices = await _context.PartnerServices.Where(ps => ps.PartnerId == partner.PartnerId).ToListAsync();
