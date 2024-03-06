@@ -27,7 +27,7 @@ namespace BussinessObject
         public string? Address { get; set; }
         public string? Description { get; set; }
         [JsonIgnore]
-        public int? Status { get; set; }
+        public int? Status { get; set; } = 1;
         [JsonIgnore]
         public DateTime? LastLogin { get; set; }
         [JsonIgnore]
@@ -35,7 +35,7 @@ namespace BussinessObject
         [JsonIgnore]
         public DateTime? LastUpdate { get; set; }
         [JsonIgnore]
-        public DateTime CreatedDate { get; set; }
+        public DateTime CreatedDate { get; set; } = DateTime.Now;
         [JsonIgnore]
         public string? UpdatedBy { get; set; }
         public string? ImgUrl { get; set; }
@@ -45,7 +45,7 @@ namespace BussinessObject
         public string BusinessLicenseNumber { get; set; }
         [JsonIgnore]
         public int? Role { get; set; }
-        public decimal? Rating { get; set; }
+        public decimal Rating { get; set; } = 0.0m;
         [JsonIgnore]
         public virtual PartnerType? Type { get; set; }
         [JsonIgnore]

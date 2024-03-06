@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using System.Xml.Linq;
 
 namespace BussinessObject
 {
@@ -27,5 +28,17 @@ namespace BussinessObject
         public int WorkShift { get;set; }
         [JsonIgnore]
         public virtual Partner? Partner { get; set; }
+        public override bool Equals(object obj)
+        {
+            if (obj == null || GetType() != obj.GetType())
+                return false;
+
+            Schedule schedule = (Schedule)obj;
+            return DayOfWeek == schedule.DayOfWeek && WorkShift == schedule.WorkShift;
+        }
+        public override int GetHashCode()
+        {
+            return (DayOfWeek, WorkShift).GetHashCode();
+        }
     }
 }
