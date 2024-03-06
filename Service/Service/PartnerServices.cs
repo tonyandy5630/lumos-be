@@ -110,11 +110,57 @@ namespace Service.Service
                 await _unitOfWork.CommitTransactionAsync(commit);
                 return (newService, null);
             }
-            catch (Exception ex)
+            catch
             {
                 await _unitOfWork.RollBackAsync(commit, TRANSACTION);
-                throw new Exception(ex.Message);
+                throw;
             }
+        }
+
+        private async Task<bool> AddPartnerScheduleAsync(List<ScheduleRequest> schedules, int partnerId)
+        {
+
+            try
+            {
+                Partner? partner = await _unitOfWork.PartnerRepo.GetPartnerByIDAsync(partnerId);
+
+                if (partner == null)
+                    throw new NullReferenceException("Partner is banned or deleted");
+
+                List<Schedule> addSchedules = _mapper.Map<List<Schedule>>(schedules);
+
+                HashSet<Schedule> uniqueSet = new HashSet<Schedule>();
+                HashSet<Schedule> duplicatesSet = new HashSet<Schedule>();
+
+                foreach (Schedule schedule in addSchedules)
+                {
+                    if (schedule.WorkShift < 1 || schedule.WorkShift > 3)
+                        throw new NotSupportedException("Work shift is not supported yet");
+
+                    if (schedule.DayOfWeek < 2 || schedule.DayOfWeek > 8)
+                        throw new NotSupportedException("Day of week is invalid");
+
+                    // uniqueSet return false on duplicates
+                    if (!uniqueSet.Add(schedule))
+                    {
+                        continue;
+                    }
+
+                    schedule.PartnerId = partner.PartnerId;
+                    schedule.Code = GenerateCode.GenerateTableCode("schedule");
+                    schedule.CreatedDate = DateTime.Now;
+                    schedule.LastUpdate = DateTime.Now;
+                }
+
+                bool addedSchedule = await _unitOfWork.ScheduleRepo.AddPartnerScheduleAsync(uniqueSet.ToList());
+                return addedSchedule;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in AddPartnerScheduleAsync: {ex.Message}", ex);
+                return false;
+            }
+            
         }
 
         public async Task<PartnerServiceDTO?> GetPartnerServiceDetailAsync(int serviceId)
@@ -138,16 +184,18 @@ namespace Service.Service
             }
         }
 
-        public async Task<(Partner?, PartnerError?)> AddPartnerAsync(AddPartnerRequest partner)
+        public async Task<(Partner?, PartnerError?)> AddPartnerAsync(AddPartnerRequest partnerRequest)
         {
+            string TRANSACTION = "add-partner";
+            IDbContextTransaction commit = await _unitOfWork.StartTransactionAsync(TRANSACTION);
             try
             {
                 PartnerError? errorPartner = null;
 
-                Task<Partner?> existedPartnerName = _unitOfWork.PartnerRepo.GetPartnerByPartnerNameAsync(partner.PartnerName.Trim());
-                Task<Partner?> existedLicense = _unitOfWork.PartnerRepo.GetPartnerByBussinessLicenseAsync(partner.BusinessLicenseNumber.Trim());
-                Task<Partner?> existedDisplayName = _unitOfWork.PartnerRepo.GetPartnerByDisplayNameAsync(partner.DisplayName.Trim());
-                Task<Partner?> existedEmail = _unitOfWork.PartnerRepo.GetPartnerByEmailAsync(partner.Email.Trim());
+                Task<Partner?> existedPartnerName = _unitOfWork.PartnerRepo.GetPartnerByPartnerNameAsync(partnerRequest.Partner.PartnerName.Trim());
+                Task<Partner?> existedLicense = _unitOfWork.PartnerRepo.GetPartnerByBussinessLicenseAsync(partnerRequest.Partner.BusinessLicenseNumber.Trim());
+                Task<Partner?> existedDisplayName = _unitOfWork.PartnerRepo.GetPartnerByDisplayNameAsync(partnerRequest.Partner.DisplayName.Trim());
+                Task<Partner?> existedEmail = _unitOfWork.PartnerRepo.GetPartnerByEmailAsync(partnerRequest.Partner.Email.Trim());
 
                 Task.WhenAll(existedPartnerName, existedLicense, existedDisplayName, existedEmail).Wait();
 
@@ -175,34 +223,40 @@ namespace Service.Service
                     return (null, errorPartner);
                 }
 
-                PartnerType? partnerType = await _unitOfWork.PartnerTypeRepo.GetPartnerTypeByIdAsync(partner.TypeId);
+                PartnerType? partnerType = await _unitOfWork.PartnerTypeRepo.GetPartnerTypeByIdAsync(partnerRequest.Partner.TypeId);
 
                 if (partnerType == null)
                     throw new NullReferenceException("Partner Type is not existed");
 
-                Partner addPartner = _mapper.Map<Partner>(partner);
+                Partner addPartner = _mapper.Map<Partner>(partnerRequest.Partner);
                 addPartner.Code = GenerateCode.GenerateRoleCode("partner");
                 addPartner.CreatedDate = DateTime.Now;
-                addPartner.LastUpdate = DateTime.Now;
                 // Hash password
-                IUserManagerRepo<AddPartnerRequest> userManager = new UserManagerRepo<AddPartnerRequest>();
-                addPartner.Password = userManager.HashPassword(partner, partner.Email.Trim());
+                IUserManagerRepo<PartnerRequest> userManager = new UserManagerRepo<PartnerRequest>();
+                addPartner.Password = userManager.HashPassword(partnerRequest.Partner, partnerRequest.Partner.Email.Trim());
 
-                Partner? part = await _unitOfWork.PartnerRepo.AddPartnereAsync(addPartner);
+                Partner? part = await _unitOfWork.PartnerRepo.AddPartnerAsync(addPartner);
 
                 if (part == null)
                 {
                     Console.WriteLine("Failed to add partner!");
                     throw new Exception("Something went wrong when adding partner");
                 }
+
+                bool schedules = await AddPartnerScheduleAsync(partnerRequest.Schedules, part.PartnerId);
+                if (!schedules)
+                {
+                    throw new NullReferenceException("Cannot add schedules");
+                }
+
+                await _unitOfWork.CommitTransactionAsync(commit);
                 return (part, null);
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                if (ex is NullReferenceException)
-                    throw new NullReferenceException(ex.Message);
-                throw new Exception(ex.Message);
+                await _unitOfWork.RollBackAsync(commit, TRANSACTION);
+                throw;
             }
         }
 
@@ -440,49 +494,7 @@ namespace Service.Service
             }
         }
 
-        public async Task<bool> AddPartnerScheduleAsync(AddScheduleRequest schedules)
-        {
-            string TRANSACTION = "add-schedule";
-            IDbContextTransaction commit = await _unitOfWork.StartTransactionAsync(TRANSACTION);
-            try
-            {
-                Partner? partner = await _unitOfWork.PartnerRepo.GetPartnerByIDAsync(schedules.partnerId);
-
-                if (partner == null)
-                    throw new NullReferenceException("Partner is banned or deleted");
-
-                List<Schedule> addSchedules = _mapper.Map<List<Schedule>>(schedules.schedules);
-
-                foreach (Schedule schedule in addSchedules)
-                {
-                    if (schedule.WorkShift < 1 || schedule.WorkShift > 3)
-                        throw new NotSupportedException("Work shift is not supported yet");
-
-                    if (schedule.DayOfWeek < 2 || schedule.DayOfWeek > 8)
-                        throw new NotSupportedException("Day of week is invalid");
-
-                    schedule.PartnerId = partner.PartnerId;
-                    schedule.Code = GenerateCode.GenerateTableCode("schedule");
-                    schedule.CreatedDate = DateTime.Now;
-                    schedule.LastUpdate = DateTime.Now;
-                }
-
-                bool addedSchedule = await _unitOfWork.ScheduleRepo.AddPartnerScheduleAsync(addSchedules);
-                if (!addedSchedule)
-                {
-                    throw new Exception("Something wrong, Schedule not added");
-                }
-
-                await _unitOfWork.CommitTransactionAsync(commit);
-                return addedSchedule;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error in AddPartnerScheduleAsync: {ex.Message}", ex);
-                await _unitOfWork.RollBackAsync(commit, TRANSACTION);
-                throw;
-            }
-        }
+       
         public async Task<IEnumerable<PartnerServiceDTO>> GetTopFiveBookedServicesAsync()
         {
             try

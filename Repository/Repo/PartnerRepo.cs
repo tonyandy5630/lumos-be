@@ -23,7 +23,7 @@ namespace Repository.Repo
 
         public Task<PartnerService?> AddPartnerServiceAsync(PartnerService service) => PartnerDAO.Instance.AddPartnerServiceAsync(service);
         
-        public Task<Partner?> AddPartnereAsync(Partner partner) => PartnerDAO.Instance.AddPartnereAsync(partner);
+        public Task<Partner?> AddPartnerAsync(Partner partner) => PartnerDAO.Instance.AddPartnereAsync(partner);
 
         public Task<bool> BanPartnerAsync(int partnerId) => PartnerDAO.Instance.BanPartnerAsync(partnerId);
 

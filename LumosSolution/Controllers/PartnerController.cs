@@ -486,47 +486,17 @@ namespace LumosSolution.Controllers
             }
             catch (Exception ex)
             {
-                if (ex is NullReferenceException)
+                if (ex is NullReferenceException || ex is NotSupportedException)
                 {
                     response.message = ex.Message;
                     response.StatusCode = ApiStatusCode.UnprocessableEntity;
                     return UnprocessableEntity(response);
                 }
+                
                 return BadRequest(response);
             }
         }
 
-        [HttpPost("schedule")]
-        [Authorize(Roles = "Admin")]
-        public async Task<ActionResult<ApiResponse<Schedule>>> AddPartnerSchedule([FromBody] AddScheduleRequest schedules)
-        {
-            ApiResponse<Schedule> res = new ApiResponse<Schedule>();
-            try
-            {
-                bool addedSchedule = await _partnerService.AddPartnerScheduleAsync(schedules);
-                if (!addedSchedule)
-                {
-                    throw new Exception("Something wrong, Schedule not added");
-                }
-
-                res.message = MessagesResponse.Success.Completed;
-                res.StatusCode = ApiStatusCode.OK;
-                return Ok(res);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error in AddPartnerSchedule: {ex.Message}", ex);
-                if(ex is NotSupportedException)
-                {
-                    res.message = ex.Message;
-                    res.StatusCode = 422;
-                    return UnprocessableEntity(res);
-                }
-                res.message = MessagesResponse.Error.OperationFailed;
-                res.StatusCode = ApiStatusCode.BadRequest;
-                return BadRequest(res);
-            }
-        }
         [HttpGet("top-five-booked-services")]
         [Authorize(Roles = "Admin,Customer,Partner")]
         public async Task<ActionResult<ApiResponse<IEnumerable<PartnerServiceDTO>>>> GetTopFiveBookedServices()

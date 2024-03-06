@@ -76,7 +76,7 @@ namespace DataTransferObject
                 .ForMember(dto => dto.BloodType, act => act.MapFrom(src => src.BloodType))
                 .ForMember(dto => dto.Note, act => act.MapFrom(src => src.Note));
 
-            CreateMap<AddPartnerRequest, Partner>()
+            CreateMap<PartnerRequest, Partner>()
                 .ForMember(req => req.PartnerName, act => act.MapFrom(src => src.PartnerName))
                 .ForMember(req => req.BusinessLicenseNumber, act => act.MapFrom(src => src.BusinessLicenseNumber))
                 .ForMember(req => req.DisplayName, act => act.MapFrom(src => src.DisplayName))
