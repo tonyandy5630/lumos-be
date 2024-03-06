@@ -6,14 +6,6 @@ using System.Threading.Tasks;
 
 namespace RequestEntity
 {
-    public class AddScheduleRequest
-    {
-       public int partnerId {  get; set; }
-       public List<ScheduleRequest> schedules { get; set; }
-
-
-    }
-
     public class ScheduleRequest
     {
         public int WorkShift { get; set; }

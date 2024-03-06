@@ -33,7 +33,7 @@ namespace Repository.Repo
 
         private void CheckUserType(TUser user)
         {
-            bool isPartner = user is AddPartnerRequest;
+            bool isPartner = user is PartnerRequest;
             bool isAdmin = user is Admin;
             bool isCustomer = user is Customer;
             if ( !isPartner && !isAdmin && !isCustomer)

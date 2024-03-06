@@ -21,7 +21,7 @@ namespace Repository.Interface
         Task<Partner> GetPartnerByRefreshTokenAsync(string token);
         Task<Partner?> GetPartnerByEmailAsync(string email);
         Task<Partner> GetPartnerByCodeAsync(string code);
-        Task<Partner?> AddPartnereAsync(Partner partner);
+        Task<Partner?> AddPartnerAsync(Partner partner);
         Task<Partner?> GetPartnerByBussinessLicenseAsync(string license);
         Task<Partner?> GetPartnerByDisplayNameAsync(string displayName);
         Task<Partner?> GetPartnerByPartnerNameAsync(string name);
