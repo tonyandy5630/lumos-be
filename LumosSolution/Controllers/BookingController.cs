@@ -312,6 +312,18 @@ namespace LumosSolution.Controllers
             {
                 string? email = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
                 completerequest.BookingId = bookingId;
+                if (string.IsNullOrEmpty(completerequest.feedback.feedbackLumos))
+                {
+                    completerequest.feedback.feedbackLumos = "";
+                }
+                if (string.IsNullOrEmpty(completerequest.feedback.feedbackImage))
+                {
+                    completerequest.feedback.feedbackImage = "";
+                }
+                if (string.IsNullOrEmpty(completerequest.feedback.feedbackPartner))
+                {
+                    completerequest.feedback.feedbackPartner = "";
+                }
                 bool result = await _bookingLogService.ChangeStatusToComplete(completerequest, email);
                 if (!result)
                 {
