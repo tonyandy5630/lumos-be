@@ -11,8 +11,8 @@ namespace RequestEntity
     {
         [Required(ErrorMessage = "Cần có rating")]
         public int rating { get; set; }
-        public string feedbackPartner { get; set; }
-        public string feedbackLumos { get; set; }
-        public string feedbackImage { get; set; }
+        public string? feedbackPartner { get; set; }
+        public string? feedbackLumos { get; set; }
+        public string? feedbackImage { get; set; }
     }
 }
