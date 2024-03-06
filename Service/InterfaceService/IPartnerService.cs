@@ -24,7 +24,7 @@ namespace Service.InterfaceService
         Task<bool> BanPartnerAsync(int partnerId);
         Task<List<Schedule>> GetScheduleByPartnerIdAsyn(int id);
         Task<List<PartnerType>> GetPartnerTypesAsync(string? keyword);
-        Task<Schedule> AddPartnerScheduleAsync(Schedule schedule);
+        Task<bool> AddPartnerScheduleAsync(AddScheduleRequest schedule);
         Task<IEnumerable<SearchPartnerDTO>> SearchPartnerByPartnerOrServiceNameAsync(string keyword);
         Task<(PartnerService?, PartnerServiceError?)> AddPartnerServiceAsync(AddPartnerServiceResquest service, string? partnerEmail);
         Task<IEnumerable<SearchPartnerDTO>> GetPartnerByCategoryAsync(int categoryId);

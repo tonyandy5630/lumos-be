@@ -159,12 +159,12 @@ namespace DataAccessLayer
                 throw new Exception(ex.Message);
             }
         }
-        public async Task<Partner> GetPartnerByIDAsync(int id)
+        public async Task<Partner?> GetPartnerByIDAsync(int id)
         {
             try
             {
                 using var _context = new LumosDBContext();
-                Partner partner = await _context.Partners.SingleOrDefaultAsync(u => u.PartnerId == id);
+                Partner? partner = await _context.Partners.SingleOrDefaultAsync(u => u.PartnerId == id && u.Status == 1);
                 if (partner != null)
                 {
                     partner.PartnerServices = await _context.PartnerServices.Where(ps => ps.PartnerId == id).ToListAsync();
