@@ -371,7 +371,7 @@ namespace BussinessObject
                 entity.Property(e => e.BusinessLicenseNumber).IsUnicode(true).IsRequired();
 
                 entity.Property(e => e.Code).HasMaxLength(50).IsUnicode(true).IsRequired();
-                entity.Property(e => e.Rating).HasColumnType("decimal(3,1").IsRequired();
+                entity.Property(e => e.Rating).HasColumnType("decimal(3,1");
 
                 entity.Property(e => e.CreatedBy)
                     .HasMaxLength(50)
