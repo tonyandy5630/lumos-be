@@ -17,7 +17,7 @@ namespace Repository.Interface
         Task<int> CountAppPartnerAsync();
         Task<PartnerServiceDTO?> GetPartnerServiceDetailByIdAsync(int id);
         Task<List<Partner>> GetAllPartnersAsync();
-        Task<Partner> GetPartnerByIDAsync(int id);
+        Task<Partner?> GetPartnerByIDAsync(int id);
         Task<Partner> GetPartnerByRefreshTokenAsync(string token);
         Task<Partner?> GetPartnerByEmailAsync(string email);
         Task<Partner> GetPartnerByCodeAsync(string code);

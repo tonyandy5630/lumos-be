@@ -11,7 +11,7 @@ namespace Repository.Interface
     public interface IScheduleRepo
     {
         Task<List<Schedule>> GetScheduleByPartnerIdAsyn(int id);
-        Task<Schedule> AddPartnerScheduleAsync(Schedule schedule);
+        Task<bool> AddPartnerScheduleAsync(List<Schedule> schedule);
         Task<List<ScheduleDTO>> GetSchedulesByPartnerIdAsync(int partnerId);
     }
 }

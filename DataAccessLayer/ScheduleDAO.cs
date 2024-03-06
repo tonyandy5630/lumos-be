@@ -47,20 +47,15 @@ namespace DataAccessLayer
             }
         }
 
-        public async Task<Schedule> AddPartnerScheduleAsync(Schedule schedule)
+        public async Task<bool> AddPartnerScheduleAsync(List<Schedule> schedules)
         {
             try
             {
-                schedule.Code = GenerateCode.GenerateTableCode("Schedule");
-                schedule.CreatedDate = DateTime.Now;
-                schedule.CreatedDate = DateTime.Now;
-                //schedule.CreatedBy = "admin";
-                //schedule.UpdatedBy = "admin";
-
-                _context.Schedules.Add(schedule);
-                await _context.SaveChangesAsync();
-                Console.WriteLine("Schedule added successfully");
-                return await _context.Schedules.SingleOrDefaultAsync(x => x.Code.Equals(schedule.Code));
+                await _context.Schedules.AddRangeAsync(schedules);
+                int success = await _context.SaveChangesAsync();
+                if (success != schedules.Count)
+                    return false;
+                return true;
             }
             catch (Exception ex)
             {

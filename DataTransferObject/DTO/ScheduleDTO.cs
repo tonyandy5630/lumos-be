@@ -12,7 +12,9 @@ namespace DataTransferObject.DTO
         public int ScheduleId { get; set; }
         public int WorkShift { get; set; }
         public int DayOfWeek { get; set; }
+        [JsonIgnore]
         public TimeSpan From { get; set; }
+        [JsonIgnore]
         public TimeSpan To { get; set; }
     }
 }

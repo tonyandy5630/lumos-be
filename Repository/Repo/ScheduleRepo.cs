@@ -14,7 +14,7 @@ namespace Repository.Repo
     {
         public ScheduleRepo(LumosDBContext context) { }
 
-        public Task<Schedule> AddPartnerScheduleAsync(Schedule schedule) => ScheduleDAO.Instance.AddPartnerScheduleAsync(schedule);
+        public Task<bool> AddPartnerScheduleAsync(List<Schedule> schedule) => ScheduleDAO.Instance.AddPartnerScheduleAsync(schedule);
 
         public Task<List<Schedule>> GetScheduleByPartnerIdAsyn(int id) => ScheduleDAO.Instance.GetScheduleByPartnerIdAsyn(id);
 

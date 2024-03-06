@@ -55,14 +55,14 @@ namespace LumosSolution.Controllers
             }
             catch (Exception ex)
             {
-                if(ex is NullReferenceException)
+                if (ex is NullReferenceException)
                 {
                     response.message = ex.Message;
                     response.StatusCode = ApiStatusCode.NotFound;
                     return NotFound(response);
                 }
 
-                if(ex is NotSupportedException)
+                if (ex is NotSupportedException)
                 {
                     response.message = ex.Message;
                     response.StatusCode = 422;
@@ -151,7 +151,7 @@ namespace LumosSolution.Controllers
                 response.StatusCode = ApiStatusCode.InternalServerError;
                 return StatusCode(500, response);
             }
-        }      
+        }
 
         [HttpGet("revenue/{month}")]
         [Authorize(Roles = "Partner")]
@@ -363,7 +363,7 @@ namespace LumosSolution.Controllers
 
                 string? email = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
                 (PartnerService? newService, PartnerServiceError? error) = await _partnerService.AddPartnerServiceAsync(service, email);
-                if(error != null)
+                if (error != null)
                 {
                     response.message = MessagesResponse.Error.DuplicateResource;
                     response.StatusCode = 422;
@@ -498,27 +498,30 @@ namespace LumosSolution.Controllers
 
         [HttpPost("schedule")]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult<ApiResponse<Schedule>>> AddPartnerSchedule([FromBody] Schedule schedule)
+        public async Task<ActionResult<ApiResponse<Schedule>>> AddPartnerSchedule([FromBody] AddScheduleRequest schedules)
         {
             ApiResponse<Schedule> res = new ApiResponse<Schedule>();
             try
             {
-                Schedule addedSchedule = await _partnerService.AddPartnerScheduleAsync(schedule);
-                if (addedSchedule == null)
+                bool addedSchedule = await _partnerService.AddPartnerScheduleAsync(schedules);
+                if (!addedSchedule)
                 {
                     throw new Exception("Something wrong, Schedule not added");
                 }
-                else
-                {
-                    res.message = MessagesResponse.Success.Completed;
-                    res.StatusCode = ApiStatusCode.OK;
-                    res.data = addedSchedule;
-                    return Ok(res);
-                }
+
+                res.message = MessagesResponse.Success.Completed;
+                res.StatusCode = ApiStatusCode.OK;
+                return Ok(res);
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error in AddPartnerSchedule: {ex.Message}", ex);
+                if(ex is NotSupportedException)
+                {
+                    res.message = ex.Message;
+                    res.StatusCode = 422;
+                    return UnprocessableEntity(res);
+                }
                 res.message = MessagesResponse.Error.OperationFailed;
                 res.StatusCode = ApiStatusCode.BadRequest;
                 return BadRequest(res);
