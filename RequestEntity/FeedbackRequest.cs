@@ -10,7 +10,7 @@ namespace RequestEntity
     public class FeedbackRequest
     {
         [Required(ErrorMessage = "Cần có rating")]
-        public int rating { get; set; }
+        public double rating { get; set; }
         public string? feedbackPartner { get; set; }
         public string? feedbackLumos { get; set; }
         public string? feedbackImage { get; set; }
