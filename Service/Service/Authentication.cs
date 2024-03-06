@@ -191,17 +191,17 @@ namespace Service.Service
                 {
                     case (BussinessObject.Admin admin, _, _):
                         admin.RefreshToken = refreshToken;
-                        await _unitOfWork.AdminRepo.UpdateAdminAsync(admin);
+                        await UpdateLastLoginTime(email);
                         break;
 
                     case (_, BussinessObject.Customer customer, _):
                         customer.RefreshToken = refreshToken;
-                        await _unitOfWork.CustomerRepo.UpdateCustomerAsync(customer);
+                        await UpdateLastLoginTime(email);
                         break;
 
                     case (_, _, BussinessObject.Partner partner):
                         partner.RefreshToken = refreshToken;
-                        await _unitOfWork.PartnerRepo.UpdatePartnerAsync(partner);
+                        await UpdateLastLoginTime(email);
                         break;
 
                     default:

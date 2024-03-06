@@ -23,19 +23,6 @@ var dbconnection = configuration["ConnectionStrings:DB"];
 builder.Services.AddInfrastructure(builder.Configuration, dbconnection);
 using var loggerFactory = LoggerFactory.Create(b => b.SetMinimumLevel(LogLevel.Trace).AddConsole());
 // Add services to the container.
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy(name: "CorsPolicy", builder =>
-
-    builder.WithOrigins("http://localhost:4200",
-                        "http://localhost:3000",
-                        "https://lumos-five.vercel.app",
-                        "https://lumos.health.vn")
-            .AllowAnyMethod()
-            .AllowAnyHeader()
-            .AllowCredentials());
-});
-
 
 // Add Authentication and JwtBearer
 builder.Services
@@ -113,14 +100,29 @@ builder.Services.AddSwaggerGen(opt =>
             }
      });
 });
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: "CorsPolicy", builder =>
+    {
+        builder.WithOrigins("http://localhost:4200",
+                            "http://localhost:3000",
+                            "https://lumos-five.vercel.app",
+                            "https://lumos.health.vn")
+                .AllowAnyMethod()
+                .AllowAnyHeader()
+                .AllowCredentials();
+    });
+});
+
 var app = builder.Build();
+
+app.UseCors("CorsPolicy");
 
 // Configure the HTTP request pipeline.
 app.UseSwagger();
 app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
-app.UseCors("CorsPolicy");
 app.UseAuthentication();
 app.UseAuthorization();
 

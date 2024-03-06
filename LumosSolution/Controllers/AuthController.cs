@@ -11,6 +11,7 @@ using BussinessObject;
 using BussinessObject.AuthenModel;
 using DataTransferObject.DTO;
 using Google.Apis.Auth;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -277,7 +278,6 @@ namespace LumosSolution.Controllers
 
                 if (authenticated && passwordCorrect)
                 {
-                    await _authentication.UpdateLastLoginTime(model.Email);
                     var (token, accessTokenTime, refreshTokentime, refreshToken) = await _authentication.GenerateToken(model.Email, role);
                     if (string.IsNullOrEmpty(token))
                     {
