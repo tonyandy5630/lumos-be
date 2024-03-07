@@ -522,17 +522,19 @@ namespace Service.Service
         }
 
 
-        public async Task<ListDataDTO> CalculatePartnerRevenueInMonthAsync(string email, int month, int year)
+        public async Task<ListRevenueDTO> CalculatePartnerRevenueInMonthAsync(string email, int month, int year)
         {
             try
             {
                 var revenuePerWeek = await _unitOfWork.PartnerRepo.GetRevenuePerWeekInMonthAsync(email, month, year);
 
                 List<int?> result = revenuePerWeek.Select(revenue => (int?)revenue).ToList();
+                List<int?> bill15pt = result.Select(revenue => (int?)(revenue * 1.5)).ToList();
 
-                ListDataDTO listData = new ListDataDTO
+                ListRevenueDTO listData = new ListRevenueDTO
                 {
-                    Data = result
+                    Data = result,
+                    Bill15pt = bill15pt,
                 };
 
                 return listData;

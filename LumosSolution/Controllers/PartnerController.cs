@@ -157,7 +157,7 @@ namespace LumosSolution.Controllers
         [Authorize(Roles = "Partner")]
         public async Task<ActionResult<ListDataDTO>> GetPartnerRevenueInMonth(int month, int? year = null)
         {
-            ApiResponse<ListDataDTO> response = new ApiResponse<ListDataDTO>
+            ApiResponse<ListRevenueDTO> response = new ApiResponse<ListRevenueDTO>
             {
                 message = MessagesResponse.Error.NotFound,
                 StatusCode = ApiStatusCode.NotFound
