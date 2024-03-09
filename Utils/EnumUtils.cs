@@ -14,10 +14,11 @@ namespace Utils
             return status switch
             {
                 0 => BookingStatusEnum.Canceled,
-                1 => BookingStatusEnum.Pending,
-                2 => BookingStatusEnum.Doing,
-                3 => BookingStatusEnum.Finished,
-                4 => BookingStatusEnum.Completed,
+                1 => BookingStatusEnum.WaitingForPayment,
+                2 => BookingStatusEnum.Pending,
+                3 => BookingStatusEnum.Doing,
+                4 => BookingStatusEnum.Finished,
+                5 => BookingStatusEnum.Completed,
                 _ => BookingStatusEnum.Unknown,
             };
         }
