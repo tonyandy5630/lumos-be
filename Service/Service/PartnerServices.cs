@@ -122,6 +122,8 @@ namespace Service.Service
 
             try
             {
+                if (schedules.Count == 0)
+                    return false;
                 Partner? partner = await _unitOfWork.PartnerRepo.GetPartnerByIDAsync(partnerId);
 
                 if (partner == null)
@@ -203,8 +205,9 @@ namespace Service.Service
                 bool licenseError = existedLicense.Result != null;
                 bool displayNameError = existedDisplayName.Result != null;
                 bool emailError = existedEmail.Result != null;
+                bool scheduleNotExist = partnerRequest.Schedules == null;
 
-                bool hasError = partnerNameError || licenseError || displayNameError || emailError;
+                bool hasError = partnerNameError || licenseError || displayNameError || emailError || scheduleNotExist;
                 if (hasError)
                 {
                     errorPartner = new PartnerError();
@@ -219,6 +222,9 @@ namespace Service.Service
 
                     if (emailError)
                         errorPartner.Email = "Existed Email";
+
+                    if (scheduleNotExist)
+                        errorPartner.Schedule = "Schedule is missing";
 
                     return (null, errorPartner);
                 }
