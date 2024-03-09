@@ -16,5 +16,6 @@ namespace Service.ErrorObject
         public string? Phone { get; set; }
         public string? Address { get; set; }
         public string? BusinessLicenseNumber { get; set; }
+        public string? Schedule { get; set; }
     }
 }
