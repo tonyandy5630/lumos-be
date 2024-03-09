@@ -294,15 +294,19 @@ namespace Service.Service
         {
             try
             {
+                var result = new List<BillDTO>();
                 var customer = await _unitOfWork.CustomerRepo.GetCustomerByEmailAsync(email);
                 if (customer == null)
                 {
                     return new List<BillDTO>();
                 }
 
-                var allBookingLogs = await _unitOfWork.BookingLogRepo.GetALLBookingBillsAsync();
-                var Bill = _unitOfWork.BookingLogRepo.GroupBookings(allBookingLogs);
-                var result = await _unitOfWork.BookingLogRepo.FilterAndMapAllBillBookingsAsync(Bill, customer);
+                var allBookingLogs = await _unitOfWork.BookingLogRepo.GetBookingBillsByCustomerIdAsync(customer.CustomerId);
+                var waitingForPaymentBookings = allBookingLogs.Where(b => b.Status == (int)BookingStatusEnum.WaitingForPayment).ToList();
+                if (waitingForPaymentBookings.Any())
+                {
+                    result = waitingForPaymentBookings.Concat(allBookingLogs.Except(waitingForPaymentBookings)).ToList();
+                }
 
                 return result;
             }
