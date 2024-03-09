@@ -275,12 +275,13 @@ namespace Service.Service
                 {
                     return new List<BookingDTO>();
                 }
-
-                var allBookingLogs = await _unitOfWork.BookingLogRepo.GetAllBookingLogsAsync();
-                var pendingBookings = _unitOfWork.BookingLogRepo.GroupBookings(allBookingLogs);
-                var result = await _unitOfWork.BookingLogRepo.FilterAndMapAllBookingsAsync(pendingBookings, customer);
-
-                return result;
+                
+                var allBookingLogs = await _unitOfWork.BookingLogRepo.GetBookingDetailsByCustomerIdAsync(customer.CustomerId);
+                foreach (var booking in allBookingLogs)
+                {
+                    booking.MedicalServices = await _unitOfWork.BookingLogRepo.GetMedicalServiceDTOsAsync(booking.BookingId);
+                }
+                return allBookingLogs;
             }
             catch (Exception ex)
             {
