@@ -270,13 +270,12 @@ namespace Service.Service
         {
             try
             {
-                var customer = await _unitOfWork.CustomerRepo.GetCustomerByEmailAsync(email);
-                if (customer == null)
+                if (email == null)
                 {
                     return new List<BookingDTO>();
                 }
                 
-                var allBookingLogs = await _unitOfWork.BookingLogRepo.GetBookingDetailsByCustomerIdAsync(customer.CustomerId);
+                var allBookingLogs = await _unitOfWork.BookingLogRepo.GetBookingDetailsByCustomerIdAsync(email);
                 foreach (var booking in allBookingLogs)
                 {
                     booking.MedicalServices = await _unitOfWork.BookingLogRepo.GetMedicalServiceDTOsAsync(booking.BookingId);
@@ -295,13 +294,12 @@ namespace Service.Service
             try
             {
                 var result = new List<BillDTO>();
-                var customer = await _unitOfWork.CustomerRepo.GetCustomerByEmailAsync(email);
-                if (customer == null)
+                if (email == null)
                 {
                     return new List<BillDTO>();
                 }
 
-                var allBookingLogs = await _unitOfWork.BookingLogRepo.GetBookingBillsByCustomerIdAsync(customer.CustomerId);
+                var allBookingLogs = await _unitOfWork.BookingLogRepo.GetBookingBillsByCustomerIdAsync(email);
                 var waitingForPaymentBookings = allBookingLogs.Where(b => b.Status == (int)BookingStatusEnum.WaitingForPayment).ToList();
                 if (waitingForPaymentBookings.Any())
                 {

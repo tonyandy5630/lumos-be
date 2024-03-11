@@ -98,7 +98,7 @@ namespace LumosSolution.Controllers
         }
 
         [HttpGet("bill")]
-        [Authorize(Roles = "Customer")]
+        [Authorize(Roles = "Customer,Partner")]
         public async Task<ActionResult<ApiResponse<object>>> GetBookingBill()
         {
             ApiResponse<object> response = new ApiResponse<object>();
@@ -135,7 +135,7 @@ namespace LumosSolution.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "Customer")]
+        [Authorize(Roles = "Customer,Partner")]
         public async Task<ActionResult<ApiResponse<object>>> GetAllBookingsByCustomerID()
         {
             ApiResponse<object> response = new ApiResponse<object>();
@@ -171,7 +171,7 @@ namespace LumosSolution.Controllers
             }
         }
         [HttpGet("customer/{id}")]
-        [Authorize(Roles = "Customer,Partner")]
+        [Authorize(Roles = "Customer")]
         public async Task<ActionResult<ApiResponse<object>>> GetIcomeBookingsByCustomerID(int id)
         {
             ApiResponse<object> response = new ApiResponse<object>();

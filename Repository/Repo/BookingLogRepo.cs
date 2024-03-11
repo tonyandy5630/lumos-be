@@ -263,8 +263,8 @@ namespace Repository.Repo
 
         public Task<List<BookingLog>> GetAllLogAsync() => BookingLogDAO.Instance.GetAllLogAsync();
 
-        public Task<List<BookingDTO>> GetBookingDetailsByCustomerIdAsync(int customerId) => BookingLogDAO.Instance.GetBookingDetailsByCustomerIdAsync(customerId);
+        public Task<List<BookingDTO>> GetBookingDetailsByCustomerIdAsync(string email) => BookingLogDAO.Instance.GetBookingDetailsByCustomerIdAsync(email);
 
-        public Task<List<BillDTO>> GetBookingBillsByCustomerIdAsync(int customerId) => BookingLogDAO.Instance.GetBookingBillsByCustomerIdAsync(customerId);
+        public Task<List<BillDTO>> GetBookingBillsByCustomerIdAsync(string email) => BookingLogDAO.Instance.GetBookingBillsByCustomerIdAsync(email);
     }
 }

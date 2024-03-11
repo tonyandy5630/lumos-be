@@ -435,7 +435,7 @@ namespace DataAccessLayer
                 throw new Exception("Error in GetBookingDetailsByIdAsync", ex);
             }
         }
-        public async Task<List<BookingDTO>> GetBookingDetailsByCustomerIdAsync(int customerId)
+        public async Task<List<BookingDTO>> GetBookingDetailsByCustomerIdAsync(string email)
         {
             try
             {
@@ -450,7 +450,7 @@ namespace DataAccessLayer
                                             join ps in dbContext.PartnerServices on sb.ServiceId equals ps.ServiceId
                                             join p in dbContext.Partners on ps.PartnerId equals p.PartnerId
                                             join pm in dbContext.PaymentMethods on b.PaymentId equals pm.PaymentId
-                                            where c.CustomerId == customerId 
+                                            where (p.Email == email) || (c.Email == email)
                                                 && bl.Status >= 0 
                                                 && bl.Status <= 5 
                                                 && bl.Status != 1
@@ -508,7 +508,7 @@ namespace DataAccessLayer
                 throw new Exception("Error in GetBookingDetailsByCustomerIdAsync", ex);
             }
         }
-        public async Task<List<BillDTO>> GetBookingBillsByCustomerIdAsync(int customerId)
+        public async Task<List<BillDTO>> GetBookingBillsByCustomerIdAsync(string email)
         {
             try
             {
@@ -523,7 +523,7 @@ namespace DataAccessLayer
                                             join ps in dbContext.PartnerServices on sb.ServiceId equals ps.ServiceId
                                             join p in dbContext.Partners on ps.PartnerId equals p.PartnerId
                                             join pm in dbContext.PaymentMethods on b.PaymentId equals pm.PaymentId
-                                            where c.CustomerId == customerId
+                                            where (p.Email == email) ||  (c.Email == email)
                                                   && c.Status == 1
                                                   && pm.Status == 1
                                             select new
