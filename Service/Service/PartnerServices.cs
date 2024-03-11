@@ -532,15 +532,23 @@ namespace Service.Service
         {
             try
             {
+                int total = 0;
                 var revenuePerWeek = await _unitOfWork.PartnerRepo.GetRevenuePerWeekInMonthAsync(email, month, year);
 
                 List<int?> result = revenuePerWeek.Select(revenue => (int?)revenue).ToList();
-                List<int?> bill15pt = result.Select(revenue => (int?)(revenue * 1.5)).ToList();
+                foreach (var item in result)
+                {
+                    if (item.HasValue)
+                    {
+                        total += item.Value;
+                    }
 
+                }
+                var bill15pt = total * 0.15;
                 ListRevenueDTO listData = new ListRevenueDTO
                 {
                     Data = result,
-                    Bill15pt = bill15pt,
+                    Bill15pt = (int)bill15pt,
                 };
 
                 return listData;
