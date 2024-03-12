@@ -1,10 +1,12 @@
-using BussinessObject;
+﻿using BussinessObject;
 using BussinessObject.AuthenModel;
 using Enum;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Repository;
 using Repository.Interface.IUnitOfWork;
+using RequestEntity;
 using Service.InterfaceService;
 using System;
 using System.ComponentModel.DataAnnotations;
@@ -28,7 +30,7 @@ namespace Service.Service
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<(bool, string, string, object,bool, bool)> IsUserAuthenticatedAsync(string email, string password)
+        public async Task<(bool, string, string, object, bool, bool)> IsUserAuthenticatedAsync(string email, string password)
         {
             try
             {
@@ -39,86 +41,120 @@ namespace Service.Service
                 bool emailExists = false;
                 bool passwordCorrect = false;
 
+                // Kiểm tra xem email có tồn tại trong hệ thống không
                 var adminResponse = await _unitOfWork.AdminRepo.GetAdminByEmailAsync(email);
-                if (adminResponse != null && adminResponse.Password == password && adminResponse.Status ==1 )
-                {
-                    passwordCorrect = true;
-                    authenticated = true;
-                    role = nameof(RolesEnum.Admin);
-                    username = "Admin";
-                    userDetails = new
-                    {
-                        ID = adminResponse.AdminId,
-                        Email = adminResponse.Email,
-                        Code = adminResponse.Code,
-                        Role = adminResponse.Role,
-                        Status = adminResponse.Status,
-                        CreatedDate = adminResponse.CreatedDate,
-                        CreatedBy = adminResponse.CreatedBy,
-                        LastUpdate = adminResponse.LastUpdate,
-                        UpdatedBy = adminResponse.UpdatedBy,
-                        ImgUrl = adminResponse.ImgUrl,
-                    };
-                }
-                if (adminResponse != null) { emailExists = true; }
+                var partnerResponse = await _unitOfWork.PartnerRepo.GetPartnerByEmailAsync(email);
+                var customerResponse = await _unitOfWork.CustomerRepo.GetCustomerByEmailAsync(email);
 
-                if (!authenticated)
+                // Nếu email tồn tại trong hệ thống
+                if (adminResponse != null || partnerResponse != null || customerResponse != null)
                 {
-                    var partnerResponse = await _unitOfWork.PartnerRepo.GetPartnerByEmailAsync(email);
-                    if (partnerResponse != null && partnerResponse.Password == password && partnerResponse.Status == 1)
-                    {
-                        passwordCorrect = true;
-                        authenticated = true;
-                        role = nameof(RolesEnum.Partner);
-                        username = partnerResponse.PartnerName;
-                        userDetails = new
-                        {
-                            ID = partnerResponse.PartnerId,
-                            Email = partnerResponse.Email,
-                            Code = partnerResponse.Code,
-                            Role = partnerResponse.Role,
-                            TypeId = partnerResponse.TypeId,
-                            DisplayName = partnerResponse.DisplayName,
-                            Phone = partnerResponse.Phone,
-                            Address = partnerResponse.Address,
-                            Status = partnerResponse.Status,
-                            CreatedDate = partnerResponse.CreatedDate,
-                            CreatedBy = partnerResponse.CreatedBy,
-                            LastUpdate = partnerResponse.LastUpdate,
-                            UpdatedBy = partnerResponse.UpdatedBy,
-                            ImgUrl = partnerResponse.ImgUrl,
-                            BusinessLicenseNumber = partnerResponse.BusinessLicenseNumber
-                        };
-                        
-                    }
-                    if (partnerResponse != null) { emailExists = true; }   
-                }
+                    emailExists = true;
 
-                if (!authenticated)
-                {
-                    var customerResponse = await _unitOfWork.CustomerRepo.GetCustomerByEmailAsync(email);
-                    if (customerResponse != null && customerResponse.Password == password && customerResponse.Status == 1)
+                    // Kiểm tra mật khẩu cho Admin
+                    if (adminResponse != null)
                     {
-                        passwordCorrect = true;
-                        authenticated = true;
-                        role = nameof(RolesEnum.Customer);
-                        username = customerResponse.Fullname;
-                        userDetails = new
+                        if (adminResponse.Password.Length==84)
                         {
-                            ID = customerResponse.CustomerId,
-                            Email = customerResponse.Email,
-                            Code = customerResponse.Code,
-                            Role = customerResponse.Role,
-                            Phone = customerResponse.Phone,
-                            Pronounce = customerResponse.Pronounce,
-                            Status = customerResponse.Status,
-                            CreatedDate = customerResponse.CreatedDate,
-                            LastUpdate = customerResponse.LastUpdate,
-                            UpdatedBy = customerResponse.UpdateBy,
-                            ImgUrl = customerResponse.ImgUrl,
-                        };
+                            passwordCorrect = PasswordHelper.VerifyPassword(adminResponse, password, adminResponse.Password);
+                        }
+                        else
+                        {
+                            passwordCorrect = adminResponse.Password == password;
+                        }
+
+                        if (passwordCorrect && adminResponse.Status == 1)
+                        {
+                            authenticated = true;
+                            role = nameof(RolesEnum.Admin);
+                            username = "Admin";
+                            userDetails = new
+                            {
+                                ID = adminResponse.AdminId,
+                                Email = adminResponse.Email,
+                                Code = adminResponse.Code,
+                                Role = adminResponse.Role,
+                                Status = adminResponse.Status,
+                                CreatedDate = adminResponse.CreatedDate,
+                                CreatedBy = adminResponse.CreatedBy,
+                                LastUpdate = adminResponse.LastUpdate,
+                                UpdatedBy = adminResponse.UpdatedBy,
+                                ImgUrl = adminResponse.ImgUrl,
+                            };
+                        }
                     }
-                    if (customerResponse != null) { emailExists = true; }
+
+                    // Kiểm tra mật khẩu cho Partner
+                    if (!authenticated && partnerResponse != null)
+                    {
+                        if (partnerResponse.Password.Length==84)
+                        {
+                            passwordCorrect = PasswordHelper.VerifyPassword(partnerResponse, password, partnerResponse.Password);
+                        }
+                        else
+                        {
+                            passwordCorrect = partnerResponse.Password == password;
+                        }
+
+                        if (passwordCorrect && partnerResponse.Status == 1)
+                        {
+                            authenticated = true;
+                            role = nameof(RolesEnum.Partner);
+                            username = partnerResponse.PartnerName;
+                            userDetails = new
+                            {
+                                ID = partnerResponse.PartnerId,
+                                Email = partnerResponse.Email,
+                                Code = partnerResponse.Code,
+                                Role = partnerResponse.Role,
+                                TypeId = partnerResponse.TypeId,
+                                DisplayName = partnerResponse.DisplayName,
+                                Phone = partnerResponse.Phone,
+                                Address = partnerResponse.Address,
+                                Status = partnerResponse.Status,
+                                CreatedDate = partnerResponse.CreatedDate,
+                                CreatedBy = partnerResponse.CreatedBy,
+                                LastUpdate = partnerResponse.LastUpdate,
+                                UpdatedBy = partnerResponse.UpdatedBy,
+                                ImgUrl = partnerResponse.ImgUrl,
+                                BusinessLicenseNumber = partnerResponse.BusinessLicenseNumber
+                            };
+                        }
+                    }
+
+                    // Kiểm tra mật khẩu cho Customer
+                    if (!authenticated && customerResponse != null)
+                    {
+                        if (customerResponse.Password.Length==84)
+                        {
+                            passwordCorrect = PasswordHelper.VerifyPassword(customerResponse, password, customerResponse.Password);
+                        }
+                        else
+                        {
+                            passwordCorrect = customerResponse.Password == password;
+                        }
+
+                        if (passwordCorrect && customerResponse.Status == 1)
+                        {
+                            authenticated = true;
+                            role = nameof(RolesEnum.Customer);
+                            username = customerResponse.Fullname;
+                            userDetails = new
+                            {
+                                ID = customerResponse.CustomerId,
+                                Email = customerResponse.Email,
+                                Code = customerResponse.Code,
+                                Role = customerResponse.Role,
+                                Phone = customerResponse.Phone,
+                                Pronounce = customerResponse.Pronounce,
+                                Status = customerResponse.Status,
+                                CreatedDate = customerResponse.CreatedDate,
+                                LastUpdate = customerResponse.LastUpdate,
+                                UpdatedBy = customerResponse.UpdateBy,
+                                ImgUrl = customerResponse.ImgUrl,
+                            };
+                        }
+                    }
                 }
 
                 if (authenticated && role != "Admin")
@@ -126,14 +162,15 @@ namespace Service.Service
                     await UpdateLastLoginTime(email);
                 }
 
-                return (true, role, username, userDetails, emailExists,passwordCorrect);
+                return (true, role, username, userDetails, emailExists, passwordCorrect);
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Exception in IsUserAuthenticatedAsync: {ex.Message}");
-                return (false, null, null, null,false,false);
+                return (false, null, null, null, false, false);
             }
         }
+
 
         public async Task<(string, DateTime, DateTime, string)> GenerateToken(string email, string role)
         {
@@ -448,6 +485,21 @@ namespace Service.Service
             string? email = decodedToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
             string? role = decodedToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
             return await Task.FromResult((email, role));
+        }
+        public static class PasswordHelper
+        {
+            private static readonly PasswordHasher<object> _passwordHasher = new PasswordHasher<object>();
+
+            public static string HashPassword<TUser>(TUser user, string password) where TUser : class
+            {
+                return _passwordHasher.HashPassword(user, password);
+            }
+
+            public static bool VerifyPassword<TUser>(TUser user, string verifyPassword, string providedPassword) where TUser : class
+            {
+                PasswordVerificationResult result = _passwordHasher.VerifyHashedPassword(user, providedPassword, verifyPassword);
+                return result == PasswordVerificationResult.Success;
+            }
         }
     }
 }
