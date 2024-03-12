@@ -20,6 +20,7 @@ using Repository.Interface;
 using Service.ErrorObject;
 using static Utils.MessagesResponse;
 using DataAccessLayer;
+using Enum;
 
 namespace Service.Service
 {
@@ -240,6 +241,7 @@ namespace Service.Service
                 // Hash password
                 IUserManagerRepo<PartnerRequest> userManager = new UserManagerRepo<PartnerRequest>();
                 addPartner.Password = userManager.HashPassword(partnerRequest.Partner, partnerRequest.Partner.Email.Trim());
+                addPartner.Role = (int)RolesEnum.Partner;
 
                 Partner? part = await _unitOfWork.PartnerRepo.AddPartnerAsync(addPartner);
 

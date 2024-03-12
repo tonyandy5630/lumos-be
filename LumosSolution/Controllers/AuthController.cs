@@ -1,25 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
-using System.Runtime.CompilerServices;
-using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Security.Claims;
 using AutoMapper;
 using BussinessObject;
 using BussinessObject.AuthenModel;
-using DataTransferObject.DTO;
 using Google.Apis.Auth;
-using Microsoft.AspNetCore.Cors;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Tokens;
 using RequestEntity;
 using Service.InterfaceService;
 using Utils;
-using static Google.Apis.Requests.BatchRequest;
 
 namespace LumosSolution.Controllers
 {
