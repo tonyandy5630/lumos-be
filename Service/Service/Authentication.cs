@@ -54,7 +54,7 @@ namespace Service.Service
                     // Kiểm tra mật khẩu cho Admin
                     if (adminResponse != null)
                     {
-                        if (adminResponse.Password.Length==84)
+                        if (adminResponse.Password.Length > 60)
                         {
                             passwordCorrect = PasswordHelper.VerifyPassword(adminResponse, password, adminResponse.Password);
                         }
