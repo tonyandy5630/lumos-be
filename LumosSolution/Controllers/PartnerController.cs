@@ -123,8 +123,6 @@ namespace LumosSolution.Controllers
                 string? email = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
                 List<PartnerServiceDTO> partnerServices = await _partnerService.GetPartnerServicesWithBookingCountAsync(email);
 
-                if (partnerServices == null || partnerServices.Count == 0)
-                    return NotFound(response);
 
                 response.message = MessagesResponse.Success.Completed;
                 response.StatusCode = ApiStatusCode.OK;
