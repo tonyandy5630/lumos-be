@@ -93,12 +93,6 @@ namespace LumosSolution.Controllers
 
                 var bookings = await _partnerService.GetPartnerBookingsAsync(email, page, PageSize);
 
-                if (bookings == null || !bookings.Any())
-                {
-                    response.message = MessagesResponse.Error.NotFound;
-                    response.StatusCode = ApiStatusCode.NotFound;
-                    return NotFound(response);
-                }
 
                 response.data = bookings;
                 response.message = MessagesResponse.Success.Completed;
