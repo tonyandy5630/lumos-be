@@ -595,17 +595,18 @@ namespace Service.Service
         {
             try
             {
-                var partner = await GetPartnerByEmailAsync(partnerEmail);
-                if (partner == null)
+                if (partnerEmail == null)
                 {
                     return new List<BookingDTO>();
                 }
 
                 if (_filteredBookings == null)
                 {
-                    var allBookingLogs = await _unitOfWork.BookingLogRepo.GetAllLogAsync();
-                    var bookings = _unitOfWork.BookingLogRepo.GroupBookings(allBookingLogs);
-                    _filteredBookings = await _unitOfWork.BookingLogRepo.FilterAndMapBookingsAsync(bookings, partner);
+                    _filteredBookings = await _unitOfWork.BookingLogRepo.GetAllBookingDetailsByCustomerIdAsync(partnerEmail);
+                    foreach (var booking in _filteredBookings)
+                    {
+                        booking.MedicalServices = await _unitOfWork.BookingLogRepo.GetMedicalServiceDTOsAsync(booking.BookingId);
+                    }
                 }
                 var skipAmount = (page - 1) * pageSize;
                 var bookingsForPage = _filteredBookings.Skip(skipAmount).Take(pageSize).ToList();
