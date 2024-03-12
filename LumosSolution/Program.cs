@@ -107,7 +107,8 @@ builder.Services.AddCors(options =>
         builder.WithOrigins("http://localhost:4200",
                             "http://localhost:3000",
                             "https://lumos-five.vercel.app",
-                            "https://lumos.health.vn")
+                            "https://lumos.health.vn",
+                            "https://www.lumos.health.vn/")
                 .AllowAnyMethod()
                 .AllowAnyHeader()
                 .AllowCredentials();
