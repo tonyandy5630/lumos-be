@@ -86,7 +86,7 @@ namespace Service.Service
                     BookingId = updateBookingStatus.BookingId,
                     Note = updateBookingStatus.CancellationReason,
                     Status = (int)BookingStatusEnum.Canceled,
-                    CreatedDate = DateTime.Now,
+                    CreatedDate = DateConverter.GetUTCTime(),
                     CreatedBy = email
                 };
                 bool createLogResult = await _unitOfWork.BookingLogRepo.CreateBookingLogAsync(newBookingLog);
@@ -162,7 +162,7 @@ namespace Service.Service
                     BookingId = updateBookingStatus.BookingId,
                     Note = latestBookingLog.Note,
                     Status = (int)BookingStatusEnum.Pending,
-                    CreatedDate = DateTime.Now,
+                    CreatedDate = DateConverter.GetUTCTime(),
                     CreatedBy = email
                 };
                 bool createLogResult = await _unitOfWork.BookingLogRepo.CreateBookingLogAsync(newBookingLog);
@@ -200,7 +200,7 @@ namespace Service.Service
                     BookingId = complete.BookingId,
                     Note = complete.reason,
                     Status = (int)BookingStatusEnum.Completed,
-                    CreatedDate = DateTime.Now,
+                    CreatedDate = DateConverter.GetUTCTime(),
                     CreatedBy = email
                 };
                 bool createLogResult = await _unitOfWork.BookingLogRepo.CreateBookingLogAsync(newBookingLog);
