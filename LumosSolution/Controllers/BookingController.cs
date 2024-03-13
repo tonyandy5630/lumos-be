@@ -346,7 +346,7 @@ namespace LumosSolution.Controllers
         }
 
         [HttpPost("{bookingId}/pending")]
-        [Authorize(Roles = "Partner")]
+        [Authorize(Roles = "Customer")]
         public async Task<ActionResult<ApiResponse<object>>> UpdateStatusAfterPayment([FromBody] BookingLogAcceptRequest updateBookingStatusDTO, int bookingId)
         {
             ApiResponse<object> response = new ApiResponse<object>();
