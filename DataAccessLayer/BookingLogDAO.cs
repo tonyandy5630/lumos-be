@@ -140,7 +140,7 @@ namespace DataAccessLayer
         public async Task<bool> IsBookingStatusValidAsync(int bookingId, Customer customer)
         {
             using var dbContext = new LumosDBContext();
-            var hasStatusGreaterThan2 = await dbContext.BookingLogs.AnyAsync(bl => bl.BookingId == bookingId && bl.Status > (int)BookingStatusEnum.Doing);
+            var hasStatusGreaterThan2 = await dbContext.BookingLogs.AnyAsync(bl => bl.BookingId == bookingId && (bl.Status > (int)BookingStatusEnum.Doing)|| bl.Status < (int)BookingStatusEnum.WaitingForPayment);
             if (hasStatusGreaterThan2)
             {
                 return false;
