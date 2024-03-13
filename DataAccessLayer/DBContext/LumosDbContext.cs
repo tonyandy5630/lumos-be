@@ -205,7 +205,8 @@ namespace BussinessObject
 
                 entity.Property(e => e.CreatedDate).HasColumnType("datetime");
 
-                entity.Property(e => e.Note).HasColumnType("text");
+                entity.Property(e => e.Note).HasMaxLength(100)
+                    .IsUnicode(true);
 
                 entity.HasOne(d => d.Booking)
                     .WithMany(p => p.BookingDetails)
