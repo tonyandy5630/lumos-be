@@ -132,7 +132,7 @@ namespace Service.Service
                     BookingId = id,
                     Note = latestBookingLog.Note,
                     Status = latestBookingLog.Status + 1,
-                    CreatedDate = DateTime.Now,
+                    CreatedDate = DateConverter.GetUTCTime(),
                     CreatedBy = email
                 };
                 bool result = await _unitOfWork.BookingLogRepo.CreateBookingLogAsync(newBookingLog);

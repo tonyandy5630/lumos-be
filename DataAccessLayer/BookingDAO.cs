@@ -177,7 +177,7 @@ namespace DataAccessLayer
                     await ProcessPaymentMethodAsync(booking);
 
                     booking.Code = GenerateCode.GenerateTableCode("booking");
-                    booking.CreatedDate = DateTime.Now;
+                    booking.CreatedDate = DateConverter.GetUTCTime();
                     booking.bookingTime = createBookingDTO.bookingTime;
                     booking.From = DateTime.Now;
                     booking.CreatedBy = email;
