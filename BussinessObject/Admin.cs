@@ -12,6 +12,7 @@ namespace BussinessObject
             AdminConfigurations = new HashSet<AdminConfiguration>();
         }
 
+        [JsonPropertyName("id")]
         public int AdminId { get; set; }
         public string? Code { get; set; }
         [Required]

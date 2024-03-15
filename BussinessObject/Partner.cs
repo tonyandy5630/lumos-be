@@ -13,7 +13,7 @@ namespace BussinessObject
             PartnerServices = new HashSet<PartnerService>();
             Schedules = new HashSet<Schedule>();
         }
-
+        [JsonPropertyName("id")]
         public int PartnerId { get; set; }
         public int TypeId { get; set; }
         public string? Code { get; set; }
