@@ -43,7 +43,6 @@ namespace BussinessObject
         public string? RefreshToken { get; set; }
         [JsonIgnore]
         public string BusinessLicenseNumber { get; set; }
-        [JsonIgnore]
         public int? Role { get; set; }
         public decimal Rating { get; set; } = 0.0m;
         [JsonIgnore]

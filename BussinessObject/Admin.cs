@@ -20,11 +20,16 @@ namespace BussinessObject
         public string? Password { get; set; }
         public int? Role { get; set; }
         public int? Status { get; set; }
+        [JsonIgnore]
         public DateTime? CreatedDate { get; set; }
+        [JsonIgnore]
         public string? CreatedBy { get; set; }
+        [JsonIgnore]
         public DateTime? LastUpdate { get; set; }
+        [JsonIgnore]
         public string? UpdatedBy { get; set; }
         public string? ImgUrl { get; set; }
+        [JsonIgnore]
         public string? RefreshToken { get; set; }
 
         public virtual ICollection<AdminConfiguration> AdminConfigurations { get; set; }

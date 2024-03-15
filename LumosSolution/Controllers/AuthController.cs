@@ -307,7 +307,7 @@ namespace LumosSolution.Controllers
                 response.data = new
                 {
                     token,
-                    userDetail = res.UserDetails,
+                    userDetails = res.UserDetails,
                 };
                 return Ok(response);
             }
