@@ -306,6 +306,7 @@ namespace LumosSolution.Controllers
                 response.StatusCode = ApiStatusCode.OK;
                 response.data = new
                 {
+                    token,
                     userDetail = res.UserDetails,
                 };
                 return Ok(response);

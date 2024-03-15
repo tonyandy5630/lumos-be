@@ -37,10 +37,10 @@ namespace Service.Service
             AuthenticateResponse res = new();
             try
             {
-                var adminResponse = await _unitOfWork.AdminRepo.GetAdminByEmailAsync(email);
-                if (adminResponse != null)
+                var customerResponse = await _unitOfWork.CustomerRepo.GetCustomerByEmailAsync(email);
+                if (customerResponse != null)
                 {
-                    return await GetAuthResponseFromUser(adminResponse, password);
+                    return await GetAuthResponseFromUser(customerResponse, password);
                 }
 
                 var partnerResponse = await _unitOfWork.PartnerRepo.GetPartnerByEmailAsync(email);
@@ -49,10 +49,10 @@ namespace Service.Service
                     return await GetAuthResponseFromUser(partnerResponse, password);
                 }
 
-                var customerResponse = await _unitOfWork.CustomerRepo.GetCustomerByEmailAsync(email);
-                if (customerResponse != null)
+                var adminResponse = await _unitOfWork.AdminRepo.GetAdminByEmailAsync(email);
+                if (adminResponse != null)
                 {
-                    return await GetAuthResponseFromUser(customerResponse, password);
+                    return await GetAuthResponseFromUser(adminResponse, password);
                 }
 
                 res.isBanned = true;
@@ -125,7 +125,7 @@ namespace Service.Service
         }
 
 
-        public async Task<(string,DateTime, DateTime, string)> GenerateToken(string email, string role)
+        public async Task<(string, DateTime, DateTime, string)> GenerateToken(string email, string role)
         {
             try
             {
@@ -172,14 +172,8 @@ namespace Service.Service
         {
             try
             {
-                var adminResponse = await _unitOfWork.AdminRepo.GetAdminByEmailAsync(email);
-                if(adminResponse != null) {
-                    adminResponse.RefreshToken = refreshToken;
-                    await UpdateLastLoginTimeAsync(adminResponse);
-                }
-
                 var customerResponse = await _unitOfWork.CustomerRepo.GetCustomerByEmailAsync(email);
-                if(customerResponse != null)
+                if (customerResponse != null)
                 {
                     customerResponse.RefreshToken = refreshToken;
                     await UpdateLastLoginTimeAsync(customerResponse);
@@ -190,6 +184,13 @@ namespace Service.Service
                 {
                     partnerResponse.RefreshToken = refreshToken;
                     await UpdateLastLoginTimeAsync(partnerResponse);
+                }
+
+                var adminResponse = await _unitOfWork.AdminRepo.GetAdminByEmailAsync(email);
+                if (adminResponse != null)
+                {
+                    adminResponse.RefreshToken = refreshToken;
+                    await UpdateLastLoginTimeAsync(adminResponse);
                 }
             }
             catch (Exception ex)
@@ -344,7 +345,7 @@ namespace Service.Service
             try
             {
                 DateTime now = DateConverter.GetUTCTime();
-                
+
                 switch (user)
                 {
                     case Customer:
