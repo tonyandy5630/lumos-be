@@ -79,7 +79,9 @@ namespace DataAccessLayer
                     DayOfWeek = s.DayOfWeek,
                     From = s.From,
                     To = s.To,
-                }).ToList();
+                }).OrderBy(s => s.DayOfWeek)
+                  .ThenBy(s => s.WorkShift)
+                  .ToList();
 
                 return schedules;
             }
