@@ -1,5 +1,6 @@
 ﻿using BussinessObject;
 using BussinessObject.AuthenModel;
+using DataTransferObject.DTO;
 using Enum;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
@@ -16,6 +17,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using Utils;
 
 namespace Service.Service
 {
@@ -30,149 +32,100 @@ namespace Service.Service
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<(bool, string, string, object, bool, bool)> IsUserAuthenticatedAsync(string email, string password)
+        public async Task<AuthenticateResponse> IsUserAuthenticatedAsync(string email, string password)
         {
+            AuthenticateResponse res = new();
             try
             {
-                string role = null;
-                bool authenticated = false;
-                string username = null;
-                object userDetails = null;
-                bool emailExists = false;
-                bool passwordCorrect = false;
-
-                // Kiểm tra xem email có tồn tại trong hệ thống không
                 var adminResponse = await _unitOfWork.AdminRepo.GetAdminByEmailAsync(email);
+                if (adminResponse != null)
+                {
+                    return await GetAuthResponseFromUser(adminResponse, password);
+                }
+
                 var partnerResponse = await _unitOfWork.PartnerRepo.GetPartnerByEmailAsync(email);
+                if (partnerResponse != null)
+                {
+                    return await GetAuthResponseFromUser(partnerResponse, password);
+                }
+
                 var customerResponse = await _unitOfWork.CustomerRepo.GetCustomerByEmailAsync(email);
-
-                // Nếu email tồn tại trong hệ thống
-                if (adminResponse != null || partnerResponse != null || customerResponse != null)
+                if (customerResponse != null)
                 {
-                    emailExists = true;
-
-                    // Kiểm tra mật khẩu cho Admin
-                    if (adminResponse != null)
-                    {
-                        if (adminResponse.Password.Length > 60)
-                        {
-                            passwordCorrect = PasswordHelper.VerifyPassword(adminResponse, password, adminResponse.Password);
-                        }
-                        else
-                        {
-                            passwordCorrect = adminResponse.Password == password;
-                        }
-
-                        if (passwordCorrect && adminResponse.Status == 1)
-                        {
-                            authenticated = true;
-                            role = nameof(RolesEnum.Admin);
-                            username = "Admin";
-                            userDetails = new
-                            {
-                                ID = adminResponse.AdminId,
-                                Email = adminResponse.Email,
-                                Code = adminResponse.Code,
-                                Role = adminResponse.Role,
-                                Status = adminResponse.Status,
-                                CreatedDate = adminResponse.CreatedDate,
-                                CreatedBy = adminResponse.CreatedBy,
-                                LastUpdate = adminResponse.LastUpdate,
-                                UpdatedBy = adminResponse.UpdatedBy,
-                                ImgUrl = adminResponse.ImgUrl,
-                            };
-                        }
-                    }
-
-                    // Kiểm tra mật khẩu cho Partner
-                    if (!authenticated && partnerResponse != null)
-                    {
-                        if (partnerResponse.Password.Length==84)
-                        {
-                            passwordCorrect = PasswordHelper.VerifyPassword(partnerResponse, password, partnerResponse.Password);
-                        }
-                        else
-                        {
-                            passwordCorrect = partnerResponse.Password == password;
-                        }
-
-                        if (passwordCorrect && partnerResponse.Status == 1)
-                        {
-                            authenticated = true;
-                            role = nameof(RolesEnum.Partner);
-                            username = partnerResponse.PartnerName;
-                            userDetails = new
-                            {
-                                ID = partnerResponse.PartnerId,
-                                Email = partnerResponse.Email,
-                                Code = partnerResponse.Code,
-                                Role = partnerResponse.Role,
-                                TypeId = partnerResponse.TypeId,
-                                DisplayName = partnerResponse.DisplayName,
-                                Phone = partnerResponse.Phone,
-                                Address = partnerResponse.Address,
-                                Status = partnerResponse.Status,
-                                CreatedDate = partnerResponse.CreatedDate,
-                                CreatedBy = partnerResponse.CreatedBy,
-                                LastUpdate = partnerResponse.LastUpdate,
-                                UpdatedBy = partnerResponse.UpdatedBy,
-                                ImgUrl = partnerResponse.ImgUrl,
-                                BusinessLicenseNumber = partnerResponse.BusinessLicenseNumber
-                            };
-                        }
-                    }
-
-                    // Kiểm tra mật khẩu cho Customer
-                    if (!authenticated && customerResponse != null)
-                    {
-                        if (customerResponse.Password.Length==84)
-                        {
-                            passwordCorrect = PasswordHelper.VerifyPassword(customerResponse, password, customerResponse.Password);
-                        }
-                        else
-                        {
-                            passwordCorrect = customerResponse.Password == password;
-                        }
-
-                        if (passwordCorrect && customerResponse.Status == 1)
-                        {
-                            authenticated = true;
-                            role = nameof(RolesEnum.Customer);
-                            username = customerResponse.Fullname;
-                            userDetails = new
-                            {
-                                ID = customerResponse.CustomerId,
-                                Email = customerResponse.Email,
-                                Code = customerResponse.Code,
-                                Role = customerResponse.Role,
-                                Phone = customerResponse.Phone,
-                                Pronounce = customerResponse.Pronounce,
-                                Status = customerResponse.Status,
-                                CreatedDate = customerResponse.CreatedDate,
-                                LastUpdate = customerResponse.LastUpdate,
-                                UpdatedBy = customerResponse.UpdateBy,
-                                ImgUrl = customerResponse.ImgUrl,
-                            };
-                        }
-                    }
+                    return await GetAuthResponseFromUser(customerResponse, password);
                 }
 
-                if (authenticated && role != "Admin")
-                {
-                    await UpdateLastLoginTime(email);
-                }
-
-                return (true, role, username, userDetails, emailExists, passwordCorrect);
+                res.isBanned = true;
+                return res;
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Exception in IsUserAuthenticatedAsync: {ex.Message}");
-                return (false, null, null, null, false, false);
+                return res;
+            }
+        }
+
+        private async Task<AuthenticateResponse> GetAuthResponseFromUser(object user, string password)
+        {
+            AuthenticateResponse res = new();
+            try
+            {
+                if (user is Admin)
+                {
+                    Admin castUser = (Admin)user;
+                    if (castUser.Password.Length > 60)
+                    {
+                        res.passwordCorrect = PasswordHelper.VerifyPassword(castUser, password, castUser.Password);
+                    }
+                    else
+                    {
+                        res.passwordCorrect = castUser.Password == password;
+                    }
+                    res.Role = nameof(RolesEnum.Admin);
+                }
+                else if (user is Partner)
+                {
+                    Partner castUser = (Partner)user;
+                    if (castUser.Password.Length > 60)
+                    {
+                        res.passwordCorrect = PasswordHelper.VerifyPassword(castUser, password, castUser.Password);
+                    }
+                    else
+                    {
+                        res.passwordCorrect = castUser.Password == password;
+                    }
+                    res.Role = nameof(RolesEnum.Partner);
+                }
+                else
+                {
+                    Customer castUser = (Customer)user;
+                    if (castUser.Password.Length > 60)
+                    {
+                        res.passwordCorrect = PasswordHelper.VerifyPassword(castUser, password, castUser.Password);
+                    }
+                    else
+                    {
+                        res.passwordCorrect = castUser.Password == password;
+                    }
+                    res.Role = nameof(RolesEnum.Customer);
+                }
+
+                if (!res.passwordCorrect)
+                {
+                    return res;
+                }
+                res.Authenticated = true;
+                res.UserDetails = user;
+                return await Task.FromResult(res);
+            }
+            catch
+            {
+                return res;
             }
         }
 
 
-        public async Task<(string, DateTime, DateTime, string)> GenerateToken(string email, string role)
+        public async Task<(string,DateTime, DateTime, string)> GenerateToken(string email, string role)
         {
             try
             {
@@ -203,10 +156,9 @@ namespace Service.Service
 
                 var accessToken = new JwtSecurityTokenHandler().WriteToken(accessTokenOptions);
                 var refreshTokenString = new JwtSecurityTokenHandler().WriteToken(refreshTokenOptions);
-
-                await SaveRefreshTokenToDatabase(email, refreshTokenString);
                 var accessTokenexpiration = accessTokenOptions.ValidTo;
                 var refreshTokenexpires = refreshTokenOptions.ValidTo;
+                await SaveRefreshTokenToDatabase(email, refreshTokenString);
                 return (accessToken, accessTokenexpiration, refreshTokenexpires, refreshTokenString);
             }
             catch (Exception ex)
@@ -221,28 +173,23 @@ namespace Service.Service
             try
             {
                 var adminResponse = await _unitOfWork.AdminRepo.GetAdminByEmailAsync(email);
+                if(adminResponse != null) {
+                    adminResponse.RefreshToken = refreshToken;
+                    await UpdateLastLoginTimeAsync(adminResponse);
+                }
+
                 var customerResponse = await _unitOfWork.CustomerRepo.GetCustomerByEmailAsync(email);
-                var partnerResponse = await _unitOfWork.PartnerRepo.GetPartnerByEmailAsync(email);
-
-                switch (adminResponse, customerResponse, partnerResponse)
+                if(customerResponse != null)
                 {
-                    case (BussinessObject.Admin admin, _, _):
-                        admin.RefreshToken = refreshToken;
-                        await UpdateLastLoginTime(email);
-                        break;
+                    customerResponse.RefreshToken = refreshToken;
+                    await UpdateLastLoginTimeAsync(customerResponse);
+                }
 
-                    case (_, BussinessObject.Customer customer, _):
-                        customer.RefreshToken = refreshToken;
-                        await UpdateLastLoginTime(email);
-                        break;
-
-                    case (_, _, BussinessObject.Partner partner):
-                        partner.RefreshToken = refreshToken;
-                        await UpdateLastLoginTime(email);
-                        break;
-
-                    default:
-                        break;
+                var partnerResponse = await _unitOfWork.PartnerRepo.GetPartnerByEmailAsync(email);
+                if (partnerResponse != null)
+                {
+                    partnerResponse.RefreshToken = refreshToken;
+                    await UpdateLastLoginTimeAsync(partnerResponse);
                 }
             }
             catch (Exception ex)
@@ -392,27 +339,25 @@ namespace Service.Service
             }
         }
 
-        public async Task UpdateLastLoginTime(string email)
+        public async Task UpdateLastLoginTimeAsync(object user)
         {
             try
             {
-                var customerResponse = await _unitOfWork.CustomerRepo.GetCustomerByEmailAsync(email);
-                var partnerResponse = await _unitOfWork.PartnerRepo.GetPartnerByEmailAsync(email);
-
-                DateTime now = DateTime.UtcNow;
-
-                switch (customerResponse, partnerResponse)
+                DateTime now = DateConverter.GetUTCTime();
+                
+                switch (user)
                 {
-                    case (BussinessObject.Customer customer, _):
+                    case Customer:
+                        Customer customer = (Customer)user;
                         customer.LastLogin = now;
                         await _unitOfWork.CustomerRepo.UpdateCustomerAsync(customer);
                         break;
 
-                    case (_, BussinessObject.Partner partner):
+                    case Partner:
+                        Partner partner = (Partner)user;
                         partner.LastLogin = now;
                         await _unitOfWork.PartnerRepo.UpdatePartnerAsync(partner);
                         break;
-
                     default:
                         break;
                 }
@@ -429,7 +374,7 @@ namespace Service.Service
             try
             {
                 var (email, roles) = await GetEmailAndRolesFromToken(accessToken);
-                if(email.IsNullOrEmpty() || roles.IsNullOrEmpty())
+                if (email.IsNullOrEmpty() || roles.IsNullOrEmpty())
                 {
                     throw new Exception("cannot get email or roles");
                 }
@@ -457,12 +402,13 @@ namespace Service.Service
                 }
 
                 return await Task.FromResult(false);
-            }catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 throw new Exception(ex.Message);
             }
         }
-        
+
         private async Task<string> GetRefreshToken(string? refreshToken)
         {
             try
@@ -470,7 +416,8 @@ namespace Service.Service
                 if (refreshToken == null || refreshToken.Length == 0)
                     throw new Exception();
                 return await Task.FromResult(refreshToken);
-            }catch( Exception ex )
+            }
+            catch (Exception ex)
             {
                 throw new Exception("Cannot find user refresh token");
             }

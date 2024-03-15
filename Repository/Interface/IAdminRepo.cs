@@ -10,7 +10,7 @@ namespace Repository.Interface
     public interface IAdminRepo
     {
         Task<List<Admin>> GetAdminsAsync();
-        Task<Admin> GetAdminByEmailAsync(string email);
+        Task<Admin?> GetAdminByEmailAsync(string email);
         Task<Admin> GetAdminByRefreshTokenAsync(string token);
         Task<Admin> GetAdminByIDAsync(int id);
         Task<Admin> GetAdminByCodeAsync(string code);

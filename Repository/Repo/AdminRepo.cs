@@ -21,7 +21,7 @@ namespace Repository.Repo
 
         public Task<Admin> GetAdminByCodeAsync(string code) => AdminDAO.Instance.GetAdminByCodeAsync(code);
 
-        public Task<Admin> GetAdminByEmailAsync(string email) => AdminDAO.Instance.GetAdminByEmailAsync(email);
+        public Task<Admin?> GetAdminByEmailAsync(string email) => AdminDAO.Instance.GetAdminByEmailAsync(email);
 
         public Task<Admin> GetAdminByIDAsync(int id) => AdminDAO.Instance.GetAdminByIDAsync(id);
 
