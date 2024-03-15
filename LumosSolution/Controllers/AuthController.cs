@@ -2,6 +2,7 @@
 using AutoMapper;
 using BussinessObject;
 using BussinessObject.AuthenModel;
+using DataTransferObject.DTO;
 using Google.Apis.Auth;
 using Microsoft.AspNetCore.Mvc;
 using RequestEntity;
@@ -49,7 +50,8 @@ namespace LumosSolution.Controllers
                     return BadRequest(response);
                 response.message = MessagesResponse.Success.Completed;
                 response.StatusCode = ApiStatusCode.OK;
-            }catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
                 return BadRequest(ex.Message);
@@ -197,7 +199,7 @@ namespace LumosSolution.Controllers
                 }
                 else
                 {
-                    await _authentication.UpdateLastLoginTime(userEmail);
+                    await _authentication.UpdateLastLoginTimeAsync(userEmail);
                     var (token, accessTokenTime, refreshTokentime, refreshToken) = await _authentication.GenerateToken(userEmail, userRole);
                     if (string.IsNullOrEmpty(token))
                     {
@@ -211,16 +213,13 @@ namespace LumosSolution.Controllers
                         response.StatusCode = ApiStatusCode.BadRequest;
                         return BadRequest(response);
                     }
-                    var accessTokenRemainingTime = accessTokenTime - DateTime.UtcNow;
-                    var refreshTokenRemainingTime = refreshTokentime - DateTime.UtcNow;
-                    
+
                     response.message = MessagesResponse.Success.Completed;
                     response.StatusCode = ApiStatusCode.OK;
                     response.data = new
                     {
                         Username = username,
                         Token = token,
-                        AccessTokenExpiration = accessTokenRemainingTime,
                         Userdetails = userDetails
                     };
                 }
@@ -233,11 +232,12 @@ namespace LumosSolution.Controllers
                 return BadRequest(response);
             }
         }
-        
+
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginModel model)
         {
-            ApiResponse<object>? response = new ApiResponse<object>();
+            ApiResponse<object>? response = new();
+            AuthenticateResponse res = new();
             try
             {
                 if (string.IsNullOrEmpty(model.Password))
@@ -246,63 +246,38 @@ namespace LumosSolution.Controllers
                     response.message = MessagesResponse.Validation.PasswordRequired;
                     response.StatusCode = ApiStatusCode.BadRequest;
                     return BadRequest(response);
-                }else if (string.IsNullOrEmpty(model.Email))
+                }
+                else if (string.IsNullOrEmpty(model.Email))
                 {
                     response.message = MessagesResponse.Validation.EmailRequired;
                     response.StatusCode = ApiStatusCode.BadRequest;
                     return BadRequest(response);
                 }
-                var checkcustomer = await _customerService.GetCustomerByEmailAsync((model.Email));
-                var checkadmin = await _adminService.GetAdminByEmailAsync((model.Email));
-                var checkpartner = await _partnerService.GetPartnerByEmailAsync((model.Email));
-                if (checkcustomer == null && checkadmin == null && checkpartner == null)
-                {
-                    response.message = MessagesResponse.Error.BannedAccount;
-                    response.StatusCode =ApiStatusCode.Forbidden;
-                    return BadRequest(response);
-                }
-                var (authenticated, role, username, userdetails, emailExists, passwordCorrect) = await _authentication.IsUserAuthenticatedAsync(model.Email, model.Password);
 
-                if (authenticated && passwordCorrect)
-                {
-                    var (token, accessTokenTime, refreshTokentime, refreshToken) = await _authentication.GenerateToken(model.Email, role);
-                    if (string.IsNullOrEmpty(token))
-                    {
-                        response.message = MessagesResponse.Error.AccessTokenNotFound;
-                        response.StatusCode = ApiStatusCode.BadRequest;
-                        return BadRequest(response);
-                    }
-                    if (string.IsNullOrEmpty(refreshToken))
-                    {
-                        response.message = MessagesResponse.Error.RefreshTokenNotFound;
-                        response.StatusCode = ApiStatusCode.BadRequest;
-                        return BadRequest(response);
-                    }
-                    var accessTokenRemainingTime = accessTokenTime - DateTime.UtcNow;
-                    var refreshTokenRemainingTime = refreshTokentime - DateTime.UtcNow;
+                res = await _authentication.IsUserAuthenticatedAsync(model.Email, model.Password);
 
-                    response.message = MessagesResponse.Success.Completed;
-                    response.StatusCode = ApiStatusCode.OK;
-                    response.data = new
-                    {
-                        Username = username,
-                        Token = token,
-                        AccessTokenExpiration = accessTokenRemainingTime,
-                        Userdetails = userdetails
-                    };
-                    return Ok(response);
-                }
-                else
+                if (!res.Authenticated)
                 {
-                    if (!emailExists)
+                    if (res.isBanned)
+                    {
+                        response.message = "User is banned or cannot found";
+                        response.data = new
+                        {
+                            user = "User is banned or cannot found"
+                        };
+                        return Unauthorized(response);
+                    }
+
+                    if (!res.emailExists)
                     {
                         response.message = MessagesResponse.Error.NotFound;
                         response.StatusCode = ApiStatusCode.NotFound;
-                        response.data = new{
-                            email = "Email không tồn tại",
+                        response.data = new
+                        {
+                            password = "Email không đúng",
                         };
                     }
-                    else if (!passwordCorrect)
+                    else if (!res.passwordCorrect)
                     {
                         response.message = MessagesResponse.Error.Unauthorized;
                         response.StatusCode = ApiStatusCode.Unauthorized;
@@ -311,84 +286,29 @@ namespace LumosSolution.Controllers
                             password = "Password không đúng",
                         };
                     }
-
-                    return StatusCode((int)response.StatusCode, response);
-                }
-
-            }
-            catch (Exception ex)
-            {
-                response.message = MessagesResponse.Error.OperationFailed;
-                response.StatusCode = ApiStatusCode.BadRequest;
-                return BadRequest(response);
-            }
-        }
-        [HttpPost("refreshtoken")]
-        public async Task<IActionResult> RefreshToken([FromBody] RefreshModel model)
-        {
-            ApiResponse<object>? response = new ApiResponse<object>();
-            try
-            {
-                var userEmail = HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
-
-                if (string.IsNullOrEmpty(userEmail))
-                {
-                    response.message = MessagesResponse.Error.Unauthorized;
-                    response.StatusCode = ApiStatusCode.Unauthorized;
                     return Unauthorized(response);
                 }
 
-                var (isValid, _) = await _authentication.ValidateRefreshTokenByEmail(userEmail);
-
-                if (!isValid)
-                {
-                    response.message = MessagesResponse.Error.OperationFailed;
-                    response.StatusCode = ApiStatusCode.BadRequest;
-                    return BadRequest(response);
-                }
-
-                var (roleValid, userRole) = await _authentication.CheckRole(userEmail);
-
-                if (!roleValid)
-                {
-                    response.message = MessagesResponse.Error.OperationFailed;
-                    response.StatusCode = ApiStatusCode.BadRequest;
-                    return BadRequest(response);
-                }
-
-                var (token, accessTokenTime, refreshTokentime, newRefreshToken) = await _authentication.GenerateToken(userEmail, userRole);
+                var (token, accessTokenTime, refreshTokentime, refreshToken) = await _authentication.GenerateToken(model.Email, res.Role);
                 if (string.IsNullOrEmpty(token))
                 {
                     response.message = MessagesResponse.Error.AccessTokenNotFound;
                     response.StatusCode = ApiStatusCode.BadRequest;
                     return BadRequest(response);
                 }
-                if (string.IsNullOrEmpty(newRefreshToken))
+                if (string.IsNullOrEmpty(refreshToken))
                 {
                     response.message = MessagesResponse.Error.RefreshTokenNotFound;
                     response.StatusCode = ApiStatusCode.BadRequest;
                     return BadRequest(response);
                 }
-                var accessTokenRemainingTime = accessTokenTime - DateTime.UtcNow;
-                var refreshTokenRemainingTime = refreshTokentime - DateTime.UtcNow;
-
-                await _authentication.SaveRefreshTokenToDatabase(userEmail, newRefreshToken);
-
-                if (accessTokenTime < DateTime.UtcNow)
-                {
-                    response.message = MessagesResponse.Error.Unauthorized;
-                    response.StatusCode = ApiStatusCode.Unauthorized;
-                    return Unauthorized(response);
-                }
-
                 response.message = MessagesResponse.Success.Completed;
                 response.StatusCode = ApiStatusCode.OK;
                 response.data = new
                 {
-                    Token = token,
-                    AccessTokenExpiration = accessTokenRemainingTime,
+                    token,
+                    userDetail = res.UserDetails,
                 };
-
                 return Ok(response);
             }
             catch (Exception ex)
@@ -396,7 +316,82 @@ namespace LumosSolution.Controllers
                 response.message = MessagesResponse.Error.OperationFailed;
                 response.StatusCode = ApiStatusCode.BadRequest;
                 return BadRequest(response);
-            }
+    }
+}
+[HttpPost("refreshtoken")]
+public async Task<IActionResult> RefreshToken([FromBody] RefreshModel model)
+{
+    ApiResponse<object>? response = new ApiResponse<object>();
+    try
+    {
+        var userEmail = HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+
+        if (string.IsNullOrEmpty(userEmail))
+        {
+            response.message = MessagesResponse.Error.Unauthorized;
+            response.StatusCode = ApiStatusCode.Unauthorized;
+            return Unauthorized(response);
         }
+
+        var (isValid, _) = await _authentication.ValidateRefreshTokenByEmail(userEmail);
+
+        if (!isValid)
+        {
+            response.message = MessagesResponse.Error.OperationFailed;
+            response.StatusCode = ApiStatusCode.BadRequest;
+            return BadRequest(response);
+        }
+
+        var (roleValid, userRole) = await _authentication.CheckRole(userEmail);
+
+        if (!roleValid)
+        {
+            response.message = MessagesResponse.Error.OperationFailed;
+            response.StatusCode = ApiStatusCode.BadRequest;
+            return BadRequest(response);
+        }
+
+        var (token, accessTokenTime, refreshTokentime, newRefreshToken) = await _authentication.GenerateToken(userEmail, userRole);
+        if (string.IsNullOrEmpty(token))
+        {
+            response.message = MessagesResponse.Error.AccessTokenNotFound;
+            response.StatusCode = ApiStatusCode.BadRequest;
+            return BadRequest(response);
+        }
+        if (string.IsNullOrEmpty(newRefreshToken))
+        {
+            response.message = MessagesResponse.Error.RefreshTokenNotFound;
+            response.StatusCode = ApiStatusCode.BadRequest;
+            return BadRequest(response);
+        }
+        var accessTokenRemainingTime = accessTokenTime - DateTime.UtcNow;
+        var refreshTokenRemainingTime = refreshTokentime - DateTime.UtcNow;
+
+        await _authentication.SaveRefreshTokenToDatabase(userEmail, newRefreshToken);
+
+        if (accessTokenTime < DateTime.UtcNow)
+        {
+            response.message = MessagesResponse.Error.Unauthorized;
+            response.StatusCode = ApiStatusCode.Unauthorized;
+            return Unauthorized(response);
+        }
+
+        response.message = MessagesResponse.Success.Completed;
+        response.StatusCode = ApiStatusCode.OK;
+        response.data = new
+        {
+            Token = token,
+            AccessTokenExpiration = accessTokenRemainingTime,
+        };
+
+        return Ok(response);
+    }
+    catch (Exception ex)
+    {
+        response.message = MessagesResponse.Error.OperationFailed;
+        response.StatusCode = ApiStatusCode.BadRequest;
+        return BadRequest(response);
+    }
+}
     }
 }

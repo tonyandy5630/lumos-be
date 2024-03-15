@@ -14,6 +14,7 @@ namespace BussinessObject
             MedicalReports = new HashSet<MedicalReport>();
         }
 
+        [JsonPropertyName("id")]
         public int CustomerId { get; set; }
         public string? Code { get; set; }
         [Required]

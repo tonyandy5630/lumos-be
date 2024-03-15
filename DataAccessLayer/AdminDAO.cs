@@ -51,7 +51,7 @@ namespace DataAccessLayer
             }
         }
 
-        public async Task<Admin> GetAdminByEmailAsync(string email)
+        public async Task<Admin?> GetAdminByEmailAsync(string email)
         {
             try
             {

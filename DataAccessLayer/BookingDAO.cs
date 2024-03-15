@@ -179,7 +179,7 @@ namespace DataAccessLayer
                     booking.Code = GenerateCode.GenerateTableCode("booking");
                     booking.CreatedDate = DateConverter.GetUTCTime();
                     booking.bookingTime = createBookingDTO.bookingTime;
-                    booking.From = DateTime.Now;
+                    booking.From = DateConverter.GetUTCTime();
                     booking.CreatedBy = email;
                     booking.PaymentLinkId = createBookingDTO.PaymentLinkId;
                     booking.Rating = 0;

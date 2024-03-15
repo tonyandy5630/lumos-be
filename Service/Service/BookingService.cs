@@ -62,7 +62,6 @@ namespace Service.Service
             }
         }
 
-
         public async Task<BookingDTO> GetBookingDetailByBookingIdAsync(int bookingId)
         {
             try
