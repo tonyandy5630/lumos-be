@@ -36,7 +36,6 @@ namespace BussinessObject
         public string? ImgUrl { get; set; }
         [JsonIgnore]
         public string? RefreshToken { get; set; }
-        [JsonIgnore]
         public int? Role { get; set; }
         [JsonIgnore]
         public virtual ICollection<Address> Addresses { get; set; }

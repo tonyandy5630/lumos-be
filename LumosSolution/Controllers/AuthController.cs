@@ -316,82 +316,82 @@ namespace LumosSolution.Controllers
                 response.message = MessagesResponse.Error.OperationFailed;
                 response.StatusCode = ApiStatusCode.BadRequest;
                 return BadRequest(response);
-    }
-}
-[HttpPost("refreshtoken")]
-public async Task<IActionResult> RefreshToken([FromBody] RefreshModel model)
-{
-    ApiResponse<object>? response = new ApiResponse<object>();
-    try
-    {
-        var userEmail = HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
-
-        if (string.IsNullOrEmpty(userEmail))
-        {
-            response.message = MessagesResponse.Error.Unauthorized;
-            response.StatusCode = ApiStatusCode.Unauthorized;
-            return Unauthorized(response);
+            }
         }
-
-        var (isValid, _) = await _authentication.ValidateRefreshTokenByEmail(userEmail);
-
-        if (!isValid)
+        [HttpPost("refreshtoken")]
+        public async Task<IActionResult> RefreshToken([FromBody] RefreshModel model)
         {
-            response.message = MessagesResponse.Error.OperationFailed;
-            response.StatusCode = ApiStatusCode.BadRequest;
-            return BadRequest(response);
+            ApiResponse<object>? response = new ApiResponse<object>();
+            try
+            {
+                var userEmail = HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+
+                if (string.IsNullOrEmpty(userEmail))
+                {
+                    response.message = MessagesResponse.Error.Unauthorized;
+                    response.StatusCode = ApiStatusCode.Unauthorized;
+                    return Unauthorized(response);
+                }
+
+                var (isValid, _) = await _authentication.ValidateRefreshTokenByEmail(userEmail);
+
+                if (!isValid)
+                {
+                    response.message = MessagesResponse.Error.OperationFailed;
+                    response.StatusCode = ApiStatusCode.BadRequest;
+                    return BadRequest(response);
+                }
+
+                var (roleValid, userRole) = await _authentication.CheckRole(userEmail);
+
+                if (!roleValid)
+                {
+                    response.message = MessagesResponse.Error.OperationFailed;
+                    response.StatusCode = ApiStatusCode.BadRequest;
+                    return BadRequest(response);
+                }
+
+                var (token, accessTokenTime, refreshTokentime, newRefreshToken) = await _authentication.GenerateToken(userEmail, userRole);
+                if (string.IsNullOrEmpty(token))
+                {
+                    response.message = MessagesResponse.Error.AccessTokenNotFound;
+                    response.StatusCode = ApiStatusCode.BadRequest;
+                    return BadRequest(response);
+                }
+                if (string.IsNullOrEmpty(newRefreshToken))
+                {
+                    response.message = MessagesResponse.Error.RefreshTokenNotFound;
+                    response.StatusCode = ApiStatusCode.BadRequest;
+                    return BadRequest(response);
+                }
+                var accessTokenRemainingTime = accessTokenTime - DateTime.UtcNow;
+                var refreshTokenRemainingTime = refreshTokentime - DateTime.UtcNow;
+
+                await _authentication.SaveRefreshTokenToDatabase(userEmail, newRefreshToken);
+
+                if (accessTokenTime < DateTime.UtcNow)
+                {
+                    response.message = MessagesResponse.Error.Unauthorized;
+                    response.StatusCode = ApiStatusCode.Unauthorized;
+                    return Unauthorized(response);
+                }
+
+                response.message = MessagesResponse.Success.Completed;
+                response.StatusCode = ApiStatusCode.OK;
+                response.data = new
+                {
+                    Token = token,
+                    AccessTokenExpiration = accessTokenRemainingTime,
+                };
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                response.message = MessagesResponse.Error.OperationFailed;
+                response.StatusCode = ApiStatusCode.BadRequest;
+                return BadRequest(response);
+            }
         }
-
-        var (roleValid, userRole) = await _authentication.CheckRole(userEmail);
-
-        if (!roleValid)
-        {
-            response.message = MessagesResponse.Error.OperationFailed;
-            response.StatusCode = ApiStatusCode.BadRequest;
-            return BadRequest(response);
-        }
-
-        var (token, accessTokenTime, refreshTokentime, newRefreshToken) = await _authentication.GenerateToken(userEmail, userRole);
-        if (string.IsNullOrEmpty(token))
-        {
-            response.message = MessagesResponse.Error.AccessTokenNotFound;
-            response.StatusCode = ApiStatusCode.BadRequest;
-            return BadRequest(response);
-        }
-        if (string.IsNullOrEmpty(newRefreshToken))
-        {
-            response.message = MessagesResponse.Error.RefreshTokenNotFound;
-            response.StatusCode = ApiStatusCode.BadRequest;
-            return BadRequest(response);
-        }
-        var accessTokenRemainingTime = accessTokenTime - DateTime.UtcNow;
-        var refreshTokenRemainingTime = refreshTokentime - DateTime.UtcNow;
-
-        await _authentication.SaveRefreshTokenToDatabase(userEmail, newRefreshToken);
-
-        if (accessTokenTime < DateTime.UtcNow)
-        {
-            response.message = MessagesResponse.Error.Unauthorized;
-            response.StatusCode = ApiStatusCode.Unauthorized;
-            return Unauthorized(response);
-        }
-
-        response.message = MessagesResponse.Success.Completed;
-        response.StatusCode = ApiStatusCode.OK;
-        response.data = new
-        {
-            Token = token,
-            AccessTokenExpiration = accessTokenRemainingTime,
-        };
-
-        return Ok(response);
-    }
-    catch (Exception ex)
-    {
-        response.message = MessagesResponse.Error.OperationFailed;
-        response.StatusCode = ApiStatusCode.BadRequest;
-        return BadRequest(response);
-    }
-}
     }
 }
