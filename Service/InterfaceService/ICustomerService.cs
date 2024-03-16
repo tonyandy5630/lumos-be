@@ -25,7 +25,7 @@ namespace Service.InterfaceService
         Task<Address> AddCustomerAddressAsync(Address address, string email);
         Task<MedicalReport> GetMedicalReportByIdAsync(int id);
         Task<bool> CheckExistingAddressAsync(string address);
-        Task<bool> CheckExistingMedicalReportAsync(string fullName);
+        Task<bool> CheckExistingMedicalReportAsync(string fullName, string email);
 
     }
 }

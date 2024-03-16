@@ -234,8 +234,9 @@ namespace Service.Service
                 var allbookingbill = await _unitOfWork.BookingLogRepo.GetAllPendingBookingLogsAsync();
                 var booking = _unitOfWork.BookingLogRepo.GroupBookings(allbookingbill);
                 var result = await _unitOfWork.BookingLogRepo.FilterAndMapIncomingBookingsAsync(booking, customer);
+                var sortedBookings = result.OrderByDescending(b => b.BookingDate).ToList();
 
-                return result;
+                return sortedBookings;
             }
             catch (Exception ex)
             {
@@ -280,7 +281,9 @@ namespace Service.Service
                 {
                     booking.MedicalServices = await _unitOfWork.BookingLogRepo.GetMedicalServiceDTOsAsync(booking.BookingId);
                 }
-                return allBookingLogs;
+                var sortedBookings = allBookingLogs.OrderByDescending(b => b.BookingDate).ToList();
+
+                return sortedBookings;
             }
             catch (Exception ex)
             {
@@ -303,7 +306,10 @@ namespace Service.Service
                 var waitingForPaymentBookings = allBookingLogs.Where(b => b.Status == (int)BookingStatusEnum.WaitingForPayment).ToList();
                 if (waitingForPaymentBookings.Any())
                 {
-                    result = waitingForPaymentBookings.Concat(allBookingLogs.Except(waitingForPaymentBookings)).ToList();
+                    result = waitingForPaymentBookings.Concat(allBookingLogs.Except(waitingForPaymentBookings))
+                        .OrderByDescending(b => b.BookingDate)
+                        .OrderByDescending(b => b.CreateDate)
+                        .ToList();
                 }
 
                 return result;

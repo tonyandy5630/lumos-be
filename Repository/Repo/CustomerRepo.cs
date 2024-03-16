@@ -37,7 +37,7 @@ namespace Repository.Repo
 
         public Task<bool> CheckExistingAddressAsync(string address) => CustomerDAO.Instance.CheckExistingAddressAsync(address);
 
-        public Task<bool> CheckExistingMedicalReportAsync(string fullName) => CustomerDAO.Instance.CheckExistingMedicalReportAsync(fullName);
+        public Task<bool> CheckExistingMedicalReportAsync(string fullName,string email) => CustomerDAO.Instance.CheckExistingMedicalReportAsync(fullName,email);
 
         public Task<Customer?> GetCustomerByBookingIdAsync(int bookingId) => CustomerDAO.Instance.GetCustomerByBookingIdAsync(bookingId);
 

@@ -21,7 +21,7 @@ namespace Repository.Interface
         Task<List<Address>> GetCustomersAddressByCustomerIdAsync(int id);
         Task<Address> AddCustomerAddressAsync(Address address, string email);
         Task<bool> CheckExistingAddressAsync(string address);
-        Task<bool> CheckExistingMedicalReportAsync(string fullName);
+        Task<bool> CheckExistingMedicalReportAsync(string fullName, string email);
         Task<Customer?> GetCustomerByBookingIdAsync(int bookingId);
         Task<List<ChartStatDTO>> GetNewCustomerMonthlyAsync(int year);
         Task<List<Customer>> GetAllCustomersAsync();

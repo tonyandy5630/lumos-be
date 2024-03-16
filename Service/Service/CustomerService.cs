@@ -255,11 +255,11 @@ namespace Service.Service
             }
         }
 
-        public async Task<bool> CheckExistingMedicalReportAsync(string fullName)
+        public async Task<bool> CheckExistingMedicalReportAsync(string fullName,string email)
         {
             try
             {
-                return await _unitOfWork.CustomerRepo.CheckExistingMedicalReportAsync(fullName);
+                return await _unitOfWork.CustomerRepo.CheckExistingMedicalReportAsync(fullName,email);
             }
             catch (Exception ex)
             {

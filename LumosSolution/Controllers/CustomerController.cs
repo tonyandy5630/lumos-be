@@ -128,14 +128,13 @@ namespace LumosSolution.Controllers
 
             try
             {
-                bool existingReport = await _customerService.CheckExistingMedicalReportAsync(medicalReport.Fullname);
+                string? userEmail = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+                bool existingReport = await _customerService.CheckExistingMedicalReportAsync(medicalReport.Fullname, userEmail);
                 if (existingReport)
                 {
                     response.message = MessagesResponse.Error.MedicalReportExists;
                     return BadRequest(response);
                 }
-                string? userEmail = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
-
                 if (string.IsNullOrEmpty(userEmail))
                 {
                     response.message = MessagesResponse.Error.UserEmailNotFound;

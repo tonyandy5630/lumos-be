@@ -310,13 +310,18 @@ namespace DataAccessLayer
                 throw new Exception(ex.Message);
             }
         }
-        public async Task<bool> CheckExistingMedicalReportAsync(string fullName)
+        public async Task<bool> CheckExistingMedicalReportAsync(string fullName,string email)
         {
             try
             {
                 bool existingReport = await dbContext.MedicalReports
-                    .AnyAsync(r => r.Fullname.ToLower().Equals(fullName.ToLower()));
-
+                    .Join(dbContext.Customers,
+                        medical => medical.CustomerId,
+                        customer => customer.CustomerId,
+                        (medical, customer) => new { Medical = medical, Customer = customer })
+                    .AnyAsync(joinResult =>
+                        joinResult.Customer.Email.ToLower() == email.ToLower() &&
+                        joinResult.Medical.Fullname.ToLower() == fullName.ToLower());
                 return existingReport;
             }
             catch (Exception ex)
