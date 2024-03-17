@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using Utils.Validation;
 
 namespace RequestEntity
 {
@@ -14,9 +15,11 @@ namespace RequestEntity
     {
         [Required(ErrorMessage = "PartnerName is required")]
         [MaxLength(50, ErrorMessage ="Partner Name is too long")]
+        [BadWord(ErrorMessage = "Name contains a forbidden word.")]
         public string PartnerName { get; set; }
         [Required(ErrorMessage = "DisplayName is required")]
         [MaxLength(50, ErrorMessage = "Display Name is too long")]
+        [BadWord(ErrorMessage = "DisplayName contains a forbidden word.")]
         public string DisplayName { get; set; }
         [Required(ErrorMessage = "Type is required")]
         public int TypeId { get; set; }
@@ -32,6 +35,7 @@ namespace RequestEntity
         [Required(ErrorMessage ="Address is required")]
         [MaxLength(100, ErrorMessage = "Address is too long")]
         public string Address { get; set; }
+        [BadWord(ErrorMessage = "Description contains a forbidden word.")]
         public string? Description { get; set; }
         public string? BusinessLicenseNumber { get; set; }
     }
