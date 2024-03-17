@@ -21,6 +21,7 @@ using Service.ErrorObject;
 using static Utils.MessagesResponse;
 using DataAccessLayer;
 using Enum;
+using System.Transactions;
 
 namespace Service.Service
 {
@@ -193,72 +194,76 @@ namespace Service.Service
             IDbContextTransaction commit = await _unitOfWork.StartTransactionAsync(TRANSACTION);
             try
             {
-                PartnerError? errorPartner = null;
-
-                Task<Partner?> existedPartnerName = _unitOfWork.PartnerRepo.GetPartnerByPartnerNameAsync(partnerRequest.Partner.PartnerName.Trim());
-                Task<Partner?> existedLicense = _unitOfWork.PartnerRepo.GetPartnerByBussinessLicenseAsync(partnerRequest.Partner.BusinessLicenseNumber.Trim());
-                Task<Partner?> existedDisplayName = _unitOfWork.PartnerRepo.GetPartnerByDisplayNameAsync(partnerRequest.Partner.DisplayName.Trim());
-                Task<Partner?> existedEmail = _unitOfWork.PartnerRepo.GetPartnerByEmailAsync(partnerRequest.Partner.Email.Trim());
-
-                Task.WhenAll(existedPartnerName, existedLicense, existedDisplayName, existedEmail).Wait();
-
-                bool partnerNameError = existedPartnerName.Result != null;
-                bool licenseError = existedLicense.Result != null;
-                bool displayNameError = existedDisplayName.Result != null;
-                bool emailError = existedEmail.Result != null;
-                bool scheduleNotExist = partnerRequest.Schedules == null;
-
-                bool hasError = partnerNameError || licenseError || displayNameError || emailError || scheduleNotExist;
-                if (hasError)
+                using (TransactionScope scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
                 {
-                    errorPartner = new PartnerError();
-                    if (partnerNameError)
-                        errorPartner.PartnerName = "Existed Partner Name";
+                    PartnerError? errorPartner = null;
 
-                    if (licenseError)
-                        errorPartner.BusinessLicenseNumber = "Existed License";
+                    Task<Partner?> existedPartnerName = _unitOfWork.PartnerRepo.GetPartnerByPartnerNameAsync(partnerRequest.Partner.PartnerName.Trim());
+                    Task<Partner?> existedLicense = _unitOfWork.PartnerRepo.GetPartnerByBussinessLicenseAsync(partnerRequest.Partner.BusinessLicenseNumber.Trim());
+                    Task<Partner?> existedDisplayName = _unitOfWork.PartnerRepo.GetPartnerByDisplayNameAsync(partnerRequest.Partner.DisplayName.Trim());
+                    Task<Partner?> existedEmail = _unitOfWork.PartnerRepo.GetPartnerByEmailAsync(partnerRequest.Partner.Email.Trim());
 
-                    if (displayNameError)
-                        errorPartner.DisplayName = "Existed Display Name";
+                    Task.WhenAll(existedPartnerName, existedLicense, existedDisplayName, existedEmail).Wait();
 
-                    if (emailError)
-                        errorPartner.Email = "Existed Email";
+                    bool partnerNameError = existedPartnerName.Result != null;
+                    bool licenseError = existedLicense.Result != null;
+                    bool displayNameError = existedDisplayName.Result != null;
+                    bool emailError = existedEmail.Result != null;
+                    bool scheduleNotExist = partnerRequest.Schedules == null;
 
-                    if (scheduleNotExist)
-                        errorPartner.Schedule = "Schedule is missing";
+                    bool hasError = partnerNameError || licenseError || displayNameError || emailError || scheduleNotExist;
+                    if (hasError)
+                    {
+                        errorPartner = new PartnerError();
+                        if (partnerNameError)
+                            errorPartner.PartnerName = "Existed Partner Name";
 
-                    return (null, errorPartner);
+                        if (licenseError)
+                            errorPartner.BusinessLicenseNumber = "Existed License";
+
+                        if (displayNameError)
+                            errorPartner.DisplayName = "Existed Display Name";
+
+                        if (emailError)
+                            errorPartner.Email = "Existed Email";
+
+                        if (scheduleNotExist)
+                            errorPartner.Schedule = "Schedule is missing";
+
+                        return (null, errorPartner);
+                    }
+
+                    PartnerType? partnerType = await _unitOfWork.PartnerTypeRepo.GetPartnerTypeByIdAsync(partnerRequest.Partner.TypeId);
+
+                    if (partnerType == null)
+                        throw new NullReferenceException("Partner Type is not existed");
+
+                    Partner addPartner = _mapper.Map<Partner>(partnerRequest.Partner);
+                    addPartner.Code = GenerateCode.GenerateRoleCode("partner");
+                    addPartner.CreatedDate = DateTime.Now;
+                    // Hash password
+                    IUserManagerRepo<PartnerRequest> userManager = new UserManagerRepo<PartnerRequest>();
+                    addPartner.Password = userManager.HashPassword(partnerRequest.Partner, partnerRequest.Partner.Email.Trim());
+                    addPartner.Role = (int)RolesEnum.Partner;
+
+                    Partner? part = await _unitOfWork.PartnerRepo.AddPartnerAsync(addPartner);
+
+                    if (part == null)
+                    {
+                        Console.WriteLine("Failed to add partner!");
+                        throw new Exception("Something went wrong when adding partner");
+                    }
+
+                    bool schedules = await AddPartnerScheduleAsync(partnerRequest.Schedules, part.PartnerId);
+                    if (!schedules)
+                    {
+                        throw new NullReferenceException("Cannot add schedules");
+                    }
+
+                    await _unitOfWork.CommitTransactionAsync(commit);
+                    scope.Complete();
+                    return (part, null);
                 }
-
-                PartnerType? partnerType = await _unitOfWork.PartnerTypeRepo.GetPartnerTypeByIdAsync(partnerRequest.Partner.TypeId);
-
-                if (partnerType == null)
-                    throw new NullReferenceException("Partner Type is not existed");
-
-                Partner addPartner = _mapper.Map<Partner>(partnerRequest.Partner);
-                addPartner.Code = GenerateCode.GenerateRoleCode("partner");
-                addPartner.CreatedDate = DateTime.Now;
-                // Hash password
-                IUserManagerRepo<PartnerRequest> userManager = new UserManagerRepo<PartnerRequest>();
-                addPartner.Password = userManager.HashPassword(partnerRequest.Partner, partnerRequest.Partner.Email.Trim());
-                addPartner.Role = (int)RolesEnum.Partner;
-
-                Partner? part = await _unitOfWork.PartnerRepo.AddPartnerAsync(addPartner);
-
-                if (part == null)
-                {
-                    Console.WriteLine("Failed to add partner!");
-                    throw new Exception("Something went wrong when adding partner");
-                }
-
-                bool schedules = await AddPartnerScheduleAsync(partnerRequest.Schedules, part.PartnerId);
-                if (!schedules)
-                {
-                    throw new NullReferenceException("Cannot add schedules");
-                }
-
-                await _unitOfWork.CommitTransactionAsync(commit);
-                return (part, null);
             }
             catch (Exception ex)
             {
