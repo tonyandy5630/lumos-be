@@ -379,7 +379,50 @@ namespace LumosSolution.Controllers
                 return BadRequest(response);
             }
         }
+        [HttpPut("service/{id}/update")]
+        [Authorize(Roles = "Partner")]
+        public async Task<IActionResult> UpdatePartnerService([FromBody] UpdatePartnerServiceRequest request, int id)
+        {
+            try
+            {
+                var (isSuccess, message) = await _partnerService.UpdatePartnerServiceAsync(request, id);
 
+                if (!isSuccess)
+                {
+                    return BadRequest(new { Message = message, StatusCode = 400 });
+                }
+
+                // Nếu không có lỗi, trả về dịch vụ đối tác đã được cập nhật thành công
+                return Ok(new { Message = "Dịch vụ đối tác đã được cập nhật thành công.", StatusCode = 200 });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { StatusCode = 500, Message = ex.Message });
+            }
+        }
+
+        [HttpDelete("service/{id}")]
+        [Authorize(Roles = "Partner")]
+        public async Task<IActionResult> DeletePartnerService(int id)
+        {
+            try
+            {
+                bool isDeleted = await _partnerService.DeletePartnerServiceAsync(id);
+
+                if (isDeleted)
+                {
+                    return Ok(new { StatusCode = 200, Message = "Dịch vụ đã được xóa thành công." });
+                }
+                else
+                {
+                    return BadRequest(new { StatusCode = 400, Message = "Xóa dịch vụ thất bại." });
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { StatusCode = 500, Message = ex.Message });
+            }
+        }
 
         [HttpGet("{id}/schedule")]
         [Authorize(Roles = "Partner,Customer")]

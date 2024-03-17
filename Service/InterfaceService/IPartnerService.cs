@@ -13,6 +13,8 @@ namespace Service.InterfaceService
 {
     public interface IPartnerService
     {
+        Task<(bool, string)> UpdatePartnerServiceAsync(UpdatePartnerServiceRequest request, int id);
+        Task<bool> DeletePartnerServiceAsync(int id);
         Task<PartnerServiceDTO?> GetPartnerServiceDetailAsync(int serviceId);
         Task<List<Partner>> GetAllPartnersAsync();
         Task<SearchPartnerDTO> GetPartnerByIDAsync(int id);

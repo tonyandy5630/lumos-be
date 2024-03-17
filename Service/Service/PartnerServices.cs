@@ -627,5 +627,55 @@ namespace Service.Service
                 throw;
             }
         }
+        public async Task<bool> DeletePartnerServiceAsync(int id)
+        {
+            try
+            {
+                return await _unitOfWork.PartnerServiceRepo.DeletePartnerServiceAsync(id);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in DeletePartnerServiceAsync: {ex.Message}", ex);
+                throw;
+            }
+        }
+        public async Task<(bool, string)> UpdatePartnerServiceAsync(UpdatePartnerServiceRequest request, int id)
+        {
+            try
+            {
+                var existingService = await _unitOfWork.PartnerServiceRepo.GetPartnerServiceByIdAsync(id);
+                if (existingService == null)
+                {
+                    return (false, $"Không tìm thấy dịch vụ đối tác với ID {id}.");
+                }
+                if (!string.IsNullOrEmpty(request.Name))
+                {
+                    existingService.Name = request.Name;
+                }
+
+                if (request.Duration != default)
+                {
+                    existingService.Duration = request.Duration;
+                }
+
+                if (!string.IsNullOrEmpty(request.Description))
+                {
+                    existingService.Description = request.Description;
+                }
+
+                if (request.Price != default)
+                {
+                    existingService.Price = (int)request.Price;
+                }
+
+                await _unitOfWork.PartnerServiceRepo.UpdatePartnerServiceAsync(existingService);
+                return (true, "Cập nhật dịch vụ đối tác thành công.");
+            }
+            catch (Exception ex)
+            {
+                return (false, "Có lỗi xảy ra khi cập nhật dịch vụ đối tác: " + ex.Message);
+            }
+        }
+
     }
 }

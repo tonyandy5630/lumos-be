@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Utils;
 
 namespace DataAccessLayer
 {
@@ -88,6 +89,65 @@ namespace DataAccessLayer
             }
 
             return serviceDetails;
+        }
+        public async Task<bool> DeletePartnerServiceAsync(int id)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                var partnerService = await _context.PartnerServices
+                    .Include(ps => ps.ServiceDetails)
+                    .FirstOrDefaultAsync(c => c.ServiceId == id);
+
+                if (partnerService != null)
+                {
+                    _context.ServiceDetails.RemoveRange(partnerService.ServiceDetails);
+                    _context.PartnerServices.Remove(partnerService);
+                    await _context.SaveChangesAsync();
+
+                    await transaction.CommitAsync();
+                    return true;
+                }
+                else { 
+                    throw new Exception($"Không tìm thấy PartnerService với ServiceId {id}."); 
+                }
+                return false;
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+        }
+        public async Task<bool> UpdatePartnerServiceAsync(PartnerService service)
+        {
+            try
+            {
+                service.LastUpdate = DateConverter.GetUTCTime();
+                _context.PartnerServices.Update(service);
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
+
+        public async Task<PartnerService?> GetPartnerServiceByIdAsync(int serviceId)
+        {
+            try
+            {
+                var partnerService = await _context.PartnerServices
+                    .Include(ps => ps.ServiceDetails)
+                    .FirstOrDefaultAsync(c => c.ServiceId == serviceId);
+                return partnerService;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error getting partner service by ID in DAO: " + ex.Message);
+            }
         }
 
     }
