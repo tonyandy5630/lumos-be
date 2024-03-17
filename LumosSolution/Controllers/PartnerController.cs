@@ -237,7 +237,7 @@ namespace LumosSolution.Controllers
                 PartnerServiceDTO? partnerService = await _partnerService.GetPartnerServiceDetailAsync(id);
 
                 if (partnerService == null)
-                    return response;
+                    return NotFound(response);
 
                 response.message = MessagesResponse.Success.Completed;
                 response.StatusCode = ApiStatusCode.OK;
