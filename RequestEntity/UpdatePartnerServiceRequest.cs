@@ -12,7 +12,7 @@ namespace RequestEntity
     public class UpdatePartnerServiceRequest
     {
 
-        public int ServiceID { get; set; }
+        public int ServiceId { get; set; }
         [BadWord(ErrorMessage = "Name contains a forbidden word.")]
         public string? Name { get; set; }
         public int? Duration { get; set; }

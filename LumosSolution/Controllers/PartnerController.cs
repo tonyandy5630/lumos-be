@@ -385,7 +385,7 @@ namespace LumosSolution.Controllers
         {
             try
             {
-                var (isSuccess, message) = await _partnerService.UpdatePartnerServiceAsync(request, request.ServiceID);
+                var (isSuccess, message) = await _partnerService.UpdatePartnerServiceAsync(request, request.ServiceId);
 
                 if (!isSuccess)
                 {
