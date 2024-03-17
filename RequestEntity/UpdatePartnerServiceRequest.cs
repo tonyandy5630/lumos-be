@@ -10,6 +10,8 @@ namespace RequestEntity
 {
     public class UpdatePartnerServiceRequest
     {
+
+        public int ServiceID { get; set; }
         public string? Name { get; set; }
         public int? Duration { get; set; }
         public string? Description { get; set; }

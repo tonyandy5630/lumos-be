@@ -379,13 +379,13 @@ namespace LumosSolution.Controllers
                 return BadRequest(response);
             }
         }
-        [HttpPut("service/{id}")]
+        [HttpPut("service")]
         [Authorize(Roles = "Partner")]
-        public async Task<IActionResult> UpdatePartnerService([FromBody] UpdatePartnerServiceRequest request, int id)
+        public async Task<IActionResult> UpdatePartnerService([FromBody] UpdatePartnerServiceRequest request)
         {
             try
             {
-                var (isSuccess, message) = await _partnerService.UpdatePartnerServiceAsync(request, id);
+                var (isSuccess, message) = await _partnerService.UpdatePartnerServiceAsync(request, request.ServiceID);
 
                 if (!isSuccess)
                 {
