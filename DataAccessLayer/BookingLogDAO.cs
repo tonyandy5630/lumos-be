@@ -580,6 +580,79 @@ namespace DataAccessLayer
                 throw new Exception("Error in GetBookingDetailsByCustomerIdAsync", ex);
             }
         }
+        public async Task<List<BookingDTO>> GetAllBookingDetailsByCustomerIdForPartnertAsync(string email)
+        {
+            try
+            {
+                using var dbContext = new LumosDBContext();
+
+                var bookingDetails = await (from b in dbContext.Bookings
+                                            join bd in dbContext.BookingDetails on b.BookingId equals bd.BookingId
+                                            join mr in dbContext.MedicalReports on bd.ReportId equals mr.ReportId
+                                            join c in dbContext.Customers on mr.CustomerId equals c.CustomerId
+                                            join bl in dbContext.BookingLogs on b.BookingId equals bl.BookingId
+                                            join sb in dbContext.ServiceBookings on bd.DetailId equals sb.DetailId
+                                            join ps in dbContext.PartnerServices on sb.ServiceId equals ps.ServiceId
+                                            join p in dbContext.Partners on ps.PartnerId equals p.PartnerId
+                                            join pm in dbContext.PaymentMethods on b.PaymentId equals pm.PaymentId
+                                            where (p.Email == email) || (c.Email == email)
+                                                && bl.Status >= 0
+                                                && bl.Status <= 5
+                                                && bl.Status !=1
+                                                && c.Status == 1
+                                                && pm.Status == 1
+                                            select new
+                                            {
+                                                Booking = b,
+                                                BookingDetail = bd,
+                                                MedicalReport = mr,
+                                                Customer = c,
+                                                BookingLog = bl,
+                                                ServiceBooking = sb,
+                                                PartnerService = ps,
+                                                Partner = p,
+                                                PaymentMethod = pm
+                                            }).ToListAsync();
+
+                var distinctBookingDetails = bookingDetails
+                    .GroupBy(x => x.Booking.BookingId)
+                    .Select(group => group.OrderByDescending(x => x.BookingLog.CreatedDate).First())
+                    .Select(x => new BookingDTO
+                    {
+                        BookingId = x.Booking.BookingId,
+                        BookingCode = x.Booking.Code,
+                        Status = x.BookingLog.Status,
+                        Partner = x.Partner.DisplayName,
+                        TotalPrice = x.Booking.TotalPrice,
+                        BookingDate = x.Booking.BookingDate,
+                        bookingTime = x.Booking.bookingTime,
+                        Address = x.Booking.Address,
+                        PaymentMethod = x.PaymentMethod.Name,
+                        Note = x.BookingLog.Note,
+                        Rating = x.Booking.Rating,
+                        PaymentLinkId = x.Booking.PaymentLinkId,
+                        Customer = new Customer
+                        {
+                            CustomerId = x.Customer.CustomerId,
+                            Code = x.Customer.Code,
+                            Phone = x.Customer.Phone,
+                            Fullname = x.Customer.Fullname,
+                            Email = x.Customer.Email,
+                            Pronounce = x.Customer.Pronounce,
+                            LastLogin = x.Customer.LastLogin,
+                            LastUpdate = x.Customer.LastUpdate,
+                            ImgUrl = x.Customer.ImgUrl
+                        },
+                    }).ToList();
+
+
+                return distinctBookingDetails;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error in GetBookingDetailsByCustomerIdAsync", ex);
+            }
+        }
         public async Task<List<BillDTO>> GetBookingBillsByCustomerIdAsync(string email)
         {
             try

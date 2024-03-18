@@ -609,7 +609,7 @@ namespace Service.Service
 
                 if (_filteredBookings == null)
                 {
-                    _filteredBookings = await _unitOfWork.BookingLogRepo.GetAllBookingDetailsByCustomerIdAsync(partnerEmail);
+                    _filteredBookings = await _unitOfWork.BookingLogRepo.GetAllBookingDetailsByCustomerIdForPartnertAsync(partnerEmail);
                     foreach (var booking in _filteredBookings)
                     {
                         booking.MedicalServices = await _unitOfWork.BookingLogRepo.GetMedicalServiceDTOsAsync(booking.BookingId);

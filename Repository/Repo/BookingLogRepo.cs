@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Utils;
 
 namespace Repository.Repo
 {
@@ -101,22 +102,25 @@ namespace Repository.Repo
                     if (await IsBookingStatusValidAsync(bookingId, customer))
                     {
                         var medicalServiceDTOs = await GetMedicalServiceDTOsAsync(bookingId);
-                        result.Add(new BookingDTO
+                        if (bookingInfo.Booking.BookingDate.Date >= DateConverter.GetUTCTime().Date)
                         {
-                            BookingId = bookingId,
-                            BookingCode = bookingInfo.Booking.Code,
-                            Status = status,
-                            PaymentLinkId = bookingInfo.Booking.PaymentLinkId,
-                            Partner = bookingInfo.PartnerName,
-                            TotalPrice = bookingInfo.Booking.TotalPrice,
-                            BookingDate = bookingInfo.Booking.BookingDate,
-                            bookingTime = bookingInfo.Booking.bookingTime,
-                            Address = bookingInfo.Booking.Address,
-                            PaymentMethod = bookingInfo.PaymentMethod,
-                            Note = bookingInfo.Note,
-                            Customer = customer,
-                            MedicalServices = medicalServiceDTOs
-                        });
+                            result.Add(new BookingDTO
+                            {
+                                BookingId = bookingId,
+                                BookingCode = bookingInfo.Booking.Code,
+                                Status = status,
+                                PaymentLinkId = bookingInfo.Booking.PaymentLinkId,
+                                Partner = bookingInfo.PartnerName,
+                                TotalPrice = bookingInfo.Booking.TotalPrice,
+                                BookingDate = bookingInfo.Booking.BookingDate,
+                                bookingTime = bookingInfo.Booking.bookingTime,
+                                Address = bookingInfo.Booking.Address,
+                                PaymentMethod = bookingInfo.PaymentMethod,
+                                Note = bookingInfo.Note,
+                                Customer = customer,
+                                MedicalServices = medicalServiceDTOs
+                            });
+                        }
                     }
                 }
             }
@@ -268,5 +272,7 @@ namespace Repository.Repo
         public Task<List<BillDTO>> GetBookingBillsByCustomerIdAsync(string email) => BookingLogDAO.Instance.GetBookingBillsByCustomerIdAsync(email);
 
         public Task<List<BookingDTO>> GetAllBookingDetailsByCustomerIdAsync(string email) => BookingLogDAO.Instance.GetAllBookingDetailsByCustomerIdAsync(email);
+
+        public Task<List<BookingDTO>> GetAllBookingDetailsByCustomerIdForPartnertAsync(string email) => BookingLogDAO.Instance.GetAllBookingDetailsByCustomerIdForPartnertAsync(email);
     }
 }

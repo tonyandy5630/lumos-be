@@ -51,6 +51,13 @@ namespace Service.Service
         {
             try
             {
+                var partnerSchedule = await _unitOfWork.ScheduleRepo.GetSchedulesByPartnerIdAsync(createBookingDTO.PartnerId);
+                bool isAvailable = partnerSchedule.Any(s => s.DayOfWeek == createBookingDTO.DayOfWeek && s.WorkShift == createBookingDTO.bookingTime);
+
+                if (!isAvailable)
+                {
+                    throw new Exception("DayOfWeek and  bookingTime is not available.");
+                }
                 var result = await _unitOfWork.BookingRepo.CreateBookingAsync(booking, createBookingDTO, email);
 
                 return result;
