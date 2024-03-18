@@ -51,7 +51,6 @@ namespace Service.Service
         {
             try
             {
-                var partnerSchedule = await _unitOfWork.ScheduleRepo.GetSchedulesByPartnerIdAsync(createBookingDTO.PartnerId);
                 var result = await _unitOfWork.BookingRepo.CreateBookingAsync(booking, createBookingDTO, email);
 
                 return result;
