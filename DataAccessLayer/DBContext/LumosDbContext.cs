@@ -180,6 +180,9 @@ namespace BussinessObject
                     .HasMaxLength(1024)
                     .IsUnicode(true);
 
+                entity.Property(e => e.isPaid).IsRequired(false).HasColumnType("bit").HasDefaultValueSql("0");
+                entity.Property(e => e.isRefund).IsRequired(false).HasColumnType("bit").HasDefaultValueSql("0");
+
                 entity.Property(e => e.FeedbackLumos).HasMaxLength(200);
 
                 entity.Property(e => e.FeedbackPartner).HasMaxLength(200);
