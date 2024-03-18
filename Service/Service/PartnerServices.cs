@@ -190,10 +190,9 @@ namespace Service.Service
 
         public async Task<(Partner?, PartnerError?)> AddPartnerAsync(AddPartnerRequest partnerRequest)
         {
-            string TRANSACTION = "add-partner";
-            IDbContextTransaction commit = await _unitOfWork.StartTransactionAsync(TRANSACTION);
             try
             {
+                bool hasError = false;
                 using (TransactionScope scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
                 {
                     PartnerError? errorPartner = null;
@@ -211,7 +210,7 @@ namespace Service.Service
                     bool emailError = existedEmail.Result != null;
                     bool scheduleNotExist = partnerRequest.Schedules == null;
 
-                    bool hasError = partnerNameError || licenseError || displayNameError || emailError || scheduleNotExist;
+                    hasError = partnerNameError || licenseError || displayNameError || emailError || scheduleNotExist;
                     if (hasError)
                     {
                         errorPartner = new PartnerError();
@@ -259,16 +258,16 @@ namespace Service.Service
                     {
                         throw new NullReferenceException("Cannot add schedules");
                     }
-
-                    await _unitOfWork.CommitTransactionAsync(commit);
-                    scope.Complete();
+                    if (!hasError)
+                    {
+                        scope.Complete();
+                    }
                     return (part, null);
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                await _unitOfWork.RollBackAsync(commit, TRANSACTION);
                 throw;
             }
         }

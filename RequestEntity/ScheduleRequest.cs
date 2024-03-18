@@ -8,6 +8,7 @@ namespace RequestEntity
 {
     public class ScheduleRequest
     {
+
         public int WorkShift { get; set; }
         public int DayOfWeek { get; set; }
         public string? Note { get; set; }
