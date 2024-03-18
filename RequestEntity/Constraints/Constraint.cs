@@ -16,9 +16,9 @@ namespace RequestEntity.Constraint
         }
         public static class PaymentsConstraint
         {
-            public const string clientId = "2b13d4e0-5fac-42c7-b09b-5c3580d17a7f";
-            public const string apiKey = "2c2991da-1a34-47d9-8902-dbe38b24146d";
-            public const string checksumKey = "14fdde4c9fac6ad7f75e25137b3593bec0120691fc2470704b3445a11a75d4bb";
+            public const string clientId = "e2cd40e5-c2b0-45d2-b0ea-26a096707b48";
+            public const string apiKey = "292a589f-ac7d-41e2-9049-3afb37f37841";
+            public const string checksumKey = "6cc624c4a98dabb1e0fe83b24010e3ab4b0df6b2e9c60259c6377a7f7b8c669f";
         }
     }
 }
