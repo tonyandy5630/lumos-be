@@ -40,8 +40,6 @@ namespace Service.Service
         {
             try
             {
-                using (TransactionScope scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
-                {
                     List<Task<ServiceCategory>> categoryTasks = new(); // parallel category validation
                     List<Task<ServiceDetail?>> serviceDetailTasks = new(); // add service detail parallel
                     List<ServiceCategory> categories = new();
@@ -83,7 +81,8 @@ namespace Service.Service
 
                     if (categories.Count != service.Categories.ToList().Count)
                         throw new Exception("Categories do not match");
-
+                using (TransactionScope scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+                {
                     PartnerService? newService = await _unitOfWork.PartnerRepo.AddPartnerServiceAsync(partnerService);
 
                     if (newService == null)
@@ -192,8 +191,6 @@ namespace Service.Service
             try
             {
                 bool hasError = false;
-                using (TransactionScope scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
-                {
                     PartnerError? errorPartner = null;
 
                     Task<Partner?> existedPartnerName = _unitOfWork.PartnerRepo.GetPartnerByPartnerNameAsync(partnerRequest.Partner.PartnerName.Trim());
@@ -201,7 +198,7 @@ namespace Service.Service
                     Task<Partner?> existedDisplayName = _unitOfWork.PartnerRepo.GetPartnerByDisplayNameAsync(partnerRequest.Partner.DisplayName.Trim());
                     Task<Partner?> existedEmail = _unitOfWork.PartnerRepo.GetPartnerByEmailAsync(partnerRequest.Partner.Email.Trim());
 
-                    Task.WhenAll(existedPartnerName, existedLicense, existedDisplayName, existedEmail).Wait();
+                    await Task.WhenAll(existedPartnerName, existedLicense, existedDisplayName, existedEmail);
 
                     bool partnerNameError = existedPartnerName.Result != null;
                     bool licenseError = existedLicense.Result != null;
@@ -243,7 +240,8 @@ namespace Service.Service
                     IUserManagerRepo<PartnerRequest> userManager = new UserManagerRepo<PartnerRequest>();
                     addPartner.Password = userManager.HashPassword(partnerRequest.Partner, partnerRequest.Partner.Email.Trim());
                     addPartner.Role = (int)RolesEnum.Partner;
-
+                using (TransactionScope scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+                {
                     Partner? part = await _unitOfWork.PartnerRepo.AddPartnerAsync(addPartner);
 
                     if (part == null)
