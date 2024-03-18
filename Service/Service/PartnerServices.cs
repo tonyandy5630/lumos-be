@@ -38,83 +38,82 @@ namespace Service.Service
 
         public async Task<(PartnerService?, PartnerServiceError?)> AddPartnerServiceAsync(AddPartnerServiceResquest service, string? partnerEmail)
         {
-            const string TRANSACTION = "add-parner-service";
-            IDbContextTransaction commit = await _unitOfWork.StartTransactionAsync(TRANSACTION);
             try
             {
-                List<Task<ServiceCategory>> categoryTasks = new(); // parallel category validation
-                List<Task<ServiceDetail?>> serviceDetailTasks = new(); // add service detail parallel
-                List<ServiceCategory> categories = new();
-
-                if (partnerEmail == null)
-                    throw new Exception("Not found partner email");
-
-
-                Partner? partner = await _unitOfWork.PartnerRepo.GetPartnerByEmailAsync(partnerEmail);
-
-                if (partner == null)
-                    throw new Exception("Not found partner");
-
-                PartnerService? existedService = await _unitOfWork.PartnerServiceRepo.GetPartnerServiceByServiceNameAsync(service.Name, partner.PartnerId);
-                if (existedService != null)
+                using (TransactionScope scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
                 {
-                    PartnerServiceError error = new()
+                    List<Task<ServiceCategory>> categoryTasks = new(); // parallel category validation
+                    List<Task<ServiceDetail?>> serviceDetailTasks = new(); // add service detail parallel
+                    List<ServiceCategory> categories = new();
+
+                    if (partnerEmail == null)
+                        throw new Exception("Not found partner email");
+
+                    Partner? partner = await _unitOfWork.PartnerRepo.GetPartnerByEmailAsync(partnerEmail);
+
+                    if (partner == null)
+                        throw new Exception("Not found partner");
+
+                    PartnerService? existedService = await _unitOfWork.PartnerServiceRepo.GetPartnerServiceByServiceNameAsync(service.Name, partner.PartnerId);
+                    if (existedService != null)
                     {
-                        Name = "Service with same name has existed"
-                    };
-                    return (null, error);
-                };
-
-                PartnerService partnerService = _mapper.Map<PartnerService>(service);
-                partnerService.PartnerId = partner.PartnerId;
-                partnerService.Code = GenerateCode.GenerateTableCode("partnerservice");
-                partnerService.Status = 1;
-                partnerService.CreatedDate = DateTime.Now;
-                partnerService.LastUpdate = DateTime.Now;
-                partnerService.Rating = 0;
-                partnerService.UpdatedBy = partner.PartnerName;
-                // Validate categories
-                // better if can do concurrently
-                foreach (int cateId in service.Categories)
-                {
-                    ServiceCategory? cate = await _unitOfWork.ServiceCategoryRepo.GetCategoryByIdAsync(cateId);
-                    categories.Add(cate);
-                }
-
-                if (categories.Count != service.Categories.ToList().Count)
-                    throw new Exception("Categories is not matched");
-
-                PartnerService? newService = await _unitOfWork.PartnerRepo.AddPartnerServiceAsync(partnerService);
-
-                if (newService == null)
-                    throw new Exception("Added faield");
-
-
-                foreach (var cate in categories)
-                {
-                    if (cate == null)
-                        throw new Exception("One of the categories is not available");
-
-                    ServiceDetail serviceDetail = new ServiceDetail
-                    {
-                        CreatedDate = DateTime.Now,
-                        ServiceId = newService.ServiceId,
-                        CategoryId = cate.CategoryId,
-                        LastUpdate = DateTime.Now,
-                        CreatedBy = partner.PartnerName,
+                        PartnerServiceError error = new()
+                        {
+                            Name = "Service with same name has existed"
+                        };
+                        return (null, error);
                     };
 
-                    ServiceDetail? detail = await _unitOfWork.ServiceDetailRepo.AddServiceDetailAsync(serviceDetail);
-                    if (detail == null)
-                        throw new Exception("Error when adding 1 of the details");
-                }
+                    PartnerService partnerService = _mapper.Map<PartnerService>(service);
+                    partnerService.PartnerId = partner.PartnerId;
+                    partnerService.Code = GenerateCode.GenerateTableCode("partnerservice");
+                    partnerService.Status = 1;
+                    partnerService.CreatedDate = DateTime.Now;
+                    partnerService.LastUpdate = DateTime.Now;
+                    partnerService.Rating = 0;
+                    partnerService.UpdatedBy = partner.PartnerName;
 
-                await _unitOfWork.CommitTransactionAsync(commit);
-                return (newService, null);
+                    // Validate categories
+                    // Better if can be done concurrently
+                    foreach (int cateId in service.Categories)
+                    {
+                        ServiceCategory? cate = await _unitOfWork.ServiceCategoryRepo.GetCategoryByIdAsync(cateId);
+                        categories.Add(cate);
+                    }
+
+                    if (categories.Count != service.Categories.ToList().Count)
+                        throw new Exception("Categories do not match");
+
+                    PartnerService? newService = await _unitOfWork.PartnerRepo.AddPartnerServiceAsync(partnerService);
+
+                    if (newService == null)
+                        throw new Exception("Failed to add service");
+
+                    foreach (var cate in categories)
+                    {
+                        if (cate == null)
+                            throw new Exception("One of the categories is not available");
+
+                        ServiceDetail serviceDetail = new ServiceDetail
+                        {
+                            CreatedDate = DateTime.Now,
+                            ServiceId = newService.ServiceId,
+                            CategoryId = cate.CategoryId,
+                            LastUpdate = DateTime.Now,
+                            CreatedBy = partner.PartnerName,
+                        };
+
+                        ServiceDetail? detail = await _unitOfWork.ServiceDetailRepo.AddServiceDetailAsync(serviceDetail);
+                        if (detail == null)
+                            throw new Exception("Error when adding one of the details");
+                    }
+
+                    scope.Complete();
+                    return (newService, null);
+                }
             }
-            catch
+            catch (Exception ex)
             {
-                await _unitOfWork.RollBackAsync(commit, TRANSACTION);
                 throw;
             }
         }
