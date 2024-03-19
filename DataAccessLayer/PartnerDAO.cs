@@ -146,7 +146,7 @@ namespace DataAccessLayer
             try
             {
                 using var _context = new LumosDBContext();
-                partners = await _context.Partners.ToListAsync();
+                partners = await _context.Partners.OrderByDescending(p => p.CreatedDate).ToListAsync();
                 if (partners == null || partners.Count == 0)
                 {
                     Console.WriteLine("No partners was found!");
