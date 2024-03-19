@@ -16,11 +16,44 @@ namespace Service.Service
     public class AdminService : IAdminService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private List<BookingDTO> _cachedBookings;
         public AdminService(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
         }
+        public async Task<List<BookingDTO>> GetPartnerBookingsAsync(int? page, int? pageSize)
+        {
+            try
+            {
+                if (page == null || pageSize == null)
+                {
+                    return await _unitOfWork.BookingLogRepo.GetAllBookingDetailsForAdminAsync();
+                }
+                int pageNumber = page.Value;
+                int size = pageSize.Value;
+                if (pageNumber < 1 || size < 1)
+                {
+                    throw new ArgumentException("Page number and page size must be greater than zero.");
+                }
+                if (_cachedBookings == null)
+                {
+                    _cachedBookings = await _unitOfWork.BookingLogRepo.GetAllBookingDetailsForAdminAsync();
+                }
+                _cachedBookings = _cachedBookings.OrderByDescending(b => b.BookingDate).ToList();
+                int skipAmount = (pageNumber - 1) * size;
 
+                // Retrieve bookings for the current page
+                return (await _unitOfWork.BookingLogRepo.GetAllBookingDetailsForAdminAsync())
+                    .Skip(skipAmount)
+                    .Take(size)
+                    .ToList();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetPartnerBookingsAsync: {ex.Message}", ex);
+                throw;
+            }
+        }
         public async Task<List<Partner>> GetTopPartnerAsync(int top)
         {
             try

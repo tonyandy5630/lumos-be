@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Service.InterfaceService;
 using Service.Service;
+using System.Security.Claims;
 using Utils;
 
 namespace LumosSolution.Controllers
@@ -133,6 +134,39 @@ namespace LumosSolution.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+        [HttpGet("bookings/pagination")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<ApiResponse<List<BookingDTO>>>> GetPartnerBookings(int? page =1, int? PageSize=5)
+        {
+            ApiResponse<List<BookingDTO>> response = new ApiResponse<List<BookingDTO>>();
+            try
+            {
+                string email = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+
+                if (email == null)
+                {
+                    response.message = MessagesResponse.Error.Unauthorized;
+                    response.StatusCode = ApiStatusCode.Unauthorized;
+                    return Unauthorized(response);
+                }
+
+                var bookings = await _adminService.GetPartnerBookingsAsync(page, PageSize);
+
+
+                response.data = bookings;
+                response.message = MessagesResponse.Success.Completed;
+                response.StatusCode = ApiStatusCode.OK;
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                response.message = ex.Message;
+                response.StatusCode = ApiStatusCode.InternalServerError;
+                return StatusCode(500, response);
             }
         }
     }

@@ -277,5 +277,7 @@ namespace Repository.Repo
         public Task<List<BookingDTO>> GetAllBookingDetailsByCustomerIdForPartnertAsync(string email) => BookingLogDAO.Instance.GetAllBookingDetailsByCustomerIdForPartnertAsync(email);
 
         public Task<List<RefundListDTO>> GetRefundListAsync() => BookingLogDAO.Instance.GetRefundListAsync();
+
+        public Task<List<BookingDTO>> GetAllBookingDetailsForAdminAsync() => BookingLogDAO.Instance.GetAllBookingDetailsForAdminAsync();
     }
 }
