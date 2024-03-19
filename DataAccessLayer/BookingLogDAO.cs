@@ -731,6 +731,7 @@ namespace DataAccessLayer
                                                   && bl.Status == (int)BookingStatusEnum.Canceled
                                                   && bl.Status <= (int)BookingStatusEnum.Pending
                                                   && b.isPaid == true 
+                                                  && b.isRefund != true
                                             select new
                                             {
                                                 Booking = b,
