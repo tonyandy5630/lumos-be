@@ -544,8 +544,6 @@ namespace DataAccessLayer
                                             ServiceBooking = sb,
                                             PartnerService = ps,
                                             Partner = p,
-                                            isPaid = b.isPaid,
-                                            isRefund = b.isRefund,
                                             PaymentMethod = pm
                                         }).ToListAsync();
 
