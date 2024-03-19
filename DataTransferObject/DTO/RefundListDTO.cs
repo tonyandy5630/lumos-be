@@ -15,5 +15,6 @@ namespace DataTransferObject.DTO
         public string Email { get; set; }
         public string Phone { get; set; }
         public string? CancelationReason { get; set;}
+        public DateTime? CreatedAt { get; set; }
     }
 }
