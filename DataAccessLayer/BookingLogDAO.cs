@@ -729,7 +729,6 @@ namespace DataAccessLayer
                                             join bl in dbContext.BookingLogs on b.BookingId equals bl.BookingId
                                             where c.Status == 1
                                                   && bl.Status == (int)BookingStatusEnum.Canceled
-                                                  && bl.Status <= (int)BookingStatusEnum.Pending
                                                   && b.isPaid == true 
                                                   && b.isRefund != true
                                             select new
@@ -746,7 +745,7 @@ namespace DataAccessLayer
                     .GroupBy(x => x.Booking.BookingId)
                     .Select(group => group.First()) // Selects the first item from each group
                     .Select(x => new RefundListDTO
-                    {
+                    {   
                         BookingId = x.Booking.BookingId,
                         Status = x.BookingLog.Status,
                         TotalPrice = x.Booking.TotalPrice,
@@ -754,6 +753,7 @@ namespace DataAccessLayer
                         Phone = x.Customer.Phone,
                         Email = x.Customer.Email,
                         CancelationReason = x.BookingLog.Note,
+                        CreatedAt = x.Booking.CreatedDate
                     }).ToList();
 
                 return distinctBookingDetails;
