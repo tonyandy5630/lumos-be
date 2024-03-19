@@ -1,5 +1,6 @@
 ﻿using BussinessObject;
 using DataTransferObject.DTO;
+using Enum;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using System;
@@ -526,15 +527,33 @@ namespace DataAccessLayer
 
             int totalServices = partner.PartnerServices.Count;
 
-            var completedBookings = await _context.Bookings
-                .Where(b => b.BookingLogs.Any(bl => bl.Status == 4))
-                .ToListAsync();
+            var completedBookings = await (from b in _context.Bookings
+                                        join bd in _context.BookingDetails on b.BookingId equals bd.BookingId
+                                        join sb in _context.ServiceBookings on bd.DetailId equals sb.DetailId
+                                        join ps in _context.PartnerServices on sb.ServiceId equals ps.ServiceId
+                                        join p in _context.Partners on ps.PartnerId equals p.PartnerId
+                                        join pm in _context.PaymentMethods on b.PaymentId equals pm.PaymentId
+                                        join bl in _context.BookingLogs on b.BookingId equals bl.BookingId
+                                        where (p.Email == email)
+                                              && pm.Status == 1
+                                              && bl.Status == (int)BookingStatusEnum.Completed
+                                        select new
+                                        {
+                                            Booking = b,
+                                            BookingDetail = bd,
+                                            ServiceBooking = sb,
+                                            PartnerService = ps,
+                                            Partner = p,
+                                            isPaid = b.isPaid,
+                                            isRefund = b.isRefund,
+                                            PaymentMethod = pm
+                                        }).ToListAsync();
 
             int revenue = 0;
             foreach (var booking in completedBookings)
             {
                 var serviceBookings = await _context.ServiceBookings
-                    .Where(sb => sb.Detail.BookingId == booking.BookingId)
+                    .Where(sb => sb.Detail.BookingId == booking.Booking.BookingId)
                     .ToListAsync();
 
                 foreach (var sb in serviceBookings)

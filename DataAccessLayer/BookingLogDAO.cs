@@ -628,6 +628,8 @@ namespace DataAccessLayer
                         Status = x.BookingLog.Status,
                         Partner = x.Partner.DisplayName,
                         TotalPrice = x.Booking.TotalPrice,
+                        isPaid = (bool)x.Booking.isPaid,
+                        isRefund = (bool)x.Booking.isRefund,
                         BookingDate = x.Booking.BookingDate,
                         bookingTime = x.Booking.bookingTime,
                         Address = x.Booking.Address,
