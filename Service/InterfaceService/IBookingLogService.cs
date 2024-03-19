@@ -11,6 +11,7 @@ namespace Service.InterfaceService
 {
     public interface IBookingLogService
     {
+        Task<List<RefundListDTO>> GetRefundListAsync();
         Task<bool> UpdateBookingLogStatusForPartnerAsync(int bookingLogId, int newStatus);
         Task<bool> UpdateBookingLogStatusForCustomerAsync(int bookingLogId, int newStatus);
         Task<BookingLog> GetLatestBookingLogAsync(int bookingId);

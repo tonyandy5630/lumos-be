@@ -37,5 +37,6 @@ namespace Repository.Interface
 
         Task<List<BookingDTO>> FilterAndMapBookingsAsync(List<IGrouping<int, BookingLog>> bookings, Partner partner);
         Task<List<BookingLog>> GetAllLogAsync();
+        Task<List<RefundListDTO>> GetRefundListAsync();
     }
 }

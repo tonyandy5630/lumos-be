@@ -14,10 +14,11 @@ namespace LumosSolution.Controllers
     public class AdminController : ControllerBase
     {
         private readonly IAdminService _adminService;
-
-        public AdminController(IAdminService adminService)
+        private readonly IBookingLogService _bookingLogService;
+        public AdminController(IAdminService adminService, IBookingLogService bookingLogService)
         {
             _adminService = adminService;
+            _bookingLogService = bookingLogService;
         }
 
         [HttpGet("dashboard/stat")]
@@ -118,6 +119,20 @@ namespace LumosSolution.Controllers
                 Console.WriteLine(ex.Message);
                 response.message = ex.Message;
                 return StatusCode(500, response);
+            }
+        }
+        [HttpGet("refundlist")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetRefundList()
+        {
+            try
+            {
+                var refundList = await _bookingLogService.GetRefundListAsync();
+                return Ok(refundList);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
     }

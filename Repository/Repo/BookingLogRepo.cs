@@ -111,6 +111,8 @@ namespace Repository.Repo
                                 PaymentLinkId = bookingInfo.Booking.PaymentLinkId,
                                 Partner = bookingInfo.PartnerName,
                                 TotalPrice = bookingInfo.Booking.TotalPrice,
+                                isPaid = bookingInfo.isPaid,
+                                isRefund =bookingInfo.isRefund,
                                 BookingDate = bookingInfo.Booking.BookingDate,
                                 bookingTime = bookingInfo.Booking.bookingTime,
                                 Address = bookingInfo.Booking.Address,
@@ -273,5 +275,7 @@ namespace Repository.Repo
         public Task<List<BookingDTO>> GetAllBookingDetailsByCustomerIdAsync(string email) => BookingLogDAO.Instance.GetAllBookingDetailsByCustomerIdAsync(email);
 
         public Task<List<BookingDTO>> GetAllBookingDetailsByCustomerIdForPartnertAsync(string email) => BookingLogDAO.Instance.GetAllBookingDetailsByCustomerIdForPartnertAsync(email);
+
+        public Task<List<RefundListDTO>> GetRefundListAsync() => BookingLogDAO.Instance.GetRefundListAsync();
     }
 }

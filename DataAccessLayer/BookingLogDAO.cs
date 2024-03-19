@@ -453,9 +453,9 @@ namespace DataAccessLayer
                                             join p in dbContext.Partners on ps.PartnerId equals p.PartnerId
                                             join pm in dbContext.PaymentMethods on b.PaymentId equals pm.PaymentId
                                             where (p.Email == email) || (c.Email == email)
-                                                && bl.Status >= 0 
-                                                && bl.Status <= 5 
-                                                && bl.Status != 1
+                                                && bl.Status >= (int)BookingStatusEnum.Canceled 
+                                                && bl.Status <= (int)BookingStatusEnum.Completed
+                                                && bl.Status != (int)BookingStatusEnum.WaitingForPayment
                                                 && c.Status == 1
                                                 && pm.Status == 1
                                             select new
@@ -481,6 +481,8 @@ namespace DataAccessLayer
                         Status = x.BookingLog.Status,
                         Partner = x.Partner.DisplayName,
                         TotalPrice = x.Booking.TotalPrice,
+                        isPaid = (bool)x.Booking.isPaid,
+                        isRefund = (bool)x.Booking.isRefund,
                         BookingDate = x.Booking.BookingDate,
                         bookingTime = x.Booking.bookingTime,
                         Address = x.Booking.Address,
@@ -526,8 +528,8 @@ namespace DataAccessLayer
                                             join p in dbContext.Partners on ps.PartnerId equals p.PartnerId
                                             join pm in dbContext.PaymentMethods on b.PaymentId equals pm.PaymentId
                                             where (p.Email == email) || (c.Email == email)
-                                                && bl.Status >= 0
-                                                && bl.Status <= 5
+                                                && bl.Status >= (int)BookingStatusEnum.Canceled
+                                                && bl.Status <= (int)BookingStatusEnum.Completed
                                                 && c.Status == 1
                                                 && pm.Status == 1
                                             select new
@@ -579,7 +581,7 @@ namespace DataAccessLayer
             }
             catch (Exception ex)
             {
-                throw new Exception("Error in GetBookingDetailsByCustomerIdAsync", ex);
+                throw new Exception("Error in GetAllBookingDetailsByCustomerIdAsync", ex);
             }
         }
         public async Task<List<BookingDTO>> GetAllBookingDetailsByCustomerIdForPartnertAsync(string email)
@@ -598,9 +600,9 @@ namespace DataAccessLayer
                                             join p in dbContext.Partners on ps.PartnerId equals p.PartnerId
                                             join pm in dbContext.PaymentMethods on b.PaymentId equals pm.PaymentId
                                             where (p.Email == email) || (c.Email == email)
-                                                && bl.Status >= 0
-                                                && bl.Status <= 5
-                                                && bl.Status !=1
+                                                && bl.Status >= (int)BookingStatusEnum.Canceled
+                                                && bl.Status <= (int)BookingStatusEnum.Completed
+                                                && bl.Status != (int)BookingStatusEnum.WaitingForPayment
                                                 && c.Status == 1
                                                 && pm.Status == 1
                                             select new
@@ -652,7 +654,7 @@ namespace DataAccessLayer
             }
             catch (Exception ex)
             {
-                throw new Exception("Error in GetBookingDetailsByCustomerIdAsync", ex);
+                throw new Exception("Error in GetAllBookingDetailsByCustomerIdForPartnertAsync", ex);
             }
         }
         public async Task<List<BillDTO>> GetBookingBillsByCustomerIdAsync(string email)
@@ -711,7 +713,53 @@ namespace DataAccessLayer
             }
             catch (Exception ex)
             {
-                throw new Exception("Error in GetBookingDetailsByCustomerIdAsync", ex);
+                throw new Exception("Error in GetBookingBillsByCustomerIdAsync", ex);
+            }
+        }
+        public async Task<List<RefundListDTO>> GetRefundListAsync()
+        {
+            try
+            {
+                using var dbContext = new LumosDBContext(); 
+
+                var bookingDetails = await (from b in dbContext.Bookings
+                                            join bd in dbContext.BookingDetails on b.BookingId equals bd.BookingId
+                                            join mr in dbContext.MedicalReports on bd.ReportId equals mr.ReportId
+                                            join c in dbContext.Customers on mr.CustomerId equals c.CustomerId
+                                            join bl in dbContext.BookingLogs on b.BookingId equals bl.BookingId
+                                            where c.Status == 1
+                                                  && bl.Status == (int)BookingStatusEnum.Canceled
+                                                  && bl.Status <= (int)BookingStatusEnum.Pending
+                                                  && b.isPaid == true 
+                                            select new
+                                            {
+                                                Booking = b,
+                                                BookingDetail = bd,
+                                                MedicalReport = mr,
+                                                Customer = c,
+                                                BookingLog = bl,
+                                            }).ToListAsync();
+
+                var distinctBookingDetails = bookingDetails
+                    .OrderByDescending(x => x.BookingLog.CreatedDate) // Orders by created date
+                    .GroupBy(x => x.Booking.BookingId)
+                    .Select(group => group.First()) // Selects the first item from each group
+                    .Select(x => new RefundListDTO
+                    {
+                        BookingId = x.Booking.BookingId,
+                        Status = x.BookingLog.Status,
+                        TotalPrice = x.Booking.TotalPrice,
+                        CustomerName = x.Customer.Fullname,
+                        Phone = x.Customer.Phone,
+                        Email = x.Customer.Email,
+                        CancelationReason = x.BookingLog.Note,
+                    }).ToList();
+
+                return distinctBookingDetails;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error in GetRefundListAsync", ex);
             }
         }
 

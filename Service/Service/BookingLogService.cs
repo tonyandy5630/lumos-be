@@ -355,5 +355,16 @@ namespace Service.Service
                 throw;
             }
         }
+        public async Task<List<RefundListDTO>> GetRefundListAsync()
+        {
+            try
+            {
+                return await _unitOfWork.BookingLogRepo.GetRefundListAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
     }
 }
