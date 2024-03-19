@@ -659,7 +659,7 @@ namespace DataAccessLayer
                 throw new Exception("Error in GetAllBookingDetailsByCustomerIdForPartnertAsync", ex);
             }
         }
-        public async Task<List<BookingDTO>> GetAllBookingDetailsForAdminAsync()
+        public async Task<List<BookingforAdminDTO>> GetAllBookingDetailsForAdminAsync()
         {
             try
             {
@@ -695,7 +695,7 @@ namespace DataAccessLayer
                 var distinctBookingDetails = bookingDetails
                     .GroupBy(x => x.Booking.BookingId)
                     .Select(group => group.OrderByDescending(x => x.BookingLog.CreatedDate).First())
-                    .Select(x => new BookingDTO
+                    .Select(x => new BookingforAdminDTO
                     {
                         BookingId = x.Booking.BookingId,
                         BookingCode = x.Booking.Code,
@@ -705,6 +705,7 @@ namespace DataAccessLayer
                         isPaid = (bool)x.Booking.isPaid,
                         isRefund = (bool)x.Booking.isRefund,
                         BookingDate = x.Booking.BookingDate,
+                        CreateDate = (DateTime)x.Booking.CreatedDate,
                         bookingTime = x.Booking.bookingTime,
                         Address = x.Booking.Address,
                         PaymentMethod = x.PaymentMethod.Name,

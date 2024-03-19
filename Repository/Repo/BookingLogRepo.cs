@@ -278,6 +278,6 @@ namespace Repository.Repo
 
         public Task<List<RefundListDTO>> GetRefundListAsync() => BookingLogDAO.Instance.GetRefundListAsync();
 
-        public Task<List<BookingDTO>> GetAllBookingDetailsForAdminAsync() => BookingLogDAO.Instance.GetAllBookingDetailsForAdminAsync();
+        public Task<List<BookingforAdminDTO>> GetAllBookingDetailsForAdminAsync() => BookingLogDAO.Instance.GetAllBookingDetailsForAdminAsync();
     }
 }

@@ -10,7 +10,7 @@ namespace Repository.Interface
 {
     public interface IBookingLogRepo
     {
-        Task<List<BookingDTO>> GetAllBookingDetailsForAdminAsync();
+        Task<List<BookingforAdminDTO>> GetAllBookingDetailsForAdminAsync();
         Task<List<BookingDTO>> GetAllBookingDetailsByCustomerIdForPartnertAsync(string email);
         Task<List<BookingDTO>> GetAllBookingDetailsByCustomerIdAsync(string email);
         Task<List<BillDTO>> GetBookingBillsByCustomerIdAsync(string email);

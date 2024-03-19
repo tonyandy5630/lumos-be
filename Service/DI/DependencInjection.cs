@@ -25,7 +25,7 @@ namespace Service.DI
             services.AddHttpContextAccessor();
             services.AddDbContext<LumosDBContext>(option =>
             option.UseSqlServer(connectionString), ServiceLifetime.Transient);
-
+            services.AddMemoryCache();
 
             #region entity
             //payment

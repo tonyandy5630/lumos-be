@@ -1,7 +1,9 @@
-﻿using BussinessObject;
+﻿using AutoMapper;
+using BussinessObject;
 using DataTransferObject.DTO;
 using Enum;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Repository.Interface.IUnitOfWork;
 using Service.InterfaceService;
 using System;
@@ -16,12 +18,108 @@ namespace Service.Service
     public class AdminService : IAdminService
     {
         private readonly IUnitOfWork _unitOfWork;
-        private List<BookingDTO> _cachedBookings;
-        public AdminService(IUnitOfWork unitOfWork)
+        private readonly IMapper _mapper;
+        private readonly IMemoryCache _cache;
+
+        public AdminService(IUnitOfWork unitOfWork, IMapper mapper, IMemoryCache cache)
         {
             _unitOfWork = unitOfWork;
+            _mapper = mapper;
+            _cache = cache;
         }
-        public async Task<List<BookingDTO>> GetPartnerBookingsAsync(int? page, int? pageSize)
+
+        public async Task<List<PartnerDTO>> GetAllPartnersAsync(int? page, int? pageSize)
+        {
+            try
+            {
+                string cacheKey = "AllPartners";
+
+                if (!_cache.TryGetValue(cacheKey, out List<PartnerDTO> partners))
+                {
+                    partners = await FetchPartnersFromDatabase(page, pageSize);
+
+                    var cacheOptions = new MemoryCacheEntryOptions
+                    {
+                        SlidingExpiration = TimeSpan.FromMinutes(3)
+                    };
+                    _cache.Set(cacheKey, partners, cacheOptions);
+                }
+
+                // Return partners
+                return partners;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetAllPartnersAsync: {ex.Message}", ex);
+                throw;
+            }
+        }
+
+        public async Task<List<BookingforAdminDTO>> GetBookingsAsync(int? page, int? pageSize)
+        {
+            try
+            {
+                string cacheKey = "AllBookings";
+
+                if (!_cache.TryGetValue(cacheKey, out List<BookingforAdminDTO> bookings))
+                {
+                    // If bookings not found in cache, query database
+                    bookings = await FetchBookingsFromDatabase(page, pageSize);
+
+                    var cacheOptions = new MemoryCacheEntryOptions
+                    {
+                        SlidingExpiration = TimeSpan.FromMinutes(3)
+                    };
+                    _cache.Set(cacheKey, bookings, cacheOptions);
+                }
+
+                // Return bookings
+                return bookings;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetBookingsAsync: {ex.Message}", ex);
+                throw;
+            }
+        }
+        private async Task<List<PartnerDTO>> FetchPartnersFromDatabase(int? page, int? pageSize)
+        {
+            try
+            {
+                if (page == null || pageSize == null)
+                {
+                    var partnerss = await _unitOfWork.PartnerRepo.GetAllPartnersAsync();
+                    return _mapper.Map<List<PartnerDTO>>(partnerss);
+                }
+
+                int pageNumber = page.Value;
+                int size = pageSize.Value;
+
+                if (pageNumber < 1 || size < 1)
+                {
+                    throw new ArgumentException("Page number and page size must be greater than zero.");
+                }
+
+                var partners = await _unitOfWork.PartnerRepo.GetAllPartnersAsync();
+
+                // Order partners by CreatedDate
+                partners = partners.OrderByDescending(p => p.CreatedDate).ToList();
+
+                int skipAmount = (pageNumber - 1) * size;
+                // Retrieve partners for the current page
+                var partnersForPage = partners.Skip(skipAmount).Take(size).ToList();
+
+                // Convert partners to PartnerDTO using AutoMapper
+                return _mapper.Map<List<PartnerDTO>>(partnersForPage);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in FetchPartnersFromDatabase: {ex.Message}", ex);
+                throw;
+            }
+        }
+
+        private async Task<List<BookingforAdminDTO>> FetchBookingsFromDatabase(int? page, int? pageSize)
         {
             try
             {
@@ -29,31 +127,31 @@ namespace Service.Service
                 {
                     return await _unitOfWork.BookingLogRepo.GetAllBookingDetailsForAdminAsync();
                 }
+
                 int pageNumber = page.Value;
                 int size = pageSize.Value;
+
                 if (pageNumber < 1 || size < 1)
                 {
                     throw new ArgumentException("Page number and page size must be greater than zero.");
                 }
-                if (_cachedBookings == null)
-                {
-                    _cachedBookings = await _unitOfWork.BookingLogRepo.GetAllBookingDetailsForAdminAsync();
-                }
-                _cachedBookings = _cachedBookings.OrderByDescending(b => b.BookingDate).ToList();
-                int skipAmount = (pageNumber - 1) * size;
 
+                var bookings = await _unitOfWork.BookingLogRepo.GetAllBookingDetailsForAdminAsync();
+
+                // Order bookings by CreateDate
+                bookings = bookings.OrderByDescending(b => b.CreateDate).ToList();
+
+                int skipAmount = (pageNumber - 1) * size;
                 // Retrieve bookings for the current page
-                return (await _unitOfWork.BookingLogRepo.GetAllBookingDetailsForAdminAsync())
-                    .Skip(skipAmount)
-                    .Take(size)
-                    .ToList();
+                return bookings.Skip(skipAmount).Take(size).ToList();
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error in GetPartnerBookingsAsync: {ex.Message}", ex);
+                Console.WriteLine($"Error in FetchBookingsFromDatabase: {ex.Message}", ex);
                 throw;
             }
         }
+
         public async Task<List<Partner>> GetTopPartnerAsync(int top)
         {
             try
