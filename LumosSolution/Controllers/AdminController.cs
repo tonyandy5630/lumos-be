@@ -138,9 +138,9 @@ namespace LumosSolution.Controllers
         }
         [HttpGet("bookings")]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult<ApiResponse<List<BookingforAdminDTO>>>> GetBookings(int? page =1, int? PageSize=5)
+        public async Task<ActionResult<ApiResponse<object>>> GetBookings(int? page =1, int? PageSize=5)
         {
-            ApiResponse<List<BookingforAdminDTO>> response = new ApiResponse<List<BookingforAdminDTO>>();
+            ApiResponse<object> response = new ApiResponse<object>();
             try
             {
                 string email = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
@@ -152,10 +152,10 @@ namespace LumosSolution.Controllers
                     return Unauthorized(response);
                 }
 
-                var bookings = await _adminService.GetBookingsAsync(page, PageSize);
+                var (totalBookings, bookings) = await _adminService.GetBookingsAsync(page, PageSize);
 
-
-                response.data = bookings;
+                var responseData = new { totalBooking = totalBookings, list = bookings };
+                response.data = responseData;
                 response.message = MessagesResponse.Success.Completed;
                 response.StatusCode = ApiStatusCode.OK;
 
@@ -171,20 +171,20 @@ namespace LumosSolution.Controllers
         }
         [HttpGet("partners")]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult<ApiResponse<List<PartnerDTO>>>> GetAllPartnersAsync(int? page = 1, int? pageSize = 5)
+        public async Task<ActionResult<ApiResponse<object>>> GetAllPartnersAsync(int? page = 1, int? pageSize = 5)
         {
-            ApiResponse<List<PartnerDTO>> response = new ApiResponse<List<PartnerDTO>>();
+            ApiResponse<object> response = new ApiResponse<object>();
             try
             {
-                List<PartnerDTO> partners = await _adminService.GetAllPartnersAsync(page, pageSize);
+                var (totalPartners, partners) = await _adminService.GetAllPartnersAsync(page, pageSize);
                 if (partners.Count == 0)
                 {
                     response.message = MessagesResponse.Error.NotFound;
                     response.StatusCode = ApiStatusCode.NotFound;
                     return NotFound(response);
                 }
-
-                response.data = partners;
+                var responseData = new { totalPartners = totalPartners, list = partners };
+                response.data = responseData;
                 response.message = MessagesResponse.Success.Completed;
                 response.StatusCode = ApiStatusCode.OK;
 

@@ -11,8 +11,8 @@ namespace Service.InterfaceService
 {
     public interface IAdminService
     {
-        Task<List<BookingforAdminDTO>> GetBookingsAsync(int? page, int? pageSize);
-        Task<List<PartnerDTO>> GetAllPartnersAsync(int? page, int? pageSize);
+        Task<(int totalBookings,List<BookingforAdminDTO> bookings)> GetBookingsAsync(int? page, int? pageSize);
+        Task<(int totalPartners, List<PartnerDTO> partners)> GetAllPartnersAsync(int? page, int? pageSize);
         Task<List<Partner>> GetTopPartnerAsync(int top);
         Task<List<Admin>> GetAdminsAsync();
         Task<Admin> GetAdminByEmailAsync(string email);

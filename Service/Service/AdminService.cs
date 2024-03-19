@@ -27,8 +27,13 @@ namespace Service.Service
             _mapper = mapper;
             _cache = cache;
         }
-
-        public async Task<List<PartnerDTO>> GetAllPartnersAsync(int? page, int? pageSize)
+        private async Task<int> GetTotalPartnersCountAsync()
+        {
+            var partners = await _unitOfWork.PartnerRepo.GetAllPartnersAsync();
+            int partnersCount = partners.Count();
+            return partnersCount;
+        }
+        public async Task<(int totalPartners, List<PartnerDTO> partners)> GetAllPartnersAsync(int? page, int? pageSize)
         {
             try
             {
@@ -36,17 +41,27 @@ namespace Service.Service
 
                 if (!_cache.TryGetValue(cacheKey, out List<PartnerDTO> partners))
                 {
-                    partners = await FetchPartnersFromDatabase(page, pageSize);
+                    partners = await FetchPartnersFromDatabase();
 
                     var cacheOptions = new MemoryCacheEntryOptions
                     {
-                        SlidingExpiration = TimeSpan.FromMinutes(3)
+                        SlidingExpiration = TimeSpan.FromSeconds(30)
                     };
                     _cache.Set(cacheKey, partners, cacheOptions);
                 }
+                int totalPartners = partners.Count();
+                // Kiểm tra và áp dụng phân trang nếu cần
+                if (page != null && pageSize != null)
+                {
+                    int pageNumber = page.Value;
+                    int size = pageSize.Value;
 
-                // Return partners
-                return partners;
+                    // Sắp xếp danh sách theo trang và kích thước trang
+                    partners = partners.Skip((pageNumber - 1) * size).Take(size).ToList();
+                }
+
+                // Return both totalPartners and partners
+                return (totalPartners, partners);
             }
             catch (Exception ex)
             {
@@ -55,26 +70,35 @@ namespace Service.Service
             }
         }
 
-        public async Task<List<BookingforAdminDTO>> GetBookingsAsync(int? page, int? pageSize)
+        public async Task<(int totalBookings, List<BookingforAdminDTO> bookings)> GetBookingsAsync(int? page, int? pageSize)
         {
             try
             {
                 string cacheKey = "AllBookings";
 
+
                 if (!_cache.TryGetValue(cacheKey, out List<BookingforAdminDTO> bookings))
                 {
-                    // If bookings not found in cache, query database
-                    bookings = await FetchBookingsFromDatabase(page, pageSize);
+                    bookings = await FetchBookingsFromDatabase();
 
                     var cacheOptions = new MemoryCacheEntryOptions
                     {
-                        SlidingExpiration = TimeSpan.FromMinutes(3)
+                        SlidingExpiration = TimeSpan.FromSeconds(30)
                     };
                     _cache.Set(cacheKey, bookings, cacheOptions);
                 }
+                int totalBookings = bookings.Count;
+                // Kiểm tra và áp dụng phân trang nếu cần
+                if (page != null && pageSize != null)
+                {
+                    int pageNumber = page.Value;
+                    int size = pageSize.Value;
 
-                // Return bookings
-                return bookings;
+                    // Sắp xếp danh sách theo trang và kích thước trang
+                    bookings = bookings.Skip((pageNumber - 1) * size).Take(size).ToList();
+                }
+
+                return (totalBookings, bookings);
             }
             catch (Exception ex)
             {
@@ -82,35 +106,13 @@ namespace Service.Service
                 throw;
             }
         }
-        private async Task<List<PartnerDTO>> FetchPartnersFromDatabase(int? page, int? pageSize)
+
+        private async Task<List<PartnerDTO>> FetchPartnersFromDatabase()
         {
             try
             {
-                if (page == null || pageSize == null)
-                {
-                    var partnerss = await _unitOfWork.PartnerRepo.GetAllPartnersAsync();
-                    return _mapper.Map<List<PartnerDTO>>(partnerss);
-                }
-
-                int pageNumber = page.Value;
-                int size = pageSize.Value;
-
-                if (pageNumber < 1 || size < 1)
-                {
-                    throw new ArgumentException("Page number and page size must be greater than zero.");
-                }
-
                 var partners = await _unitOfWork.PartnerRepo.GetAllPartnersAsync();
-
-                // Order partners by CreatedDate
-                partners = partners.OrderByDescending(p => p.CreatedDate).ToList();
-
-                int skipAmount = (pageNumber - 1) * size;
-                // Retrieve partners for the current page
-                var partnersForPage = partners.Skip(skipAmount).Take(size).ToList();
-
-                // Convert partners to PartnerDTO using AutoMapper
-                return _mapper.Map<List<PartnerDTO>>(partnersForPage);
+                return _mapper.Map<List<PartnerDTO>>(partners);
             }
             catch (Exception ex)
             {
@@ -119,31 +121,11 @@ namespace Service.Service
             }
         }
 
-        private async Task<List<BookingforAdminDTO>> FetchBookingsFromDatabase(int? page, int? pageSize)
+        private async Task<List<BookingforAdminDTO>> FetchBookingsFromDatabase()
         {
             try
             {
-                if (page == null || pageSize == null)
-                {
-                    return await _unitOfWork.BookingLogRepo.GetAllBookingDetailsForAdminAsync();
-                }
-
-                int pageNumber = page.Value;
-                int size = pageSize.Value;
-
-                if (pageNumber < 1 || size < 1)
-                {
-                    throw new ArgumentException("Page number and page size must be greater than zero.");
-                }
-
-                var bookings = await _unitOfWork.BookingLogRepo.GetAllBookingDetailsForAdminAsync();
-
-                // Order bookings by CreateDate
-                bookings = bookings.OrderByDescending(b => b.CreateDate).ToList();
-
-                int skipAmount = (pageNumber - 1) * size;
-                // Retrieve bookings for the current page
-                return bookings.Skip(skipAmount).Take(size).ToList();
+                return await _unitOfWork.BookingLogRepo.GetAllBookingDetailsForAdminAsync();
             }
             catch (Exception ex)
             {
