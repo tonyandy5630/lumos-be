@@ -14,6 +14,7 @@ namespace DataTransferObject.DTO
         public string PartnerName { get; set; }
         public Booking Booking { get; set; }
         public Customer Customer { get; set; }
-
+        public bool isPaid { get; set; }
+        public bool isRefund { get; set; }
     }
 }

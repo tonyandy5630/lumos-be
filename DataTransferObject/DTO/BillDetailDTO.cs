@@ -22,7 +22,8 @@ namespace DataTransferObject.DTO
         public string? PaymentMethod { get; set; }
         public string? Note { get; set; }
         public decimal? Rating { get; set; }
-        public string? IsPay { get; set; }
+        public bool? IsPay { get; set; }
+        public bool? IsRefund { get; set; }
         public List<BillMedicalDTO?>? MedicalServices { get; set; }
     }
 }

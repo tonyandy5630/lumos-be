@@ -46,8 +46,6 @@ namespace Repository.Repo
                     }
                     foreach (var status in statuses)
                     {
-
-                        var isPay = await GetBookingStatusListAndCheckIsPayAsync(bookingId);
                         if (await CheckStatusForGetAllBooking(bookingId, bookingInfo.Customer))
                         {
                             var medicalServiceDTOs = await GetMedicalServiceBillDTOsAsync(bookingId);
@@ -64,7 +62,8 @@ namespace Repository.Repo
                                 CreateDate = (DateTime)bookingInfo.Booking.CreatedDate,
                                 bookingTime = bookingInfo.Booking.bookingTime,
                                 Note = bookingInfo.Note,
-                                IsPay = isPay,
+                                IsPay = bookingInfo.isPaid,
+                                IsRefund = bookingInfo.isRefund,
                                 MedicalServices = medicalServiceDTOs,
                             };
                         }

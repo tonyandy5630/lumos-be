@@ -16,6 +16,8 @@ namespace DataTransferObject.DTO
         public int? TotalPrice { get; set; }
         public DateTime BookingDate { get; set; }
         public DateTime CreateDate { get; set; }
+        public bool isPaid { get; set; }
+        public bool isRefund { get; set; }
         public int bookingTime { get; set; } // workshift
         public string? Note { get; set; }
     }

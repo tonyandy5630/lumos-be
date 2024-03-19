@@ -393,7 +393,9 @@ namespace DataAccessLayer
                                                            Note = bd.Note,
                                                            Booking = b,
                                                            Customer = mr.Customer,
-                                                           PartnerName = sb.Service.Partner.DisplayName // Add partner name here
+                                                           PartnerName = sb.Service.Partner.DisplayName,
+                                                           isPaid = (bool)b.isPaid,
+                                                           isRefund = (bool)b.isRefund
                                                        }).FirstOrDefaultAsync();
 
                 return bookingDetailsAndCustomer;
@@ -681,6 +683,8 @@ namespace DataAccessLayer
                                                 ServiceBooking = sb,
                                                 PartnerService = ps,
                                                 Partner = p,
+                                                isPaid = b.isPaid,
+                                                isRefund =b.isRefund,
                                                 PaymentMethod = pm
                                             }).ToListAsync();
 
@@ -697,6 +701,8 @@ namespace DataAccessLayer
                         TotalPrice = x.Booking.TotalPrice,
                         BookingDate = x.Booking.BookingDate,
                         bookingTime = x.Booking.bookingTime,
+                        isPaid = (bool)x.isPaid,
+                        isRefund = (bool)x.isRefund,
                         Note = x.BookingDetail.Note,
                         CreateDate = (DateTime)x.Booking.CreatedDate
                     }).ToList();
