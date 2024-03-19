@@ -30,7 +30,7 @@ namespace Repository.Interface
         Task<int> CountBookingInAppAsync();
         Task<List<(string ServiceName, int? Price, int Quantity)>> GetBookingServiceInfoAsync(int bookingId);
         Task<int?> GetTotalPriceByBookingIdAsync(int bookingId);
-        Task UpdatePaymentLinkIdAsync(int bookingid, string newPaymentLinkId);
+        Task UpdatePaymentLinkIdAndIsPaidAsync(int bookingid, string newPaymentLinkId);
         Task UpdateBookingComplete(int bookingid, FeedbackRequest feedback);
     }
 }

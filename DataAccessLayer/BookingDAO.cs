@@ -623,7 +623,7 @@ namespace DataAccessLayer
                 throw;
             }
         }
-        public async Task UpdatePaymentLinkIdAsync(int bookingid, string newPaymentLinkId)
+        public async Task UpdatePaymentLinkIdAndIsPaidAsync(int bookingid, string newPaymentLinkId)
         {
             try
             {
@@ -633,6 +633,7 @@ namespace DataAccessLayer
 
                     if (bookingToUpdate != null)
                     {
+                        bookingToUpdate.isPaid = true;
                         bookingToUpdate.PaymentLinkId = newPaymentLinkId;
                         await _context.SaveChangesAsync();
                     }
@@ -648,6 +649,7 @@ namespace DataAccessLayer
                 throw;
             }
         }
+
         public async Task UpdateBookingComplete(int bookingid, FeedbackRequest feedback)
         {
             try

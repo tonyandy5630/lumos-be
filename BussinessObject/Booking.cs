@@ -26,8 +26,8 @@ namespace BussinessObject
         public string Address { get; set; }
         public int bookingTime { get; set; }
         public decimal? Rating { get; set; }
-        public bool isPaid { get; set; } = false;
-        public bool isRefund { get; set; } = false;
+        public bool? isPaid { get; set; } = false;
+        public bool? isRefund { get; set; } = false;
         public string? PaymentLinkId { get; set; }
         [JsonIgnore]
         public virtual PaymentMethod? Payment { get; set; }

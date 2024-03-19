@@ -67,8 +67,9 @@ namespace Repository.Repo
 
         public Task<int?> GetTotalPriceByBookingIdAsync(int bookingId) => BookingDAO.Instance.GetTotalPriceByBookingIdAsync(bookingId);
 
-        public Task UpdatePaymentLinkIdAsync(int bookingid, string newPaymentLinkId) => BookingDAO.Instance.UpdatePaymentLinkIdAsync(bookingid,newPaymentLinkId);
+        public Task UpdatePaymentLinkIdAndIsPaidAsync(int bookingid, string newPaymentLinkId) => BookingDAO.Instance.UpdatePaymentLinkIdAndIsPaidAsync(bookingid,newPaymentLinkId);
 
         public Task UpdateBookingComplete(int bookingid, FeedbackRequest feedback) =>BookingDAO.Instance.UpdateBookingComplete(bookingid, feedback);
+
     }
 }
